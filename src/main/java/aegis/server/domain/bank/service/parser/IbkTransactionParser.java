@@ -37,7 +37,7 @@ public class IbkTransactionParser implements TransactionParser {
 
         Long amount = Long.parseLong(matcher.group(2));
 
-        String depositorName = matcher.group(3);
+        String name = matcher.group(3);
 
         // 3. 세번째 줄에서 거래시간, 잔액을 추출
         matcher = TX_TIME_BALANCE_PATTERN.matcher(lines[2]);
@@ -55,7 +55,7 @@ public class IbkTransactionParser implements TransactionParser {
 
         return Transaction.builder()
                 .transactionTime(transactionTime)
-                .depositorName(depositorName)
+                .name(name)
                 .transactionType(transactionType)
                 .amount(amount)
                 .balance(balance)

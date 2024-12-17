@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class Transaction {
 
     private LocalDateTime transactionTime;
-    private String depositorName;
+    private String name;
     private TransactionType transactionType;
     private Long amount;
     private Long balance;
