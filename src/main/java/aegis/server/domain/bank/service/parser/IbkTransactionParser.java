@@ -2,18 +2,23 @@ package aegis.server.domain.bank.service.parser;
 
 import aegis.server.domain.bank.domain.Transaction;
 import aegis.server.domain.bank.domain.TransactionType;
+import lombok.RequiredArgsConstructor;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@RequiredArgsConstructor
 public class IbkTransactionParser implements TransactionParser {
 
     private static final Pattern TX_TYPE_AMOUNT_NAME_PATTERN =
             Pattern.compile("^\\[(입금|출금)]\\s*(\\d+)원\\s*(.+)$");
     private static final Pattern TX_TIME_BALANCE_PATTERN =
             Pattern.compile("(\\d{2}/\\d{2}\\s+\\d{2}:\\d{2})\\s*/\\s*잔액\\s*(\\d+)원");
+
+    private final Clock clock;
 
     @Override
     public Transaction parse(String transactionLog) {
@@ -45,11 +50,16 @@ public class IbkTransactionParser implements TransactionParser {
             throw new IllegalArgumentException("거래시간, 잔액을 추출할 수 없습니다");
         }
 
-        String timeStr = LocalDateTime.now().getYear() + "/" + matcher.group(1);
-        LocalDateTime transactionTime = LocalDateTime.parse(
-                timeStr,
+        LocalDateTime currentTime = LocalDateTime.now(clock);
+        LocalDateTime parsedTime = LocalDateTime.parse(
+                currentTime.getYear() + "/" + matcher.group(1),
                 DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
         );
+
+        // 현재가 1월이고 거래가 12월이면 작년 거래
+        LocalDateTime transactionTime = (currentTime.getMonthValue() == 1 && parsedTime.getMonthValue() == 12)
+                ? parsedTime.minusYears(1)
+                : parsedTime;
 
         Long balance = Long.parseLong(matcher.group(2));
 
