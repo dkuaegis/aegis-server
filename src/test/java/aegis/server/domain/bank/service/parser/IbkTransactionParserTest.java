@@ -6,7 +6,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,10 +17,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class IbkTransactionParserTest {
 
     private IbkTransactionParser parser;
+    private ZoneId timeZone;
 
     @BeforeEach
     void setUp() {
-        parser = new IbkTransactionParser();
+        timeZone = ZoneId.of("Asia/Seoul");
+        Clock clock = Clock.system(timeZone);
+        parser = new IbkTransactionParser(clock);
     }
 
     @Test
@@ -74,6 +79,33 @@ class IbkTransactionParserTest {
     }
 
     @Test
+    @DisplayName("연도가 바뀌는 경우 거래 시간을 올바르게 파싱한다")
+    void parseYearRolloverProperly() {
+        // given
+        int currentYear = 2024;
+        Clock januaryClock = Clock.fixed(
+                LocalDateTime
+                        .of(currentYear + 1, 1, 1, 0, 0)
+                        .atZone(timeZone)
+                        .toInstant(),
+                timeZone
+        );
+        parser = new IbkTransactionParser(januaryClock);
+
+        String log = """
+                [입금] 50000원 홍길동
+                982-******-01-017
+                12/31 23:59 /잔액 150000원""";
+
+        // when
+        Transaction transaction = parser.parse(log);
+
+        // then
+        assertThat(transaction.getTransactionTime())
+                .isEqualTo(LocalDateTime.of(currentYear, 12, 31, 23, 59));
+    }
+
+    @Test
     @DisplayName("잘못된 형식의 로그는 예외를 발생시킨다")
     void parseInvalidLog() {
         // given
@@ -115,5 +147,18 @@ class IbkTransactionParserTest {
         assertThatThrownBy(() -> parser.parse(invalidLog))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("거래시간, 잔액을 추출할 수 없습니다");
+    }
+
+    private IbkTransactionParser customTimeParser(
+            int year, int month, int day, int hour, int minute
+    ) {
+        Clock clock = Clock.fixed(
+                LocalDateTime
+                        .of(year, month, day, hour, minute)
+                        .atZone(timeZone)
+                        .toInstant(),
+                ZoneId.of("Asia/Seoul")
+        );
+        return new IbkTransactionParser(clock);
     }
 }
