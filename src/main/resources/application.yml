@@ -4,3 +4,6 @@ spring:
 
 bank:
   type: ibk
+
+time:
+  zone: Asia/Seoul
