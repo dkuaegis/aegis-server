@@ -28,3 +28,6 @@ bank:
 
 time:
   zone: Asia/Seoul
+
+key:
+  tx-track-api: ${TRANSACTION_TRACK_API_KEY}
