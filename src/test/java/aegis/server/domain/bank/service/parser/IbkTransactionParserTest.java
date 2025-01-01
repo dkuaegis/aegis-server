@@ -16,13 +16,20 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class IbkTransactionParserTest {
 
+    private final int currentYear = 2024;
     private IbkTransactionParser parser;
     private ZoneId timeZone;
 
     @BeforeEach
     void setUp() {
         timeZone = ZoneId.of("Asia/Seoul");
-        Clock clock = Clock.system(timeZone);
+        Clock clock = Clock.fixed(
+                LocalDateTime
+                        .of(currentYear, 12, 17, 14, 30)
+                        .atZone(timeZone)
+                        .toInstant(),
+                timeZone
+        );
         parser = new IbkTransactionParser(clock);
     }
 
@@ -44,7 +51,7 @@ class IbkTransactionParserTest {
         assertThat(transaction.getName()).isEqualTo("홍길동");
         assertThat(transaction.getBalance()).isEqualTo(150000);
 
-        String expectedTimeStr = LocalDateTime.now().getYear() + "/12/17 14:30";
+        String expectedTimeStr = currentYear + "/12/17 14:30";
         LocalDateTime expectedTime = LocalDateTime.parse(
                 expectedTimeStr,
                 DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
@@ -59,7 +66,7 @@ class IbkTransactionParserTest {
         String log = """
                 [출금] 30000원 ATM출금
                 982-******-01-017
-                12/17 15:30 /잔액 120000원""";
+                12/17 14:30 /잔액 120000원""";
 
         // when
         Transaction transaction = parser.parse(log);
@@ -70,7 +77,7 @@ class IbkTransactionParserTest {
         assertThat(transaction.getName()).isEqualTo("ATM출금");
         assertThat(transaction.getBalance()).isEqualTo(120000);
 
-        String expectedTimeStr = LocalDateTime.now().getYear() + "/12/17 15:30";
+        String expectedTimeStr = currentYear + "/12/17 14:30";
         LocalDateTime expectedTime = LocalDateTime.parse(
                 expectedTimeStr,
                 DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
