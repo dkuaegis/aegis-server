@@ -56,8 +56,11 @@ public class IbkTransactionParser implements TransactionParser {
                 DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
         );
 
-        // 현재가 1월이고 거래가 12월이면 작년 거래
-        LocalDateTime transactionTime = (currentTime.getMonthValue() == 1 && parsedTime.getMonthValue() == 12)
+        // IBK의 경우 거래 내역에 년도 정보가 없으므로
+        // 12/31 23:59라고 적힌 거래가 그 다음 년도에 서버에서 파싱되면
+        // Y년 12월 31일 23시 59분으로 파싱되야 할 것이, Y+1년 12월 31일 23시 59분으로 파싱됨
+        // 따라서 파싱된 시각이 현재 시각보다 미래라면 작년으로 간주
+        LocalDateTime transactionTime = parsedTime.isAfter(currentTime)
                 ? parsedTime.minusYears(1)
                 : parsedTime;
 
