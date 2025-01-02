@@ -6,7 +6,7 @@ import aegis.server.domain.survey.domain.InterestField;
 import aegis.server.domain.survey.domain.Survey;
 import aegis.server.domain.survey.domain.SurveyDto;
 import aegis.server.domain.survey.repository.SurveyRepository;
-import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,7 +38,7 @@ class SurveyServiceTest {
     void saveSurveySuccess() throws Exception {
         //given
         Long memberId = 1L;
-        Member member = new Member();
+        Member member = Member.builder().build();
         HashSet<InterestField> interestFields = new HashSet<>(Arrays.asList(InterestField.DEVOPS, InterestField.GAME_SERVER, InterestField.NOTSURE));
         String registrationReason = "동이리 가입 이유";
         String feedBack = "하고 싶은 말";
@@ -79,7 +79,7 @@ class SurveyServiceTest {
     void findByMemberIdSuccess() throws Exception {
         //given
         Long memberId = 1L;
-        Member member = new Member();
+        Member member = Member.builder().build();
         Set<InterestField> interests = new HashSet<>(
                 Arrays.asList(InterestField.GAME_CLIENT, InterestField.AI));
         Survey survey = new Survey(member, interests, "reason", "feedBack");
@@ -93,4 +93,5 @@ class SurveyServiceTest {
         assertEquals(interests, findDto.getInterestFields());
         verify(surveyRepository).findByMemberId(memberId);
     }
+
 }
