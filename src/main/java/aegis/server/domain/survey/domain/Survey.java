@@ -42,11 +42,11 @@ public class Survey {
     private LocalDateTime createdAt;
 
 
-    public Survey(Member member, Set<InterestField> interestFields, String feedBack, String registrationReason) {
+    public Survey(Member member, Set<InterestField> interestFields, String registrationReason, String feedBack) {
         this.member = member;
         this.interestFields = interestFields;
-        this.feedBack = feedBack;
         this.registrationReason = registrationReason;
+        this.feedBack = feedBack;
     }
 
 }
