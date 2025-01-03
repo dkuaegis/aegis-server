@@ -1,8 +1,8 @@
 package aegis.server.global.config;
 
-import aegis.server.global.security.oauth.CustomOidcUserService;
-import aegis.server.global.security.oauth.OidcFailureHandler;
-import aegis.server.global.security.oauth.OidcSuccessHandler;
+import aegis.server.global.security.oidc.CustomOidcUserService;
+import aegis.server.global.security.oidc.OidcFailureHandler;
+import aegis.server.global.security.oidc.OidcSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
