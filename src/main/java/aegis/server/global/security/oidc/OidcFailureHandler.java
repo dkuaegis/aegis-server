@@ -1,4 +1,4 @@
-package aegis.server.global.security.oauth;
+package aegis.server.global.security.oidc;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Component
-public class OAuth2FailureHandler implements AuthenticationFailureHandler {
+public class OidcFailureHandler implements AuthenticationFailureHandler {
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,

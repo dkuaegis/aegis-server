@@ -1,8 +1,8 @@
 package aegis.server.global.config;
 
-import aegis.server.global.security.oauth.CustomOAuth2UserService;
-import aegis.server.global.security.oauth.OAuth2FailureHandler;
-import aegis.server.global.security.oauth.OAuth2SuccessHandler;
+import aegis.server.global.security.oidc.CustomOidcUserService;
+import aegis.server.global.security.oidc.OidcFailureHandler;
+import aegis.server.global.security.oidc.OidcSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,9 +18,9 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2SuccessHandler oAuth2SuccessHandler;
-    private final OAuth2FailureHandler oAuth2FailureHandler;
+    private final CustomOidcUserService customOidcUserService;
+    private final OidcSuccessHandler oidcSuccessHandler;
+    private final OidcFailureHandler oidcFailureHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -35,6 +35,7 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/login-fail"),
                                 new AntPathRequestMatcher("/api/transaction-track/**")
                         ).permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .logout(logout -> logout
@@ -47,10 +48,10 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/")
                         .userInfoEndpoint(userInfo ->
-                                userInfo.userService(customOAuth2UserService)
+                                userInfo.oidcUserService(customOidcUserService)
                         )
-                        .successHandler(oAuth2SuccessHandler)
-                        .failureHandler(oAuth2FailureHandler)
+                        .successHandler(oidcSuccessHandler)
+                        .failureHandler(oidcFailureHandler)
                 );
 
         return http.build();
