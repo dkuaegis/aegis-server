@@ -19,10 +19,14 @@ public class Member {
 
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
     public static Member createGuestMember(String email, String name) {
         return Member.builder()
                 .email(email)
                 .name(name)
+                .role(Role.GUEST)
                 .build();
     }
 }
