@@ -5,7 +5,7 @@ import lombok.*;
 
 @Entity
 @Getter
-@Builder(access = AccessLevel.PRIVATE)
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member {
@@ -19,14 +19,45 @@ public class Member {
 
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    private String birthDate;
 
-    public static Member createGuestMember(String email, String name) {
-        return Member.builder()
-                .email(email)
-                .name(name)
-                .role(Role.GUEST)
-                .build();
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+    private String studentId;
+
+    private String phoneNumber;
+
+    @Enumerated(EnumType.STRING)
+    private Department department;
+
+    @Enumerated(EnumType.STRING)
+    private AcademicStatus academicStatus;
+
+    @Enumerated(EnumType.STRING)
+    private Grade grade;
+
+    @Enumerated(EnumType.STRING)
+    private Semester semester;
+
+    public void updateMember(
+            String birthDate,
+            Gender gender,
+            String studentId,
+            String phoneNumber,
+            Department department,
+            AcademicStatus academicStatus,
+            Grade grade,
+            Semester semester
+    ) {
+        this.birthDate = birthDate;
+        this.gender = gender;
+        this.studentId = studentId;
+        this.phoneNumber = phoneNumber;
+        this.department = department;
+        this.academicStatus = academicStatus;
+        this.grade = grade;
+        this.semester = semester;
     }
+
 }
