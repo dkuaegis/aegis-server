@@ -1,4 +1,4 @@
-package aegis.server.global.security.oauth;
+package aegis.server.global.security.oidc;
 
 import aegis.server.global.security.dto.SessionUser;
 import jakarta.servlet.http.HttpServletRequest;

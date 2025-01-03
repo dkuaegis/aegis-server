@@ -1,7 +1,7 @@
 package aegis.server.global.security.dto;
 
 import aegis.server.domain.member.domain.Role;
-import aegis.server.global.security.oauth.UserAuthInfo;
+import aegis.server.global.security.oidc.UserAuthInfo;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
