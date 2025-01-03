@@ -40,7 +40,7 @@ public class Survey {
     @MapKeyEnumerated(EnumType.STRING)
     @MapKeyColumn(name = "interest_field")
     @Column(name = "etc")
-    private Map<InterestField, String> interestEtc = new HashMap<>();
+    private Map<InterestField, String> interestEtc = new HashMap<>(); 
 
     private String registrationReason;
     private String feedBack;

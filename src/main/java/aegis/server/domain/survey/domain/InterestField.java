@@ -1,7 +1,9 @@
 package aegis.server.domain.survey.domain;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Getter
 public enum InterestField {
     // 보안 분야
@@ -19,8 +21,8 @@ public enum InterestField {
     WEB_ETC("웹 기타"),
 
     // 게임 분야
-    GAME_CLIENT("게임 클라이언트"),
-    GAME_SERVER("게임 서버"),
+    GAME_CLIENT("클라이언트"),
+    GAME_SERVER("서버"),
     GAME_ETC("게임 기타"),
 
     // 기타 분야
@@ -32,8 +34,6 @@ public enum InterestField {
 
     private final String description;
 
-    InterestField(String description) {
-        this.description = description;
-    }
 }
+
 
