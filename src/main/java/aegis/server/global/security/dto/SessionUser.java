@@ -1,19 +1,27 @@
 package aegis.server.global.security.dto;
 
 import aegis.server.domain.member.domain.Role;
+import aegis.server.global.security.oauth.UserAuthInfo;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.io.Serializable;
 
 @Getter
+@Builder(access = AccessLevel.PRIVATE)
 public class SessionUser implements Serializable {
-    private final String name;
+    private final Long id;
     private final String email;
+    private final String name;
     private final Role role;
 
-    public SessionUser(String name, String email) {
-        this.name = name;
-        this.email = email;
-        this.role = Role.USER;
+    public static SessionUser from(UserAuthInfo userAuthInfo) {
+        return SessionUser.builder()
+                .id(userAuthInfo.getId())
+                .email(userAuthInfo.getEmail())
+                .name(userAuthInfo.getName())
+                .role(userAuthInfo.getRole())
+                .build();
     }
 }
