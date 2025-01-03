@@ -66,12 +66,6 @@ public class IbkTransactionParser implements TransactionParser {
 
         Long balance = Long.parseLong(matcher.group(2));
 
-        return Transaction.builder()
-                .transactionTime(transactionTime)
-                .name(name)
-                .transactionType(transactionType)
-                .amount(amount)
-                .balance(balance)
-                .build();
+        return Transaction.of(transactionTime, name, transactionType, amount, balance);
     }
 }
