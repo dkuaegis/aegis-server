@@ -2,20 +2,22 @@ package aegis.server.domain.survey.domain;
 
 import aegis.server.domain.member.domain.Member;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+@EntityListeners(AuditingEntityListener.class)
 @Entity
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Survey {
 
     @Id
@@ -24,7 +26,7 @@ public class Survey {
     private Long id;
 
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="member_id")
     private Member member;
 
@@ -33,8 +35,13 @@ public class Survey {
     @Enumerated(EnumType.STRING)
     private Set<InterestField> interestFields = new HashSet<>();
 
+    @ElementCollection
+    @CollectionTable(name = "survey_interest_etc")
+    @MapKeyEnumerated(EnumType.STRING)
+    @MapKeyColumn(name = "interest_field")
+    @Column(name = "etc")
+    private Map<InterestField, String> interestEtc = new HashMap<>();
 
-    @Size(min = 3)
     private String registrationReason;
     private String feedBack;
 
@@ -42,11 +49,11 @@ public class Survey {
     private LocalDateTime createdAt;
 
 
-    public Survey(Member member, Set<InterestField> interestFields, String registrationReason, String feedBack) {
-        this.member = member;
-        this.interestFields = interestFields;
-        this.registrationReason = registrationReason;
-        this.feedBack = feedBack;
+    public void update(SurveyDto surveyDto) {
+        this.interestFields = surveyDto.getInterestFields();
+        this.interestEtc = surveyDto.getInterestEtc();
+        this.registrationReason = surveyDto.getRegistrationReason();
+        this.feedBack = surveyDto.getFeedBack();
+        this.createdAt = LocalDateTime.now();
     }
-
 }
