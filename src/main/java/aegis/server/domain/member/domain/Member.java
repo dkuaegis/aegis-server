@@ -40,6 +40,17 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private Semester semester;
 
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    public static Member createGuestMember(String email, String name) {
+        return Member.builder()
+                .email(email)
+                .name(name)
+                .role(Role.GUEST)
+                .build();
+    }
+
     public void updateMember(
             String birthDate,
             Gender gender,
