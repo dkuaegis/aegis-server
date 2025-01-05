@@ -1,6 +1,6 @@
 package aegis.server.domain.survey.controller;
 
-import aegis.server.domain.survey.domain.SurveyDto;
+import aegis.server.domain.survey.dto.SurveyRequest;
 import aegis.server.domain.survey.service.SurveyService;
 import aegis.server.global.security.annotation.LoginUser;
 import aegis.server.global.security.dto.SessionUser;
@@ -20,20 +20,20 @@ public class SurveyController {
     private final SurveyService surveyService;
 
     @GetMapping("/{memberId}")
-    public ResponseEntity<SurveyDto> getSurvey(@PathVariable Long memberId) {
-        SurveyDto surveyDto = surveyService.findByMemberId(memberId);
-        return new ResponseEntity<>(surveyDto, HttpStatus.OK);
+    public ResponseEntity<SurveyRequest> getSurvey(@PathVariable Long memberId) {
+        SurveyRequest surveyRequest = surveyService.findByMemberId(memberId);
+        return new ResponseEntity<>(surveyRequest, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<SurveyDto> createSurvey(@Validated @RequestBody SurveyDto surveyDto, @LoginUser SessionUser sessionUser) {
-        surveyService.save(surveyDto, sessionUser);
+    public ResponseEntity<SurveyRequest> createSurvey(@Validated @RequestBody SurveyRequest surveyRequest, @LoginUser SessionUser sessionUser) {
+        surveyService.save(surveyRequest, sessionUser);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<SurveyDto>> getAllSurveys() {
-        List<SurveyDto> allSurveys = surveyService.getAllSurveys();
+    public ResponseEntity<List<SurveyRequest>> getAllSurveys() {
+        List<SurveyRequest> allSurveys = surveyService.getAllSurveys();
         return new ResponseEntity<>(allSurveys, HttpStatus.OK);
     }
 }

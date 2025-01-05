@@ -1,5 +1,6 @@
-package aegis.server.domain.survey.domain;
+package aegis.server.domain.survey.dto;
 
+import aegis.server.domain.survey.domain.InterestField;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -14,7 +15,7 @@ import java.util.Set;
 @Getter
 @Builder
 @AllArgsConstructor
-public class SurveyDto {
+public class SurveyRequest {
 
     private Set<InterestField> interestFields = new HashSet<>();
 
