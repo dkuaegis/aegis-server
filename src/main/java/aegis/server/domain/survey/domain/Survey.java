@@ -55,7 +55,6 @@ public class Survey {
         this.interestEtc = surveyRequest.getInterestEtc();
         this.registrationReason = surveyRequest.getRegistrationReason();
         this.feedBack = surveyRequest.getFeedBack();
-        this.createdAt = LocalDateTime.now();
     }
 
     public static Survey createSurvey(Member member, SurveyRequest request) {
