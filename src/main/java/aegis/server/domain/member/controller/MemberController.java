@@ -29,12 +29,11 @@ public class MemberController {
 
 
     @PostMapping
-    public ResponseEntity<?> updateMember(
+    public ResponseEntity<Void> updateMember(
             @LoginUser SessionUser sessionUser,
-            @Validated MemberUpdateRequest request
+            @Validated @RequestBody MemberUpdateRequest request
     ) {
         memberService.updateMember(sessionUser, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-
 }

@@ -3,6 +3,8 @@ spring:
     active: local
   application:
     name: aegis-server
+  jackson:
+    property-naming-strategy: SNAKE_CASE
   security:
     oauth2:
       client:
@@ -17,7 +19,7 @@ spring:
   session:
     redis:
       namespace: "aegis:session"
-    timeout: 1800
+    timeout: 18000
 
 bank:
   type: ibk

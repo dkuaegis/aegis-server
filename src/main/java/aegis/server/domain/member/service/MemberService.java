@@ -43,5 +43,4 @@ public class MemberService {
                 request.getSemester()
         );
     }
-
 }
