@@ -1,6 +1,7 @@
 package aegis.server.domain.survey.domain;
 
 import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.survey.dto.SurveyRequest;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -16,7 +17,7 @@ import java.util.Set;
 @Entity
 @Getter
 @AllArgsConstructor
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Survey {
 
@@ -49,11 +50,21 @@ public class Survey {
     private LocalDateTime createdAt;
 
 
-    public void update(SurveyDto surveyDto) {
-        this.interestFields = surveyDto.getInterestFields();
-        this.interestEtc = surveyDto.getInterestEtc();
-        this.registrationReason = surveyDto.getRegistrationReason();
-        this.feedBack = surveyDto.getFeedBack();
+    public void update(SurveyRequest surveyRequest) {
+        this.interestFields = surveyRequest.getInterestFields();
+        this.interestEtc = surveyRequest.getInterestEtc();
+        this.registrationReason = surveyRequest.getRegistrationReason();
+        this.feedBack = surveyRequest.getFeedBack();
         this.createdAt = LocalDateTime.now();
+    }
+
+    public static Survey createSurvey(Member member, SurveyRequest request) {
+        return Survey.builder()
+                .member(member)
+                .interestFields(request.getInterestFields())
+                .interestEtc(request.getInterestEtc())
+                .registrationReason(request.getRegistrationReason())
+                .feedBack(request.getFeedBack())
+                .build();
     }
 }
