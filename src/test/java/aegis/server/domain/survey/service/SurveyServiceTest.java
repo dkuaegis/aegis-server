@@ -1,28 +1,30 @@
 package aegis.server.domain.survey.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.survey.domain.InterestField;
 import aegis.server.domain.survey.domain.Survey;
-import aegis.server.domain.survey.domain.SurveyDto;
+import aegis.server.domain.survey.dto.SurveyRequest;
 import aegis.server.domain.survey.repository.SurveyRepository;
 import aegis.server.global.security.dto.SessionUser;
 import aegis.server.global.security.oidc.UserAuthInfo;
-import org.junit.jupiter.api.DisplayName;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import static org.mockito.ArgumentMatchers.any;
-
-
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SurveyServiceTest {
@@ -36,8 +38,7 @@ class SurveyServiceTest {
     private SurveyService surveyService;
 
     @Test
-    @DisplayName("새로운 설문 저장")
-    void saveNewSurvey() {
+    void 새로운_설문_저장() {
         // given
         Member member = Member.createGuestMember("test@dankook.ac.kr", "테스트");
         ReflectionTestUtils.setField(member, "id", 1L);
@@ -45,7 +46,7 @@ class SurveyServiceTest {
         UserAuthInfo userAuthInfo = UserAuthInfo.from(member);
         SessionUser sessionUser = SessionUser.from(userAuthInfo);
 
-        SurveyDto surveyDto = SurveyDto.builder()
+        SurveyRequest surveyRequest = SurveyRequest.builder()
                 .interestFields(Set.of(InterestField.GAME_CLIENT))
                 .interestEtc(new HashMap<>())
                 .registrationReason("동아리에서 어떤 활동을 하고 싶으신가요?")
@@ -58,15 +59,14 @@ class SurveyServiceTest {
                 .thenReturn(Optional.empty());
 
         // when
-        surveyService.save(surveyDto, sessionUser);
+        surveyService.save(surveyRequest, sessionUser);
 
         // then
         verify(surveyRepository).save(any(Survey.class));
     }
 
     @Test
-    @DisplayName("기존 설문 업데이트")
-    void updateExistingSurvey() {
+    void 기존_설문_업데이트() {
         // given
         Member member = Member.createGuestMember("test@dankook.ac.kr", "테스트");
         ReflectionTestUtils.setField(member, "id", 1L);
@@ -74,15 +74,14 @@ class SurveyServiceTest {
         UserAuthInfo userAuthInfo = UserAuthInfo.from(member);
         SessionUser sessionUser = SessionUser.from(userAuthInfo);
 
-        Survey existingSurvey = Survey.builder()
-                .member(member)
+        Survey existingSurvey = Survey.createSurvey(member, SurveyRequest.builder()
                 .interestFields(Set.of(InterestField.GAME_CLIENT))
                 .interestEtc(new HashMap<>())
                 .registrationReason("이전 이유")
                 .feedBack("이전 피드백")
-                .build();
+                .build());
 
-        SurveyDto updateDto = SurveyDto.builder()
+        SurveyRequest updateDto = SurveyRequest.builder()
                 .interestFields(Set.of(InterestField.WEB_BACKEND))
                 .interestEtc(new HashMap<>())
                 .registrationReason("새로운 이유")
@@ -104,25 +103,23 @@ class SurveyServiceTest {
     }
 
     @Test
-    @DisplayName("회원 ID로 설문 조회")
-    void findByMemberId() {
+    void 회원_ID로_설문_조회() {
         // given
         Member member = Member.createGuestMember("test@dankook.ac.kr", "테스트");
         ReflectionTestUtils.setField(member, "id", 1L);
 
-        Survey survey = Survey.builder()
-                .member(member)
+        Survey survey = Survey.createSurvey(member, SurveyRequest.builder()
                 .interestFields(Set.of(InterestField.GAME_CLIENT))
                 .interestEtc(new HashMap<>())
                 .registrationReason("테스트 이유")
                 .feedBack("테스트 피드백")
-                .build();
+                .build());
 
         when(surveyRepository.findByMemberId(member.getId()))
                 .thenReturn(Optional.of(survey));
 
         // when
-        SurveyDto foundSurvey = surveyService.findByMemberId(member.getId());
+        SurveyRequest foundSurvey = surveyService.findByMemberId(member.getId());
 
         // then
         assertNotNull(foundSurvey);
@@ -132,8 +129,7 @@ class SurveyServiceTest {
     }
 
     @Test
-    @DisplayName("모든 설문 조회")
-    void getAllSurveys() {
+    void 모든_설문_조회() {
         // given
         Member member1 = Member.createGuestMember("test1@dankook.ac.kr", "테스트1");
         Member member2 = Member.createGuestMember("test2@dankook.ac.kr", "테스트2");
@@ -141,24 +137,22 @@ class SurveyServiceTest {
         ReflectionTestUtils.setField(member2, "id", 2L);
 
         List<Survey> surveys = Arrays.asList(
-                Survey.builder()
-                        .member(member1)
+                Survey.createSurvey(member1, SurveyRequest.builder()
                         .interestFields(Set.of(InterestField.GAME_CLIENT))
                         .registrationReason("이유1")
                         .feedBack("피드백1")
-                        .build(),
-                Survey.builder()
-                        .member(member2)
+                        .build()),
+                Survey.createSurvey(member2, SurveyRequest.builder()
                         .interestFields(Set.of(InterestField.WEB_BACKEND))
                         .registrationReason("이유2")
                         .feedBack("피드백2")
-                        .build()
+                        .build())
         );
 
         when(surveyRepository.findAll()).thenReturn(surveys);
 
         // when
-        List<SurveyDto> allSurveys = surveyService.getAllSurveys();
+        List<SurveyRequest> allSurveys = surveyService.getAllSurveys();
 
         // then
         assertEquals(2, allSurveys.size());
