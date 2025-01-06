@@ -11,7 +11,7 @@ import java.io.IOException;
 
 @Slf4j
 @Configuration
-@Profile({"local"})
+@Profile({"test"})
 public class EmbeddedRedisConfig {
 
     private RedisServer redisServer;
