@@ -2,9 +2,26 @@ spring:
   config:
     activate:
       on-profile: local
+  datasource:
+    url: ${DB_URL}
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
   data:
     redis:
       host: localhost
       port: 6379
       username:
       password:
+
+logging:
+  level:
+    org.springframework.security: DEBUG
