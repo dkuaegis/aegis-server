@@ -1,6 +1,6 @@
-package aegis.server.domain.bank.service;
+package aegis.server.domain.payment.service;
 
-import aegis.server.domain.bank.service.parser.TransactionParser;
+import aegis.server.domain.payment.service.parser.TransactionParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

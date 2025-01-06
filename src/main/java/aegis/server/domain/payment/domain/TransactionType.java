@@ -1,4 +1,4 @@
-package aegis.server.domain.bank.domain;
+package aegis.server.domain.payment.domain;
 
 public enum TransactionType {
     DEPOSIT,

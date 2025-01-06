@@ -1,7 +1,7 @@
-package aegis.server.domain.bank.service.parser;
+package aegis.server.domain.payment.service.parser;
 
-import aegis.server.domain.bank.domain.Transaction;
-import aegis.server.domain.bank.domain.TransactionType;
+import aegis.server.domain.payment.domain.Transaction;
+import aegis.server.domain.payment.domain.TransactionType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

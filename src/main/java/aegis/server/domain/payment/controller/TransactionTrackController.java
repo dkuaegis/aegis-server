@@ -1,6 +1,6 @@
-package aegis.server.domain.bank.controller;
+package aegis.server.domain.payment.controller;
 
-import aegis.server.domain.bank.service.TransactionTrackService;
+import aegis.server.domain.payment.service.TransactionTrackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
