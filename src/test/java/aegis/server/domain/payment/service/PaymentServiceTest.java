@@ -20,6 +20,7 @@ import java.util.List;
 import static aegis.server.global.constant.Constant.CLUB_DUES;
 import static aegis.server.global.constant.Constant.CURRENT_SEMESTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PaymentServiceTest extends IntegrationTest {
 
@@ -87,6 +88,24 @@ public class PaymentServiceTest extends IntegrationTest {
             // then
             IssuedCoupon updatedIssuedCoupon = issuedCouponRepository.findById(issuedCoupon.getId()).orElseThrow();
             assertEquals(false, updatedIssuedCoupon.getIsValid());
+        }
+
+        @Test
+        void 중복된_결제정보_생성_시_실패한다() {
+            // given
+            Member member = createMember();
+            SessionUser sessionUser = createSessionUser(member);
+            PaymentRequest request = new PaymentRequest(List.of());
+
+            paymentService.createPendingPayment(request, sessionUser);
+
+            // when
+            IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+                paymentService.createPendingPayment(request, sessionUser);
+            });
+
+            // then
+            assertEquals("이미 이번 학기에 대한 결제 정보가 존재합니다.", exception.getMessage());
         }
     }
 }

@@ -27,6 +27,11 @@ public class PaymentService {
     public void createPendingPayment(PaymentRequest request, SessionUser sessionUser) {
         Member member = memberRepository.findById(sessionUser.getId()).orElseThrow();
 
+        paymentRepository.findByMemberAndCurrentSemester(member, CURRENT_SEMESTER)
+                .ifPresent(payment -> {
+                    throw new IllegalStateException("이미 이번 학기에 대한 결제 정보가 존재합니다.");
+                });
+
         Payment payment = Payment.of(member);
         if (!request.getIssuedCouponIds().isEmpty()) {
             payment.useCoupons(
