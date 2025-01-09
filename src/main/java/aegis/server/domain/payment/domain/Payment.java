@@ -104,10 +104,10 @@ public class Payment {
         currentDepositAmount = currentDepositAmount.add(
                 BigDecimal.valueOf(transaction.getAmount())
         );
-        updateStatue();
+        updateStatus();
     }
 
-    private void updateStatue() {
+    private void updateStatus() {
         if (finalPrice.compareTo(currentDepositAmount) == 0) {
             status = PaymentStatus.COMPLETED;
         } else if (finalPrice.compareTo(currentDepositAmount) < 0) {
