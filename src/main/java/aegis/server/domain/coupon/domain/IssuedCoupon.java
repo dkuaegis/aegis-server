@@ -1,6 +1,7 @@
 package aegis.server.domain.coupon.domain;
 
 import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.payment.domain.Payment;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -29,6 +30,10 @@ public class IssuedCoupon {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
+
     private Boolean isValid;
 
     @CreatedDate
@@ -44,11 +49,12 @@ public class IssuedCoupon {
                 .build();
     }
 
-    public void use() {
+    public void use(Payment payment) {
         if (!isValid) {
             throw new IllegalStateException("이미 사용한 쿠폰입니다.");
         }
         this.isValid = false;
         this.usedAt = LocalDateTime.now();
+        this.payment = payment;
     }
 }

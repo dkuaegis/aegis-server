@@ -11,7 +11,7 @@ import java.time.Clock;
 @Configuration
 public class BankConfig {
 
-    @Value("${bank.type}")
+    @Value("${payment.bank-type}")
     private String bankType;
 
     @Bean
