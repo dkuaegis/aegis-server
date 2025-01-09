@@ -1,7 +1,7 @@
-package aegis.server.domain.bank.service.parser;
+package aegis.server.domain.payment.service.parser;
 
-import aegis.server.domain.bank.domain.Transaction;
-import aegis.server.domain.bank.domain.TransactionType;
+import aegis.server.domain.payment.domain.Transaction;
+import aegis.server.domain.payment.domain.TransactionType;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Clock;
