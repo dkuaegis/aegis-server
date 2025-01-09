@@ -12,8 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 import static aegis.server.global.constant.Constant.CURRENT_SEMESTER;
 
 @Slf4j
@@ -30,30 +28,47 @@ public class TransactionService {
     public void createTransaction(String transactionLog) {
         Transaction transaction = transactionParser.parse(transactionLog);
         transactionRepository.save(transaction);
+
+        processTransaction(transaction);
+
+        logTransactionInfo(transaction);
+    }
+
+    private void processTransaction(Transaction transaction) {
         if (transaction.getTransactionType().equals(TransactionType.WITHDRAWAL)) {
-            logTransactionInfo(transaction);
             return;
         }
 
-        Optional<Payment> paymentOptional = paymentRepository.findByExpectedDepositorNameAndCurrentSemester(transaction.getName(), CURRENT_SEMESTER);
+        findAndUpdatePayment(transaction);
+    }
 
-        if (paymentOptional.isPresent()) {
-            Payment payment = paymentOptional.get();
-            payment.addTransaction(transaction);
-            paymentRepository.save(payment);
-            if (payment.getStatus().equals(PaymentStatus.OVERPAID)) {
-                // TODO: DISCORD_ALARM: 초과 입금이 발생한 경우 디스코드 알림 필요
-                log.warn(
-                        "[TransactionService] 초과 입금이 발생하였습니다: paymentId={}, transactionId={}, name={}, amount={}, currentDepositAmount={}",
-                        payment.getId(), transaction.getId(), transaction.getName(), transaction.getAmount(), payment.getCurrentDepositAmount()
+    private void findAndUpdatePayment(Transaction transaction) {
+        paymentRepository.findByExpectedDepositorNameAndCurrentSemester(transaction.getName(), CURRENT_SEMESTER)
+                .ifPresentOrElse(
+                        payment -> updatePayment(payment, transaction),
+                        () -> logMissingDepositorName(transaction)
                 );
-            }
-        } else {
-            // TODO: DISCORD_ALARM: 입금자명과 일치하는 결제 정보가 없는 경우 디스코드 알림 필요
-            log.warn("[TransactionService] 입금자명과 일치하는 결제 정보가 없습니다: name={}", transaction.getName());
-        }
+    }
 
-        logTransactionInfo(transaction);
+    private void updatePayment(Payment payment, Transaction transaction) {
+        payment.addTransaction(transaction);
+        paymentRepository.save(payment);
+        if (payment.getStatus().equals(PaymentStatus.OVERPAID)) {
+            logOverpaid(payment, transaction);
+        }
+    }
+
+    private void logMissingDepositorName(Transaction transaction) {
+        // TODO: DISCORD_ALARM: 입금자명과 일치하는 결제 정보가 없는 경우 디스코드 알림 필요
+        log.warn("[TransactionService] 입금자명과 일치하는 결제 정보가 없습니다: name={}", transaction.getName());
+    }
+
+    private void logOverpaid(Payment payment, Transaction transaction) {
+        // TODO: DISCORD_ALARM: 초과 입금이 발생한 경우 디스코드 알림 필요
+        log.warn(
+                "[TransactionService] 초과 입금이 발생하였습니다: paymentId={}, transactionId={}, name={}, amount={}, currentDepositAmount={}",
+                payment.getId(), transaction.getId(), transaction.getName(), transaction.getAmount(), payment.getCurrentDepositAmount()
+        );
     }
 
     private void logTransactionInfo(Transaction transaction) {
