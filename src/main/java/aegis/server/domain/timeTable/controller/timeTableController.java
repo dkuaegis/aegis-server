@@ -1,4 +1,4 @@
-package timeTable.EverytimeCrawler.Controller;
+package aegis.server.domain.timeTable.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

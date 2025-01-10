@@ -1,12 +1,12 @@
 package aegis.server.domain.timeTable.service;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -16,11 +16,9 @@ import java.util.List;
 @Service
 public class timeTableService {
 
-    @Value("${chrome.driver.path}")
-    private String chromeDriverPath;
 
-    @Value("${crawl.url}")
-    private String crawlUrl;
+    String crawlUrl= "";
+
 
     //9시 수업의 top px 값
     private static final int NINE_OCLOCK_TOP = 450;
@@ -28,7 +26,7 @@ public class timeTableService {
     public List<String> crawlTimetable(){
         List<String> timetableData = new ArrayList<>();
 
-        System.setProperty("webdriver.chrome.driver", chromeDriverPath);
+        WebDriverManager.chromedriver().setup();
 
         WebDriver driver = new ChromeDriver();
 
