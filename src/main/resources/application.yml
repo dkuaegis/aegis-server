@@ -27,5 +27,8 @@ payment:
 time:
   zone: Asia/Seoul
 
+client:
+  origin: ${CLIENT_ORIGN}
+
 key:
   tx-track-api: ${TRANSACTION_TRACK_API_KEY}
