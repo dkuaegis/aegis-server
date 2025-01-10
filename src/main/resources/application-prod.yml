@@ -16,3 +16,7 @@ spring:
       port: ${REDIS_PORT}
       username: ${REDIS_USERNAME}
       password: ${REDIS_PASSWORD}
+
+logging:
+  level:
+    org.springframework.security: DEBUG
