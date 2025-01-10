@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>시간표</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+    .timetable {
+        margin-top: 20px;
+    }
+    .lecture {
+        border-bottom: 1px solid #ccc;
+        padding: 10px;
+    }
+    .lecture h3 {
+        margin: 0;
+        font-size: 18px;
+    }
+    .lecture em {
+        font-style: normal;
+        color: #888;
+    }
+    .lecture span {
+        display: block;
+        color: #555;
+    }
+    .divider {
+        margin: 10px 0;
+    }
+    .container {
+        width: 80%;
+        margin: 0 auto;
+    }
+    h1 {
+        text-align: center;
+        margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>시간표</h1>
+
+  <div class="timetable">
+    <div th:each="line : ${timetableData}">
+      <div class="lecture">
+        <span th:text="${line}">강의 정보</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
