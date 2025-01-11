@@ -21,7 +21,7 @@ server:
   servlet:
     session:
       cookie:
-        domain: .dk-aegis.org
+        domain: dk-aegis.org
 
 logging:
   level:
