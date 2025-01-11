@@ -17,6 +17,12 @@ spring:
       username: ${REDIS_USERNAME}
       password: ${REDIS_PASSWORD}
 
+server:
+  servlet:
+    session:
+      cookie:
+        domain: .dk-aegis.org
+
 logging:
   level:
     org.springframework.security: DEBUG
