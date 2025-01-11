@@ -21,6 +21,9 @@ spring:
       namespace: "aegis:session"
     timeout: 18000
 
+server:
+  forward-headers-strategy: framework
+
 payment:
   bank-type: ibk
 
