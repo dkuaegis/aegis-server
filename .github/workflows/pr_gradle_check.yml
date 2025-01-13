@@ -9,7 +9,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  check-and-test:
+  check:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,4 +29,4 @@ jobs:
           add-job-summary-as-pr-comment: always
 
       - name: Run Gradle Check
-        run: ./gradlew clean check --configuration-cache
+        run: ./gradlew check --configuration-cache
