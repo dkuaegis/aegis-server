@@ -46,6 +46,7 @@ public class Survey {
     private Map<InterestField, String> interestEtc = new HashMap<>();
 
     private String registrationReason;
+
     private String feedBack;
 
     @CreatedDate

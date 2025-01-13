@@ -20,9 +20,10 @@ public class SurveyRequest {
     @Nullable
     private Map<InterestField, String> interestEtc;
 
-    @Size(min = 3)
+    @Size(min = 3, max = 1000)
     private String registrationReason;
 
+    @Size(max = 1000)
     private String feedBack;
 
 }
