@@ -1,4 +1,4 @@
-name: Check and Test Backend
+name: Run Gradle Check on PR
 
 on:
   pull_request:
