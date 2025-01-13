@@ -27,6 +27,7 @@ public class CustomOidcUserService extends OidcUserService {
     }
 
     private Member findOrSave(OidcUser oidcUser) {
+        String oidcId = oidcUser.getSubject();
         String email = oidcUser.getEmail();
         String name = oidcUser.getFullName();
 
@@ -34,8 +35,8 @@ public class CustomOidcUserService extends OidcUserService {
             throw new OAuth2AuthenticationException("단국대학교 구성원만 로그인할 수 있습니다.");
         }
 
-        return memberRepository.findByEmail(email).orElseGet(
-                () -> memberRepository.save(Member.createGuestMember(email, name))
+        return memberRepository.findByOidcId(oidcId).orElseGet(
+                () -> memberRepository.save(Member.createGuestMember(oidcId, email, name))
         );
     }
 }

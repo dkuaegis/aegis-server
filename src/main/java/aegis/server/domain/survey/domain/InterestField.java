@@ -29,7 +29,7 @@ public enum InterestField {
     APP("앱"),
     DEVOPS("DevOps"),
     AI("인공지능"),
-    NOTSURE("아직 잘 모르겠어요"),
+    NOT_SURE("아직 잘 모르겠어요"),
     ETC("기타");
 
     private final String description;

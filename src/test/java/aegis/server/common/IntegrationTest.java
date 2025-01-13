@@ -40,7 +40,7 @@ public abstract class IntegrationTest {
     }
 
     protected Member createGuestMember() {
-        Member member = Member.createGuestMember("test@dankook.ac.kr", "테스트");
+        Member member = Member.createGuestMember("123456789012345678901", "test@dankook.ac.kr", "테스트");
         memberRepository.save(member);
         ReflectionTestUtils.setField(member, "email", "test" + member.getId() + "@dankook.ac.kr");
         ReflectionTestUtils.setField(member, "name", "테스트" + member.getId());

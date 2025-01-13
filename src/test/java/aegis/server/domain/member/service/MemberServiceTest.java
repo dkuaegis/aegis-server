@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class MemberServiceTest {
 
+    private static final String TEST_OIDC_ID = "123456789012345678901";
     private static final String TEST_EMAIL = "test@dankook.ac.kr";
     private static final String TEST_NAME = "홍길동";
     private static final Long TEST_MEMBER_ID = 1L;
@@ -35,7 +36,7 @@ public class MemberServiceTest {
     private MemberService memberService;
 
     private Member createTestMember() {
-        Member member = Member.createGuestMember(TEST_EMAIL, TEST_NAME);
+        Member member = Member.createGuestMember(TEST_OIDC_ID, TEST_EMAIL, TEST_NAME);
         ReflectionTestUtils.setField(member, "id", TEST_MEMBER_ID);
         return member;
     }

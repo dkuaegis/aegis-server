@@ -1,11 +1,5 @@
 package aegis.server.domain.survey.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.survey.domain.InterestField;
@@ -14,17 +8,20 @@ import aegis.server.domain.survey.dto.SurveyRequest;
 import aegis.server.domain.survey.repository.SurveyRepository;
 import aegis.server.global.security.dto.SessionUser;
 import aegis.server.global.security.oidc.UserAuthInfo;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SurveyServiceTest {
@@ -40,7 +37,7 @@ class SurveyServiceTest {
     @Test
     void 새로운_설문_저장() {
         // given
-        Member member = Member.createGuestMember("test@dankook.ac.kr", "테스트");
+        Member member = Member.createGuestMember("123456789012345678901", "test@dankook.ac.kr", "테스트");
         ReflectionTestUtils.setField(member, "id", 1L);
 
         UserAuthInfo userAuthInfo = UserAuthInfo.from(member);
@@ -53,7 +50,7 @@ class SurveyServiceTest {
                 .feedBack("예시로 작년과는 이런 점이 달라졌으면 좋겠어요!")
                 .build();
 
-        when(memberRepository.findByEmail(sessionUser.getEmail()))
+        when(memberRepository.findById(sessionUser.getId()))
                 .thenReturn(Optional.of(member));
         when(surveyRepository.findByMemberId(member.getId()))
                 .thenReturn(Optional.empty());
@@ -68,7 +65,7 @@ class SurveyServiceTest {
     @Test
     void 기존_설문_업데이트() {
         // given
-        Member member = Member.createGuestMember("test@dankook.ac.kr", "테스트");
+        Member member = Member.createGuestMember("123456789012345678901", "test@dankook.ac.kr", "테스트");
         ReflectionTestUtils.setField(member, "id", 1L);
 
         UserAuthInfo userAuthInfo = UserAuthInfo.from(member);
@@ -88,7 +85,7 @@ class SurveyServiceTest {
                 .feedBack("새로운 피드백")
                 .build();
 
-        when(memberRepository.findByEmail(sessionUser.getEmail()))
+        when(memberRepository.findById(sessionUser.getId()))
                 .thenReturn(Optional.of(member));
         when(surveyRepository.findByMemberId(member.getId()))
                 .thenReturn(Optional.of(existingSurvey));
@@ -105,7 +102,7 @@ class SurveyServiceTest {
     @Test
     void 회원_ID로_설문_조회() {
         // given
-        Member member = Member.createGuestMember("test@dankook.ac.kr", "테스트");
+        Member member = Member.createGuestMember("123456789012345678901", "test@dankook.ac.kr", "테스트");
         ReflectionTestUtils.setField(member, "id", 1L);
 
         Survey survey = Survey.createSurvey(member, SurveyRequest.builder()
@@ -131,8 +128,8 @@ class SurveyServiceTest {
     @Test
     void 모든_설문_조회() {
         // given
-        Member member1 = Member.createGuestMember("test1@dankook.ac.kr", "테스트1");
-        Member member2 = Member.createGuestMember("test2@dankook.ac.kr", "테스트2");
+        Member member1 = Member.createGuestMember("123456789012345678901", "test1@dankook.ac.kr", "테스트1");
+        Member member2 = Member.createGuestMember("123456789012345678902", "test2@dankook.ac.kr", "테스트2");
         ReflectionTestUtils.setField(member1, "id", 1L);
         ReflectionTestUtils.setField(member2, "id", 2L);
 
