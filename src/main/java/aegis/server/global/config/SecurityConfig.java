@@ -48,11 +48,7 @@ public class SecurityConfig {
                         })
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                new AntPathRequestMatcher("/"),
-                                new AntPathRequestMatcher("/login-fail"),
-                                new AntPathRequestMatcher("/api/transaction-track/**")
-                        ).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/transaction-track/**")).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
