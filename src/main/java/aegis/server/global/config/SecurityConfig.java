@@ -4,6 +4,7 @@ import aegis.server.global.security.oidc.CustomOidcUserService;
 import aegis.server.global.security.oidc.OidcFailureHandler;
 import aegis.server.global.security.oidc.OidcSuccessHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,9 @@ public class SecurityConfig {
     private final OidcSuccessHandler oidcSuccessHandler;
     private final OidcFailureHandler oidcFailureHandler;
 
+    @Value("${client.origin}")
+    private String clientOrigin;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -53,7 +57,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .logout(logout -> logout
-                        .logoutSuccessUrl("/")
+                        .logoutSuccessUrl(clientOrigin)
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
