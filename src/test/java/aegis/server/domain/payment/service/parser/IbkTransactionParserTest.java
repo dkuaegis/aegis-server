@@ -38,20 +38,20 @@ class IbkTransactionParserTest {
     void parseDepositTransaction() {
         // given
         String log = """
-                [입금] 50000원 홍길동
+                [입금] 10,000원 윤성민212874
                 982-******-01-017
-                12/17 14:30 /잔액 150000원""";
+                01/13 19:10 /잔액 150,000원""";
 
         // when
         Transaction transaction = parser.parse(log);
 
         // then
         assertThat(transaction.getTransactionType()).isEqualTo(TransactionType.DEPOSIT);
-        assertThat(transaction.getAmount()).isEqualTo(50000);
-        assertThat(transaction.getName()).isEqualTo("홍길동");
+        assertThat(transaction.getAmount()).isEqualTo(10000);
+        assertThat(transaction.getName()).isEqualTo("윤성민212874");
         assertThat(transaction.getBalance()).isEqualTo(150000);
 
-        String expectedTimeStr = currentYear + "/12/17 14:30";
+        String expectedTimeStr = currentYear + "/01/13 19:10";
         LocalDateTime expectedTime = LocalDateTime.parse(
                 expectedTimeStr,
                 DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
@@ -64,9 +64,9 @@ class IbkTransactionParserTest {
     void parseWithdrawalTransaction() {
         // given
         String log = """
-                [출금] 30000원 ATM출금
+                [출금] 30,000원 ATM출금
                 982-******-01-017
-                12/17 14:30 /잔액 120000원""";
+                12/17 14:30 /잔액 120,000원""";
 
         // when
         Transaction transaction = parser.parse(log);
@@ -100,9 +100,9 @@ class IbkTransactionParserTest {
         parser = new IbkTransactionParser(januaryClock);
 
         String log = """
-                [입금] 50000원 홍길동
+                [입금] 50,000원 홍길동
                 982-******-01-017
-                12/31 23:59 /잔액 150000원""";
+                12/31 23:59 /잔액 150,000원""";
 
         // when
         Transaction transaction = parser.parse(log);
@@ -131,9 +131,9 @@ class IbkTransactionParserTest {
     void parseInvalidTransactionType() {
         // given
         String invalidLog = """
-                [송금] 50000원 홍길동
+                [송금] 50,000원 홍길동
                 982-******-01-017
-                12/25 14:30 /잔액 150000원""";
+                12/25 14:30 /잔액 150,000원""";
 
         // when & then
         assertThatThrownBy(() -> parser.parse(invalidLog))
@@ -146,9 +146,9 @@ class IbkTransactionParserTest {
     void parseInvalidTimeFormat() {
         // given
         String invalidLog = """
-                [입금] 50000원 홍길동
+                [입금] 50,000원 홍길동
                 982-******-01-017
-                2023년 12월 25일 /잔액 150000원""";
+                2023년 12월 25일 /잔액 150,000원""";
 
         // when & then
         assertThatThrownBy(() -> parser.parse(invalidLog))
