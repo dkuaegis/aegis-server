@@ -23,17 +23,18 @@ public class Survey {
 
     @Id
     @GeneratedValue
-    @Column(name="survey_id")
+    @Column(name = "survey_id")
     private Long id;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="member_id")
+    @JoinColumn(name = "member_id")
     private Member member;
 
     @ElementCollection
     @CollectionTable(name = "interests", joinColumns = @JoinColumn(name = "survey_id"))
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private Set<InterestField> interestFields = new HashSet<>();
 
     @ElementCollection
@@ -41,6 +42,7 @@ public class Survey {
     @MapKeyEnumerated(EnumType.STRING)
     @MapKeyColumn(name = "interest_field")
     @Column(name = "etc")
+    @Builder.Default
     private Map<InterestField, String> interestEtc = new HashMap<>();
 
     private String registrationReason;
