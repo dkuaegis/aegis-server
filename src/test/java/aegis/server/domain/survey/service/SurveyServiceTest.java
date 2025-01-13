@@ -129,7 +129,7 @@ class SurveyServiceTest {
     void 모든_설문_조회() {
         // given
         Member member1 = Member.createGuestMember("123456789012345678901", "test1@dankook.ac.kr", "테스트1");
-        Member member2 = Member.createGuestMember("123456789012345678901", "test2@dankook.ac.kr", "테스트2");
+        Member member2 = Member.createGuestMember("123456789012345678902", "test2@dankook.ac.kr", "테스트2");
         ReflectionTestUtils.setField(member1, "id", 1L);
         ReflectionTestUtils.setField(member2, "id", 2L);
 
