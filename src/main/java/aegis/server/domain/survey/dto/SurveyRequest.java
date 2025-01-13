@@ -7,8 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,13 +15,14 @@ import java.util.Set;
 @AllArgsConstructor
 public class SurveyRequest {
 
-    private Set<InterestField> interestFields = new HashSet<>();
+    private Set<InterestField> interestFields;
 
     @Nullable
-    private Map<InterestField, String> interestEtc = new HashMap<>(); 
+    private Map<InterestField, String> interestEtc;
 
     @Size(min = 3)
     private String registrationReason;
+
     private String feedBack;
 
 }
