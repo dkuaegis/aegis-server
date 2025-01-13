@@ -24,7 +24,7 @@ public class SurveyService {
 
     @Transactional
     public void save(SurveyRequest surveyRequest, SessionUser sessionUser) {
-        Member findMember = memberRepository.findByEmail(sessionUser.getEmail())
+        Member findMember = memberRepository.findById(sessionUser.getId())
                 .orElseThrow(() -> new IllegalStateException("구글 인증된 사용자가 존재하지 않습니다."));
 
         surveyRepository.findByMemberId(findMember.getId())

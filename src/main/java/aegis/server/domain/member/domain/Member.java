@@ -15,6 +15,8 @@ public class Member {
     @Column(name = "member_id")
     private Long id;
 
+    private String oidcId;
+
     private String email;
 
     private String name;
@@ -43,8 +45,9 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    public static Member createGuestMember(String email, String name) {
+    public static Member createGuestMember(String oidcId, String email, String name) {
         return Member.builder()
+                .oidcId(oidcId)
                 .email(email)
                 .name(name)
                 .role(Role.GUEST)

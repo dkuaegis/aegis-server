@@ -20,3 +20,6 @@ spring:
             client-secret: test-client-secret
 key:
   tx-track-api: test-api-key
+
+client:
+  origin: https://join.dk-aegis.org
