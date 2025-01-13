@@ -14,9 +14,9 @@ import java.util.regex.Pattern;
 public class IbkTransactionParser implements TransactionParser {
 
     private static final Pattern TX_TYPE_AMOUNT_NAME_PATTERN =
-            Pattern.compile("^\\[(입금|출금)]\\s*(\\d+)원\\s*(.+)$");
+            Pattern.compile("^\\[(입금|출금)]\\s*([\\d,]+)원\\s*(.+)$");
     private static final Pattern TX_TIME_BALANCE_PATTERN =
-            Pattern.compile("(\\d{2}/\\d{2}\\s+\\d{2}:\\d{2})\\s*/\\s*잔액\\s*(\\d+)원");
+            Pattern.compile("(\\d{2}/\\d{2}\\s+\\d{2}:\\d{2})\\s*/\\s*잔액\\s*([\\d,]+)원");
 
     private final Clock clock;
 
@@ -40,7 +40,7 @@ public class IbkTransactionParser implements TransactionParser {
             default -> throw new IllegalArgumentException("알 수 없는 거래유형입니다");
         };
 
-        Long amount = Long.parseLong(matcher.group(2));
+        Long amount = Long.parseLong(matcher.group(2).replace(",", ""));
 
         String name = matcher.group(3);
 
@@ -64,7 +64,7 @@ public class IbkTransactionParser implements TransactionParser {
                 ? parsedTime.minusYears(1)
                 : parsedTime;
 
-        Long balance = Long.parseLong(matcher.group(2));
+        Long balance = Long.parseLong(matcher.group(2).replace(",", ""));
 
         return Transaction.of(transactionTime, name, transactionType, amount, balance);
     }
