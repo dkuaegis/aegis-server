@@ -13,20 +13,18 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/members")
+@RequestMapping("/members")
 public class MemberController {
 
     private final MemberService memberService;
 
-    @GetMapping("/{memberId}")
+    @GetMapping
     public ResponseEntity<MemberResponse> getMember(
-            @LoginUser SessionUser sessionUser,
-            @PathVariable Long memberId
+            @LoginUser SessionUser sessionUser
     ) {
-        MemberResponse response = memberService.getMember(sessionUser, memberId);
+        MemberResponse response = memberService.getMember(sessionUser);
         return ResponseEntity.ok().body(response);
     }
-
 
     @PostMapping
     public ResponseEntity<Void> updateMember(

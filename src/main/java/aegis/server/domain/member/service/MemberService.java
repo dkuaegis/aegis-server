@@ -28,6 +28,12 @@ public class MemberService {
         return MemberResponse.from(member);
     }
 
+    public MemberResponse getMember(SessionUser sessionUser) {
+        Member member = memberRepository.findById(sessionUser.getId()).orElseThrow();
+
+        return MemberResponse.from(member);
+    }
+
     @Transactional
     public void updateMember(SessionUser sessionUser, MemberUpdateRequest request) {
         Member member = memberRepository.findById(sessionUser.getId()).orElseThrow();
