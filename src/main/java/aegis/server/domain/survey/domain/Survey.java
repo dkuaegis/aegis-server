@@ -45,7 +45,10 @@ public class Survey {
     @Builder.Default
     private Map<InterestField, String> interestEtc = new HashMap<>();
 
+    @Column(length = 1000)
     private String registrationReason;
+
+    @Column(length = 1000)
     private String feedBack;
 
     @CreatedDate
