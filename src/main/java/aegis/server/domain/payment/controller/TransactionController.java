@@ -8,14 +8,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/transaction-track")
+@RequestMapping("/api/transaction")
 @RequiredArgsConstructor
 public class TransactionController {
 
     private final TransactionService transactionService;
 
-    @PostMapping("/ibk")
-    public void ibkTransactionTrack(@RequestBody String request) {
+    @PostMapping
+    public void createTransaction(@RequestBody String request) {
         transactionService.createTransaction(request);
     }
 }
