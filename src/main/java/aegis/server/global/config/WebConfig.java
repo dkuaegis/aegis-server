@@ -25,6 +25,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(transactionTrackInterceptor)
-                .addPathPatterns("/api/transaction-track/**");
+                .addPathPatterns("/api/transaction");
     }
 }
