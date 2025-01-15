@@ -1,5 +1,6 @@
 package aegis.server.domain.member.service;
 
+import aegis.server.common.IntegrationTest;
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.dto.request.MemberUpdateRequest;
 import aegis.server.domain.member.dto.response.MemberResponse;
@@ -57,7 +58,7 @@ public class MemberServiceTest {
             when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
 
             // when
-            MemberResponse memberResponse = memberService.getMember(sessionUser, member.getId());
+            MemberResponse memberResponse = memberService.getMember(sessionUser);
 
             // then
             assertEquals(member.getId(), memberResponse.getId());
@@ -74,7 +75,7 @@ public class MemberServiceTest {
 
             // when & then
             assertThrows(IllegalArgumentException.class, () ->
-                    memberService.getMember(sessionUser, invalidMemberId));
+                    memberService.getMember(sessionUser));
         }
     }
 
