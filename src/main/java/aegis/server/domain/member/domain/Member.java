@@ -45,12 +45,16 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    private JoinProgress joinProgress;
+
     public static Member createGuestMember(String oidcId, String email, String name) {
         return Member.builder()
                 .oidcId(oidcId)
                 .email(email)
                 .name(name)
                 .role(Role.GUEST)
+                .joinProgress(JoinProgress.GOOGLE_LOGIN)
                 .build();
     }
 
@@ -72,6 +76,10 @@ public class Member {
         this.academicStatus = academicStatus;
         this.grade = grade;
         this.semester = semester;
+    }
+
+    public void updateJoinProgress(JoinProgress joinProgress) {
+        this.joinProgress = joinProgress;
     }
 
 }

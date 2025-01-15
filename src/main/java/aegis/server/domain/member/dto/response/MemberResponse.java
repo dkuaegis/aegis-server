@@ -30,6 +30,8 @@ public class MemberResponse {
 
     private Semester semester;
 
+    private JoinProgress joinProgress;
+
     public static MemberResponse from(Member member) {
         return new MemberResponse(
                 member.getId(),
@@ -42,7 +44,8 @@ public class MemberResponse {
                 member.getDepartment(),
                 member.getAcademicStatus(),
                 member.getGrade(),
-                member.getSemester()
+                member.getSemester(),
+                member.getJoinProgress()
         );
     }
 
