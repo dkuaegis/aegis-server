@@ -1,5 +1,6 @@
 package aegis.server.domain.member.service;
 
+import aegis.server.domain.member.domain.JoinProgress;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.dto.request.MemberUpdateRequest;
 import aegis.server.domain.member.dto.response.MemberResponse;
