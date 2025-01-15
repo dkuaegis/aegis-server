@@ -3,8 +3,6 @@ spring:
     active: local
   application:
     name: aegis-server
-  jackson:
-    property-naming-strategy: SNAKE_CASE
   security:
     oauth2:
       client:
