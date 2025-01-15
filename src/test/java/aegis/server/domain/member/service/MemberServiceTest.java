@@ -1,6 +1,5 @@
 package aegis.server.domain.member.service;
 
-import aegis.server.common.IntegrationTest;
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.dto.request.MemberUpdateRequest;
 import aegis.server.domain.member.dto.response.MemberResponse;

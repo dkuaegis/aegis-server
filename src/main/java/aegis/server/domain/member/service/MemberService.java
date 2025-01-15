@@ -1,6 +1,5 @@
 package aegis.server.domain.member.service;
 
-import aegis.server.domain.member.domain.JoinProgress;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.dto.request.MemberUpdateRequest;
 import aegis.server.domain.member.dto.response.MemberResponse;
@@ -9,8 +8,6 @@ import aegis.server.global.security.dto.SessionUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Objects;
 
 @Service
 @Transactional(readOnly = true)
@@ -40,5 +37,6 @@ public class MemberService {
                 request.getGrade(),
                 request.getSemester()
         );
+//        memberRepository.save(member); 이거 해야하는거 아닌가?
     }
 }
