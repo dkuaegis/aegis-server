@@ -74,7 +74,7 @@ public class MemberServiceTest {
             Long invalidMemberId = member.getId() + 1L;
 
             // when & then
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NoSuchElementException.class, () ->
                     memberService.getMember(sessionUser));
         }
     }
