@@ -33,10 +33,6 @@ public class Payment {
     @Builder.Default
     private List<IssuedCoupon> usedCoupons = new ArrayList<>();
 
-    @OneToMany(mappedBy = "payment")
-    @Builder.Default
-    private List<Transaction> transactions = new ArrayList<>();
-
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
@@ -96,15 +92,6 @@ public class Payment {
         if (finalPrice.compareTo(BigDecimal.ZERO) < 0) {
             finalPrice = BigDecimal.ZERO;
         }
-    }
-
-    public void addTransaction(Transaction transaction) {
-        transactions.add(transaction);
-        transaction.setPayment(this);
-        currentDepositAmount = currentDepositAmount.add(
-                BigDecimal.valueOf(transaction.getAmount())
-        );
-        updateStatus();
     }
 
     private void updateStatus() {

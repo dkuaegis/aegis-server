@@ -51,7 +51,6 @@ public class TransactionService {
     }
 
     private void updatePayment(Payment payment, Transaction transaction) {
-        payment.addTransaction(transaction);
         paymentRepository.save(payment);
         if (payment.getStatus().equals(PaymentStatus.OVERPAID)) {
             logOverpaid(payment, transaction);

@@ -22,11 +22,6 @@ public class Transaction {
     @Column(name = "transaction_id")
     private Long id;
 
-    @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_id")
-    private Payment payment;
-
     // === 은행앱에서 발송한 거래 내역 정보 START ===
 
     private LocalDateTime transactionTime;
