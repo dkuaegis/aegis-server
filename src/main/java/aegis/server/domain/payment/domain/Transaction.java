@@ -3,6 +3,7 @@ package aegis.server.domain.payment.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,9 +32,11 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 
-    private Long amount;
+    @Column(precision = 10, scale = 0)
+    private BigDecimal amount;
 
-    private Long balance;
+    @Column(precision = 10, scale = 0)
+    private BigDecimal balance;
 
     // === 은행앱에서 발송한 거래 내역 정보 END ===
 
@@ -41,8 +44,8 @@ public class Transaction {
             LocalDateTime transactionTime,
             String depositorName,
             TransactionType transactionType,
-            Long amount,
-            Long balance
+            BigDecimal amount,
+            BigDecimal balance
     ) {
         return Transaction.builder()
                 .transactionTime(transactionTime)
