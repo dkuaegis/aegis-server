@@ -43,7 +43,7 @@ public class TransactionService {
     }
 
     private void findAndUpdatePayment(Transaction transaction) {
-        paymentRepository.findByExpectedDepositorNameAndCurrentSemester(transaction.getName(), CURRENT_SEMESTER)
+        paymentRepository.findByExpectedDepositorNameAndCurrentSemesterAndStatus(transaction.getDepositorName(), CURRENT_SEMESTER, PaymentStatus.PENDING)
                 .ifPresentOrElse(
                         payment -> updatePayment(payment, transaction),
                         () -> logMissingDepositorName(transaction)
@@ -60,14 +60,14 @@ public class TransactionService {
 
     private void logMissingDepositorName(Transaction transaction) {
         // TODO: DISCORD_ALARM: 입금자명과 일치하는 결제 정보가 없는 경우 디스코드 알림 필요
-        log.warn("[TransactionService] 입금자명과 일치하는 결제 정보가 없습니다: name={}", transaction.getName());
+        log.warn("[TransactionService] 입금자명과 일치하는 결제 정보가 없습니다: name={}", transaction.getDepositorName());
     }
 
     private void logOverpaid(Payment payment, Transaction transaction) {
         // TODO: DISCORD_ALARM: 초과 입금이 발생한 경우 디스코드 알림 필요
         log.warn(
                 "[TransactionService] 초과 입금이 발생하였습니다: paymentId={}, transactionId={}, name={}, amount={}, currentDepositAmount={}",
-                payment.getId(), transaction.getId(), transaction.getName(), transaction.getAmount(), payment.getCurrentDepositAmount()
+                payment.getId(), transaction.getId(), transaction.getDepositorName(), transaction.getAmount(), payment.getCurrentDepositAmount()
         );
     }
 
@@ -76,7 +76,7 @@ public class TransactionService {
                 "[TransactionService] 거래 정보 저장 완료: transactionId={}, type={}, name={}, amount={}",
                 transaction.getId(),
                 transaction.getTransactionType(),
-                transaction.getName(),
+                transaction.getDepositorName(),
                 transaction.getAmount()
         );
     }

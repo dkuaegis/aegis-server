@@ -48,7 +48,7 @@ class IbkTransactionParserTest {
         // then
         assertThat(transaction.getTransactionType()).isEqualTo(TransactionType.DEPOSIT);
         assertThat(transaction.getAmount()).isEqualTo(10000);
-        assertThat(transaction.getName()).isEqualTo("윤성민212874");
+        assertThat(transaction.getDepositorName()).isEqualTo("윤성민212874");
         assertThat(transaction.getBalance()).isEqualTo(150000);
 
         String expectedTimeStr = currentYear + "/01/13 19:10";
@@ -74,7 +74,7 @@ class IbkTransactionParserTest {
         // then
         assertThat(transaction.getTransactionType()).isEqualTo(TransactionType.WITHDRAWAL);
         assertThat(transaction.getAmount()).isEqualTo(30000);
-        assertThat(transaction.getName()).isEqualTo("ATM출금");
+        assertThat(transaction.getDepositorName()).isEqualTo("ATM출금");
         assertThat(transaction.getBalance()).isEqualTo(120000);
 
         String expectedTimeStr = currentYear + "/12/17 14:30";

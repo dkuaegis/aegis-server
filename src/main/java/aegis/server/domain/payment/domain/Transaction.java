@@ -27,7 +27,7 @@ public class Transaction {
 
     private LocalDateTime transactionTime;
 
-    private String name;
+    private String depositorName;
 
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
@@ -38,10 +38,10 @@ public class Transaction {
 
     // === 은행앱에서 발송한 거래 내역 정보 END ===
 
-    public static Transaction of(LocalDateTime transactionTime, String name, TransactionType transactionType, Long amount, Long balance) {
+    public static Transaction of(LocalDateTime transactionTime, String depositorName, TransactionType transactionType, Long amount, Long balance) {
         return Transaction.builder()
                 .transactionTime(transactionTime)
-                .name(name)
+                .depositorName(depositorName)
                 .transactionType(transactionType)
                 .amount(amount)
                 .balance(balance)
