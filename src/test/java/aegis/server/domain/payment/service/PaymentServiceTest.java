@@ -13,6 +13,7 @@ import aegis.server.global.security.dto.SessionUser;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -91,13 +92,34 @@ public class PaymentServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 중복된_결제정보_생성_시_실패한다() {
+        void 중복된_결제정보_생성_시_기존_정보를_취소상태로_변경한다() {
             // given
             Member member = createMember();
             SessionUser sessionUser = createSessionUser(member);
             PaymentRequest request = new PaymentRequest(List.of());
 
             paymentService.createPendingPayment(request, sessionUser);
+            Payment firstPayment = paymentRepository.findById(1L).orElseThrow();
+
+            // when
+            paymentService.createPendingPayment(request, sessionUser);
+            Payment secondPayment = paymentRepository.findById(2L).orElseThrow();
+
+            // then
+            assertEquals(PaymentStatus.CANCELED, firstPayment.getStatus());
+            assertEquals(PaymentStatus.PENDING, secondPayment.getStatus());
+        }
+
+        @Test
+        void 완료된_결제정보가_존재하면_실패한다() {
+            // given
+            Member member = createMember();
+            SessionUser sessionUser = createSessionUser(member);
+            PaymentRequest request = new PaymentRequest(List.of());
+
+            Payment payment = Payment.of(member);
+            ReflectionTestUtils.setField(payment, "status", PaymentStatus.COMPLETED);
+            paymentRepository.save(payment);
 
             // when
             IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
@@ -105,7 +127,27 @@ public class PaymentServiceTest extends IntegrationTest {
             });
 
             // then
-            assertEquals("이미 이번 학기에 대한 결제 정보가 존재합니다.", exception.getMessage());
+            assertEquals("완료된 결제 정보가 존재합니다.", exception.getMessage());
+        }
+
+        @Test
+        void 초과입금된_결제정보가_존재하면_실패한다() {
+            // given
+            Member member = createMember();
+            SessionUser sessionUser = createSessionUser(member);
+            PaymentRequest request = new PaymentRequest(List.of());
+
+            Payment payment = Payment.of(member);
+            ReflectionTestUtils.setField(payment, "status", PaymentStatus.OVERPAID);
+            paymentRepository.save(payment);
+
+            // when
+            IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+                paymentService.createPendingPayment(request, sessionUser);
+            });
+
+            // then
+            assertEquals("초과입금된 결제 정보가 존재합니다.", exception.getMessage());
         }
     }
 }

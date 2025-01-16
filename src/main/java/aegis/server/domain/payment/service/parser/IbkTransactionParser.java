@@ -4,6 +4,7 @@ import aegis.server.domain.payment.domain.Transaction;
 import aegis.server.domain.payment.domain.TransactionType;
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,7 +41,7 @@ public class IbkTransactionParser implements TransactionParser {
             default -> throw new IllegalArgumentException("알 수 없는 거래유형입니다");
         };
 
-        Long amount = Long.parseLong(matcher.group(2).replace(",", ""));
+        BigDecimal amount = BigDecimal.valueOf(Long.parseLong(matcher.group(2).replace(",", "")));
 
         String name = matcher.group(3);
 
@@ -64,7 +65,7 @@ public class IbkTransactionParser implements TransactionParser {
                 ? parsedTime.minusYears(1)
                 : parsedTime;
 
-        Long balance = Long.parseLong(matcher.group(2).replace(",", ""));
+        BigDecimal balance = BigDecimal.valueOf(Long.parseLong(matcher.group(2).replace(",", "")));
 
         return Transaction.of(transactionTime, name, transactionType, amount, balance);
     }

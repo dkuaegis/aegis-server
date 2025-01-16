@@ -3,6 +3,7 @@ package aegis.server.domain.payment.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -10,7 +11,11 @@ import java.time.LocalDateTime;
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@ToString
+@Table(
+        indexes = {
+                @Index(name = "idx_transaction_depositor_name", columnList = "depositorName"),
+        }
+)
 public class Transaction {
 
     @Id
@@ -18,30 +23,33 @@ public class Transaction {
     @Column(name = "transaction_id")
     private Long id;
 
-    @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_id")
-    private Payment payment;
-
     // === 은행앱에서 발송한 거래 내역 정보 START ===
 
     private LocalDateTime transactionTime;
 
-    private String name;
+    private String depositorName;
 
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 
-    private Long amount;
+    @Column(precision = 10, scale = 0)
+    private BigDecimal amount;
 
-    private Long balance;
+    @Column(precision = 10, scale = 0)
+    private BigDecimal balance;
 
     // === 은행앱에서 발송한 거래 내역 정보 END ===
 
-    public static Transaction of(LocalDateTime transactionTime, String name, TransactionType transactionType, Long amount, Long balance) {
+    public static Transaction of(
+            LocalDateTime transactionTime,
+            String depositorName,
+            TransactionType transactionType,
+            BigDecimal amount,
+            BigDecimal balance
+    ) {
         return Transaction.builder()
                 .transactionTime(transactionTime)
-                .name(name)
+                .depositorName(depositorName)
                 .transactionType(transactionType)
                 .amount(amount)
                 .balance(balance)
