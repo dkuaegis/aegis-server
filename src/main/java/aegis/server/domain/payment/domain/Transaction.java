@@ -10,7 +10,11 @@ import java.time.LocalDateTime;
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@ToString
+@Table(
+        indexes = {
+                @Index(name = "idx_transaction_depositor_name", columnList = "depositorName"),
+        }
+)
 public class Transaction {
 
     @Id
@@ -38,7 +42,13 @@ public class Transaction {
 
     // === 은행앱에서 발송한 거래 내역 정보 END ===
 
-    public static Transaction of(LocalDateTime transactionTime, String depositorName, TransactionType transactionType, Long amount, Long balance) {
+    public static Transaction of(
+            LocalDateTime transactionTime,
+            String depositorName,
+            TransactionType transactionType,
+            Long amount,
+            Long balance
+    ) {
         return Transaction.builder()
                 .transactionTime(transactionTime)
                 .depositorName(depositorName)
