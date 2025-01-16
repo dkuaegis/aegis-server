@@ -57,11 +57,12 @@ public class PaymentService {
 
     public PaymentStatusResponse checkPaymentStatus(SessionUser sessionUser) {
         Member member = memberRepository.findById(sessionUser.getId()).orElseThrow();
-        Long currentDepositAmount = transactionRepository.sumAmountByDepositorName(Payment.expectedDepositorName(member)).orElse(0L);
 
         Payment payment = paymentRepository.findByMemberAndCurrentSemester(member, CURRENT_SEMESTER)
                 .orElseThrow();
 
-        return PaymentStatusResponse.from(payment, BigDecimal.valueOf(currentDepositAmount));
+        BigDecimal currentDepositAmount = transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName()).orElse(BigDecimal.ZERO);
+
+        return PaymentStatusResponse.from(payment, currentDepositAmount);
     }
 }
