@@ -6,78 +6,34 @@ import aegis.server.domain.member.dto.request.MemberUpdateRequest;
 import aegis.server.domain.member.dto.response.MemberResponse;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.global.security.dto.SessionUser;
-import aegis.server.global.security.oidc.UserAuthInfo;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.NoSuchElementException;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-public class MemberServiceTest {
+public class MemberServiceTest extends IntegrationTest {
 
-    private static final String TEST_OIDC_ID = "123456789012345678901";
-    private static final String TEST_EMAIL = "test@dankook.ac.kr";
-    private static final String TEST_NAME = "홍길동";
-    private static final Long TEST_MEMBER_ID = 1L;
-
-    @Mock
+    @Autowired
     private MemberRepository memberRepository;
-    @InjectMocks
+    @Autowired
     private MemberService memberService;
 
-    private Member createTestMember() {
-        Member member = Member.createGuestMember(TEST_OIDC_ID, TEST_EMAIL, TEST_NAME);
-        ReflectionTestUtils.setField(member, "id", TEST_MEMBER_ID);
-        return member;
+
+    @Test
+    void 조회시_JoinProgress_업데이트() {
+        // given
+        Member member = createGuestMember();
+        SessionUser sessionUser = createSessionUser(member);
+
+        // when
+        MemberResponse memberResponse = memberService.getMember(sessionUser);
+
+        // then
+        assertEquals(JoinProgress.PERSONAL_INFORMATION, memberResponse.getJoinProgress());
     }
 
-    private SessionUser createSessionUser(Member member) {
-        UserAuthInfo userAuthInfo = UserAuthInfo.from(member);
-        return SessionUser.from(userAuthInfo);
-    }
-
-    @Nested
-    class 멤버조회 {
-
-        @Test
-        void 성공한다() {
-            // given
-            Member member = createTestMember();
-            SessionUser sessionUser = createSessionUser(member);
-            when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
-
-            // when
-            MemberResponse memberResponse = memberService.getMember(sessionUser);
-
-            // then
-            assertEquals(member.getId(), memberResponse.getId());
-            assertEquals(member.getEmail(), memberResponse.getEmail());
-            assertEquals(member.getName(), memberResponse.getName());
-        }
-
-        @Test
-        void 실패한다() {
-            // given
-            Member member = createTestMember();
-            SessionUser sessionUser = createSessionUser(member);
-            Long invalidMemberId = member.getId() + 1L;
-
-            // when & then
-            assertThrows(NoSuchElementException.class, () ->
-                    memberService.getMember(sessionUser));
-        }
-    }
 
     @Nested
     class 멤버수정 {
@@ -85,7 +41,7 @@ public class MemberServiceTest {
         @Test
         void 성공한다() {
             // given
-            Member member = createTestMember();
+            Member member = createGuestMember();
             SessionUser sessionUser = createSessionUser(member);
 
             MemberUpdateRequest updateRequest = MemberUpdateRequest.builder()
@@ -98,8 +54,6 @@ public class MemberServiceTest {
                     .grade(Grade.ONE)
                     .semester(Semester.FIRST)
                     .build();
-
-            when(memberRepository.findById(sessionUser.getId())).thenReturn(Optional.of(member));
 
             // when
             memberService.updateMember(sessionUser, updateRequest);
@@ -118,9 +72,11 @@ public class MemberServiceTest {
         @Test
         void 실패한다() {
             // given
-            SessionUser sessionUser = createSessionUser(createTestMember());
+            Member member = createGuestMember();
+            SessionUser sessionUser = createSessionUser(member);
             MemberUpdateRequest updateRequest = MemberUpdateRequest.builder().build();
-            when(memberRepository.findById(any())).thenThrow(new NoSuchElementException());
+
+            memberRepository.delete(member); // update가 실패할 경우는 member가 delete되었을때 밖에 없음
 
             // when & then
             assertThrows(NoSuchElementException.class, () ->
