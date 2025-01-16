@@ -1,6 +1,9 @@
 package aegis.server.domain.survey.service;
 
+import static aegis.server.global.constant.Constant.CURRENT_SEMESTER;
+
 import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.domain.Semester;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.survey.domain.Survey;
 import aegis.server.domain.survey.dto.SurveyRequest;
@@ -27,7 +30,7 @@ public class SurveyService {
         Member findMember = memberRepository.findById(sessionUser.getId())
                 .orElseThrow(() -> new IllegalStateException("구글 인증된 사용자가 존재하지 않습니다."));
 
-        surveyRepository.findByMemberId(findMember.getId())
+        surveyRepository.findByIdAndCurrentSemester(findMember.getId(), CURRENT_SEMESTER)
                 .ifPresentOrElse(
                         survey -> survey.update(surveyRequest),
                         () -> {
@@ -38,7 +41,7 @@ public class SurveyService {
     }
 
     public SurveyRequest findByMemberId(Long memberId) {
-        Survey survey = surveyRepository.findByMemberId(memberId).orElseThrow(() -> new EntityNotFoundException("설문을 찾을 수 없습니다"));
+        Survey survey = surveyRepository.findByIdAndCurrentSemester(memberId,CURRENT_SEMESTER).orElseThrow(() -> new EntityNotFoundException("설문을 찾을 수 없습니다"));
         return SurveyRequest.builder()
                 .interestFields(survey.getInterestFields())
                 .interestEtc(survey.getInterestEtc())
