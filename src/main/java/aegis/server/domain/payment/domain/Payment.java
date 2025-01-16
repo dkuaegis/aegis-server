@@ -89,13 +89,13 @@ public class Payment {
         }
     }
 
-//    private void updateStatus() {
-//        if (finalPrice.compareTo(currentDepositAmount) == 0) {
-//            status = PaymentStatus.COMPLETED;
-//        } else if (finalPrice.compareTo(currentDepositAmount) < 0) {
-//            status = PaymentStatus.OVERPAID;
-//        }
-//    }
+    public void updateStatus(BigDecimal currentDepositAmount) {
+        if (finalPrice.compareTo(currentDepositAmount) == 0) {
+            status = PaymentStatus.COMPLETED;
+        } else if (finalPrice.compareTo(currentDepositAmount) < 0) {
+            status = PaymentStatus.OVERPAID;
+        }
+    }
 
     public void cancel() {
         status = PaymentStatus.CANCELED;

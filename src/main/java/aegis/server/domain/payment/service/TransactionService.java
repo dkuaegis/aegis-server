@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 import static aegis.server.global.constant.Constant.CURRENT_SEMESTER;
 
 @Slf4j
@@ -51,7 +53,9 @@ public class TransactionService {
     }
 
     private void updatePayment(Payment payment, Transaction transaction) {
-        paymentRepository.save(payment);
+        BigDecimal currentDepositAmount = transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName()).orElse(BigDecimal.ZERO);
+        payment.updateStatus(currentDepositAmount);
+
         if (payment.getStatus().equals(PaymentStatus.OVERPAID)) {
             logOverpaid(payment, transaction);
         }
