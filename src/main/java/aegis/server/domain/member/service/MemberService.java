@@ -17,6 +17,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
+    @Transactional
     public MemberResponse getMember(SessionUser sessionUser) {
         Member member = memberRepository.findById(sessionUser.getId()).orElseThrow();
         member.updateJoinProgress(JoinProgress.PERSONAL_INFORMATION);
