@@ -12,4 +12,5 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Optional<Payment> findByExpectedDepositorNameAndCurrentSemester(String expectedDepositorName, String currentSemester);
 
+    Optional<Payment> findByExpectedDepositorNameAndCurrentSemesterAndStatus(String expectedDepositorName, String currentSemester, PaymentStatus status);
 }

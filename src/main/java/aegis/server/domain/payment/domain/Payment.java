@@ -51,10 +51,6 @@ public class Payment {
     @Comment("현재 학기")
     private String currentSemester;
 
-    @Comment("현재 입금액")
-    @Column(precision = 10, scale = 0)
-    private BigDecimal currentDepositAmount;
-
     @Comment("요구되는 입금자명")
     private String expectedDepositorName;
 
@@ -73,7 +69,6 @@ public class Payment {
                 .totalDiscountAmount(BigDecimal.ZERO)
                 .finalPrice(CLUB_DUES)
                 .currentSemester(CURRENT_SEMESTER)
-                .currentDepositAmount(BigDecimal.ZERO)
                 .expectedDepositorName(expectedDepositorName(member))
                 .build();
     }

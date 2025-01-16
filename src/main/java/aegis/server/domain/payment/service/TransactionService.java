@@ -66,7 +66,7 @@ public class TransactionService {
         // TODO: DISCORD_ALARM: 초과 입금이 발생한 경우 디스코드 알림 필요
         log.warn(
                 "[TransactionService] 초과 입금이 발생하였습니다: paymentId={}, transactionId={}, name={}, amount={}, currentDepositAmount={}",
-                payment.getId(), transaction.getId(), transaction.getDepositorName(), transaction.getAmount(), payment.getCurrentDepositAmount()
+                payment.getId(), transaction.getId(), transaction.getDepositorName(), transaction.getAmount(), transactionRepository.sumAmountByDepositorName(transaction.getDepositorName())
         );
     }
 

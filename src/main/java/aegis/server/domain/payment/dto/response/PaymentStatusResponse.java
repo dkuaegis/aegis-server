@@ -20,11 +20,11 @@ public class PaymentStatusResponse {
 
     private final BigDecimal currentDepositAmount;
 
-    public static PaymentStatusResponse from(Payment payment) {
+    public static PaymentStatusResponse from(Payment payment, BigDecimal currentDepositAmount) {
         return PaymentStatusResponse.builder()
                 .status(payment.getStatus())
                 .expectedDepositAmount(payment.getFinalPrice())
-                .currentDepositAmount(payment.getCurrentDepositAmount())
+                .currentDepositAmount(currentDepositAmount)
                 .build();
     }
 }
