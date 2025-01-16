@@ -27,7 +27,7 @@ public class EmbeddedRedisConfig {
     }
 
     @PreDestroy
-    public void stopRedis() {
+    public void stopRedis() throws IOException {
         if (redisServer != null) {
             redisServer.stop();
         }

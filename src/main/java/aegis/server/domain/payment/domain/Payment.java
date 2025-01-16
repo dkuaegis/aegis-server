@@ -33,10 +33,6 @@ public class Payment {
     @Builder.Default
     private List<IssuedCoupon> usedCoupons = new ArrayList<>();
 
-    @OneToMany(mappedBy = "payment")
-    @Builder.Default
-    private List<Transaction> transactions = new ArrayList<>();
-
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
@@ -54,10 +50,6 @@ public class Payment {
 
     @Comment("현재 학기")
     private String currentSemester;
-
-    @Comment("현재 입금액")
-    @Column(precision = 10, scale = 0)
-    private BigDecimal currentDepositAmount;
 
     @Comment("요구되는 입금자명")
     private String expectedDepositorName;
@@ -77,7 +69,6 @@ public class Payment {
                 .totalDiscountAmount(BigDecimal.ZERO)
                 .finalPrice(CLUB_DUES)
                 .currentSemester(CURRENT_SEMESTER)
-                .currentDepositAmount(BigDecimal.ZERO)
                 .expectedDepositorName(expectedDepositorName(member))
                 .build();
     }
@@ -98,20 +89,15 @@ public class Payment {
         }
     }
 
-    public void addTransaction(Transaction transaction) {
-        transactions.add(transaction);
-        transaction.setPayment(this);
-        currentDepositAmount = currentDepositAmount.add(
-                BigDecimal.valueOf(transaction.getAmount())
-        );
-        updateStatus();
-    }
-
-    private void updateStatus() {
+    public void updateStatus(BigDecimal currentDepositAmount) {
         if (finalPrice.compareTo(currentDepositAmount) == 0) {
             status = PaymentStatus.COMPLETED;
         } else if (finalPrice.compareTo(currentDepositAmount) < 0) {
             status = PaymentStatus.OVERPAID;
         }
+    }
+
+    public void cancel() {
+        status = PaymentStatus.CANCELED;
     }
 }

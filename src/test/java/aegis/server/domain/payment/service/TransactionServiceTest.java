@@ -59,8 +59,7 @@ public class TransactionServiceTest extends IntegrationTest {
             // then
             Payment payment = paymentRepository.findByMemberAndCurrentSemester(member, CURRENT_SEMESTER).orElseThrow();
             assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
-            assertEquals(1, payment.getTransactions().size());
-            assertEquals(CLUB_DUES, BigDecimal.valueOf(payment.getTransactions().getFirst().getAmount()));
+            assertEquals(CLUB_DUES, getCurrentCurrentDepositAmount(payment.getExpectedDepositorName()));
         }
     }
 
@@ -82,8 +81,7 @@ public class TransactionServiceTest extends IntegrationTest {
             // then
             Payment payment = paymentRepository.findByMemberAndCurrentSemester(member, CURRENT_SEMESTER).orElseThrow();
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
-            assertEquals(0, payment.getTransactions().size());
-            assertEquals(BigDecimal.ZERO, payment.getCurrentDepositAmount());
+            assertEquals(BigDecimal.ZERO, getCurrentCurrentDepositAmount(payment.getExpectedDepositorName()));
         }
 
         @Test
@@ -101,8 +99,7 @@ public class TransactionServiceTest extends IntegrationTest {
             // then
             Payment payment = paymentRepository.findByMemberAndCurrentSemester(member, CURRENT_SEMESTER).orElseThrow();
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
-            assertEquals(1, payment.getTransactions().size());
-            assertEquals(CLUB_DUES.subtract(BigDecimal.ONE), payment.getCurrentDepositAmount());
+            assertEquals(CLUB_DUES.subtract(BigDecimal.ONE), getCurrentCurrentDepositAmount(payment.getExpectedDepositorName()));
         }
 
         @Test
@@ -120,8 +117,7 @@ public class TransactionServiceTest extends IntegrationTest {
             // then
             Payment payment = paymentRepository.findByMemberAndCurrentSemester(member, CURRENT_SEMESTER).orElseThrow();
             assertEquals(PaymentStatus.OVERPAID, payment.getStatus());
-            assertEquals(1, payment.getTransactions().size());
-            assertEquals(CLUB_DUES.add(BigDecimal.ONE), payment.getCurrentDepositAmount());
+            assertEquals(CLUB_DUES.add(BigDecimal.ONE), getCurrentCurrentDepositAmount(payment.getExpectedDepositorName()));
         }
     }
 
@@ -149,7 +145,6 @@ public class TransactionServiceTest extends IntegrationTest {
             // then
             Payment payment = paymentRepository.findByMemberAndCurrentSemester(member, CURRENT_SEMESTER).orElseThrow();
             assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
-            assertEquals(2, payment.getTransactions().size());
         }
 
         @Test
@@ -173,7 +168,6 @@ public class TransactionServiceTest extends IntegrationTest {
             // then
             Payment payment = paymentRepository.findByMemberAndCurrentSemester(member, CURRENT_SEMESTER).orElseThrow();
             assertEquals(PaymentStatus.OVERPAID, payment.getStatus());
-            assertEquals(2, payment.getTransactions().size());
         }
     }
 }

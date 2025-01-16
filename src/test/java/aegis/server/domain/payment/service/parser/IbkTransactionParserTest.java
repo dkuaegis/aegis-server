@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -47,9 +48,9 @@ class IbkTransactionParserTest {
 
         // then
         assertThat(transaction.getTransactionType()).isEqualTo(TransactionType.DEPOSIT);
-        assertThat(transaction.getAmount()).isEqualTo(10000);
-        assertThat(transaction.getName()).isEqualTo("윤성민212874");
-        assertThat(transaction.getBalance()).isEqualTo(150000);
+        assertThat(transaction.getAmount()).isEqualTo(BigDecimal.valueOf(10000));
+        assertThat(transaction.getDepositorName()).isEqualTo("윤성민212874");
+        assertThat(transaction.getBalance()).isEqualTo(BigDecimal.valueOf(150000));
 
         String expectedTimeStr = currentYear + "/01/13 19:10";
         LocalDateTime expectedTime = LocalDateTime.parse(
@@ -73,9 +74,9 @@ class IbkTransactionParserTest {
 
         // then
         assertThat(transaction.getTransactionType()).isEqualTo(TransactionType.WITHDRAWAL);
-        assertThat(transaction.getAmount()).isEqualTo(30000);
-        assertThat(transaction.getName()).isEqualTo("ATM출금");
-        assertThat(transaction.getBalance()).isEqualTo(120000);
+        assertThat(transaction.getAmount()).isEqualTo(BigDecimal.valueOf(30000));
+        assertThat(transaction.getDepositorName()).isEqualTo("ATM출금");
+        assertThat(transaction.getBalance()).isEqualTo(BigDecimal.valueOf(120000));
 
         String expectedTimeStr = currentYear + "/12/17 14:30";
         LocalDateTime expectedTime = LocalDateTime.parse(

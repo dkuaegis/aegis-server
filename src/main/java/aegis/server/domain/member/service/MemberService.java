@@ -10,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
-
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -19,6 +17,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
+    @Transactional
     public MemberResponse getMember(SessionUser sessionUser) {
         Member member = memberRepository.findById(sessionUser.getId()).orElseThrow();
         member.updateJoinProgress(JoinProgress.PERSONAL_INFORMATION);

@@ -6,6 +6,7 @@ import aegis.server.domain.coupon.repository.CouponRepository;
 import aegis.server.domain.coupon.repository.IssuedCouponRepository;
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.repository.MemberRepository;
+import aegis.server.domain.payment.repository.TransactionRepository;
 import aegis.server.global.security.dto.SessionUser;
 import aegis.server.global.security.oidc.UserAuthInfo;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +34,9 @@ public abstract class IntegrationTest {
 
     @Autowired
     protected IssuedCouponRepository issuedCouponRepository;
+
+    @Autowired
+    protected TransactionRepository transactionRepository;
 
     @BeforeEach
     void cleanDatabase() {
@@ -78,5 +82,9 @@ public abstract class IntegrationTest {
 
     protected IssuedCoupon createIssuedCoupon(Member member, Coupon coupon) {
         return issuedCouponRepository.save(IssuedCoupon.of(coupon, member));
+    }
+
+    protected BigDecimal getCurrentCurrentDepositAmount(String depositorName) {
+        return transactionRepository.sumAmountByDepositorName(depositorName).orElse(BigDecimal.ZERO);
     }
 }
