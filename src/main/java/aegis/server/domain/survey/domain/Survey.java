@@ -1,5 +1,7 @@
 package aegis.server.domain.survey.domain;
 
+import static aegis.server.global.constant.Constant.CURRENT_SEMESTER;
+
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.survey.dto.SurveyRequest;
 import jakarta.persistence.*;
@@ -51,6 +53,8 @@ public class Survey {
     @Column(length = 1000)
     private String feedBack;
 
+    private String currentSemester;
+
     @CreatedDate
     private LocalDateTime createdAt;
 
@@ -69,6 +73,7 @@ public class Survey {
                 .interestEtc(request.getInterestEtc())
                 .registrationReason(request.getRegistrationReason())
                 .feedBack(request.getFeedBack())
+                .currentSemester(CURRENT_SEMESTER)
                 .build();
     }
 }

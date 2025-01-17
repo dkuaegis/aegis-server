@@ -7,8 +7,13 @@ import aegis.server.domain.coupon.repository.IssuedCouponRepository;
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.repository.TransactionRepository;
+import aegis.server.domain.survey.domain.InterestField;
+import aegis.server.domain.survey.dto.SurveyRequest;
+import aegis.server.domain.survey.repository.SurveyRepository;
 import aegis.server.global.security.dto.SessionUser;
 import aegis.server.global.security.oidc.UserAuthInfo;
+import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,6 +42,9 @@ public abstract class IntegrationTest {
 
     @Autowired
     protected TransactionRepository transactionRepository;
+
+    @Autowired
+    protected SurveyRepository surveyRepository;
 
     @BeforeEach
     void cleanDatabase() {
@@ -86,5 +94,14 @@ public abstract class IntegrationTest {
 
     protected BigDecimal getCurrentCurrentDepositAmount(String depositorName) {
         return transactionRepository.sumAmountByDepositorName(depositorName).orElse(BigDecimal.ZERO);
+    }
+
+    protected SurveyRequest createSurveyRequest() {
+        return SurveyRequest.builder()
+                .interestFields(Set.of(InterestField.WEB_BACKEND, InterestField.WEB_FRONTEND))
+                .interestEtc(Map.of(InterestField.WEB_ETC, "기타"))
+                .registrationReason("등록 이유")
+                .feedBack("피드백")
+                .build();
     }
 }
