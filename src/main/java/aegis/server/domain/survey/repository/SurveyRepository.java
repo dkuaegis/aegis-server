@@ -11,6 +11,6 @@ import java.util.Optional;
 @Repository
 public interface SurveyRepository extends JpaRepository<Survey, Long> {
     Optional<Survey> findByMemberId(Long memberId);
-    Optional<Survey> findByIdAndCurrentSemester(Long id, String currentSemester);
+    Optional<Survey> findByMemberIdAndCurrentSemester(Long memberId, String currentSemester);
 
 }
