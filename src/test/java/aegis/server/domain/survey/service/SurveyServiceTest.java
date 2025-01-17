@@ -14,9 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
 
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class SurveyServiceTest extends IntegrationTest {
 
     @Autowired
@@ -34,7 +32,7 @@ class SurveyServiceTest extends IntegrationTest {
         surveyService.save(surveyRequest, sessionUser);
 
         //then
-        Survey survey = surveyRepository.findByIdAndCurrentSemester(member.getId(),
+        Survey survey = surveyRepository.findByMemberIdAndCurrentSemester(member.getId(),
                 CURRENT_SEMESTER).orElseThrow();
         assertEquals(member, survey.getMember());
         assertEquals(surveyRequest.getInterestFields(), survey.getInterestFields());
@@ -61,7 +59,7 @@ class SurveyServiceTest extends IntegrationTest {
         surveyService.save(updatedSurveyRequest, sessionUser);
 
         //then
-        Survey survey = surveyRepository.findByIdAndCurrentSemester(member.getId(),
+        Survey survey = surveyRepository.findByMemberIdAndCurrentSemester(member.getId(),
                 CURRENT_SEMESTER).orElseThrow();
         assertEquals(member, survey.getMember());
         assertEquals(updatedSurveyRequest.getInterestFields(), survey.getInterestFields());
