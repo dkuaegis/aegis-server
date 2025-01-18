@@ -17,6 +17,8 @@ public class Member {
 
     private String oidcId;
 
+    private String discordId;
+
     private String email;
 
     private String name;
@@ -80,6 +82,10 @@ public class Member {
 
     public void updateJoinProgress(JoinProgress joinProgress) {
         this.joinProgress = joinProgress;
+    }
+
+    public void updateDiscordId(String discordId) {
+        this.discordId = discordId;
     }
 
 }

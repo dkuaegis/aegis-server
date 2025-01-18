@@ -33,3 +33,8 @@ client:
 
 key:
   tx-track-api: ${TRANSACTION_TRACK_API_KEY}
+
+discord:
+  token: ${DISCORD_BOT_TOKEN}
+  guild-id: ${DISCORD_GUILD_ID}
+  complete-role-id: ${DISCORD_COMPLETE_ROLE_ID}
