@@ -1,5 +1,6 @@
 package aegis.server.domain.payment.service;
 
+import aegis.server.domain.member.domain.JoinProgress;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.domain.Transaction;
@@ -9,6 +10,11 @@ import aegis.server.domain.payment.repository.TransactionRepository;
 import aegis.server.domain.payment.service.parser.TransactionParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.UserSnowflake;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +31,13 @@ public class TransactionService {
     private final TransactionParser transactionParser;
     private final TransactionRepository transactionRepository;
     private final PaymentRepository paymentRepository;
+    private final JDA jda;
+
+    @Value("${discord.guild-id}")
+    private String guildId;
+
+    @Value("${discord.complete-role-id}")
+    private String roleId;
 
     @Transactional
     public void createTransaction(String transactionLog) {
@@ -56,6 +69,19 @@ public class TransactionService {
         BigDecimal currentDepositAmount = transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName()).orElse(BigDecimal.ZERO);
         payment.updateStatus(currentDepositAmount);
 
+        if (payment.getStatus().equals(PaymentStatus.COMPLETED)) {
+            String discordId = payment.getMember().getDiscordId();
+            Guild guild = jda.getGuildById(guildId);
+            if (guild == null) {
+                throw new IllegalStateException("서버를 찾을 수 없습니다");
+            }
+            Role role = guild.getRoleById(roleId);
+            if (role == null) {
+                throw new IllegalStateException("역할을 찾을 수 없습니다");
+            }
+            guild.addRoleToMember(UserSnowflake.fromId(discordId), role).queue();
+            payment.getMember().updateJoinProgress(JoinProgress.COMPLETE);
+        }
         if (payment.getStatus().equals(PaymentStatus.OVERPAID)) {
             logOverpaid(payment, transaction);
         }

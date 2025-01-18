@@ -6,5 +6,7 @@ public enum JoinProgress {
     SURVEY,
     EVERYTIME,
     DISCORD,
+    COUPON,
+    PAYMENT,
     COMPLETE
 }
