@@ -3,9 +3,13 @@ package aegis.server.common;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.metamodel.EntityType;
+import org.hibernate.Session;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,13 +30,17 @@ public class DataBaseCleaner implements InitializingBean {
     }
 
     public void clean() {
-        em.createNativeQuery("SET REFERENTIAL_INTEGRITY FALSE").executeUpdate();
+        em.unwrap(Session.class).doWork(this::doClean);
+    }
 
-        for (String tableName : tableNames) {
-            em.createNativeQuery("TRUNCATE TABLE " + tableName).executeUpdate();
-            em.createNativeQuery("ALTER TABLE " + tableName + " ALTER COLUMN " + tableName + "_ID RESTART WITH 1").executeUpdate();
+    private void doClean(Connection connection) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate("SET REFERENTIAL_INTEGRITY FALSE");
+            for (String tableName : tableNames) {
+                statement.executeUpdate("TRUNCATE TABLE " + tableName);
+                statement.executeUpdate("ALTER TABLE " + tableName + " ALTER COLUMN " + tableName + "_ID RESTART WITH 1");
+            }
+            statement.executeUpdate("SET REFERENTIAL_INTEGRITY TRUE");
         }
-        
-        em.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate();
     }
 }
