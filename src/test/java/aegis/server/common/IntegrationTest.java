@@ -4,6 +4,7 @@ import aegis.server.domain.coupon.domain.Coupon;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
 import aegis.server.domain.coupon.repository.CouponRepository;
 import aegis.server.domain.coupon.repository.IssuedCouponRepository;
+import aegis.server.domain.discord.service.listener.DiscordEventListener;
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.repository.TransactionRepository;
@@ -12,18 +13,21 @@ import aegis.server.domain.survey.dto.SurveyRequest;
 import aegis.server.domain.survey.repository.SurveyRepository;
 import aegis.server.global.security.dto.SessionUser;
 import aegis.server.global.security.oidc.UserAuthInfo;
-import java.util.Map;
-import java.util.Set;
+import net.dv8tion.jda.api.JDA;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Map;
+import java.util.Set;
 
-@Transactional
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+
 @SpringBootTest
 @ActiveProfiles("test")
 public abstract class IntegrationTest {
@@ -46,9 +50,19 @@ public abstract class IntegrationTest {
     @Autowired
     protected SurveyRepository surveyRepository;
 
+    @MockitoBean
+    protected JDA jda;
+
+    @MockitoBean
+    protected DiscordEventListener discordEventListener;
+
     @BeforeEach
-    void cleanDatabase() {
+    void setUp() {
         dataBaseCleaner.clean();
+
+        doNothing().when(discordEventListener).handlePaymentCompletedEvent(any());
+        doNothing().when(discordEventListener).handleOverpaidEvent(any());
+        doNothing().when(discordEventListener).handleMissingDepositorNameEvent(any());
     }
 
     protected Member createGuestMember() {
@@ -93,7 +107,7 @@ public abstract class IntegrationTest {
     }
 
     protected BigDecimal getCurrentCurrentDepositAmount(String depositorName) {
-        return transactionRepository.sumAmountByDepositorName(depositorName).orElse(BigDecimal.ZERO);
+        return transactionRepository.sumAmountByDepositorName(depositorName);
     }
 
     protected SurveyRequest createSurveyRequest() {

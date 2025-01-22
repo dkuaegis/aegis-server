@@ -87,5 +87,4 @@ public class Member {
     public void updateDiscordId(String discordId) {
         this.discordId = discordId;
     }
-
 }

@@ -1,19 +1,20 @@
 package aegis.server.domain.survey.service;
 
-import static aegis.server.global.constant.Constant.CURRENT_SEMESTER;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import aegis.server.common.IntegrationTest;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.survey.domain.InterestField;
 import aegis.server.domain.survey.domain.Survey;
 import aegis.server.domain.survey.dto.SurveyRequest;
 import aegis.server.global.security.dto.SessionUser;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import static aegis.server.global.constant.Constant.CURRENT_SEMESTER;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SurveyServiceTest extends IntegrationTest {
 
@@ -34,7 +35,7 @@ class SurveyServiceTest extends IntegrationTest {
         //then
         Survey survey = surveyRepository.findByMemberIdAndCurrentSemester(member.getId(),
                 CURRENT_SEMESTER).orElseThrow();
-        assertEquals(member, survey.getMember());
+        assertEquals(member.getId(), survey.getMember().getId());
         assertEquals(surveyRequest.getInterestFields(), survey.getInterestFields());
         assertEquals(surveyRequest.getInterestEtc(), survey.getInterestEtc());
         assertEquals(surveyRequest.getRegistrationReason(), survey.getRegistrationReason());
@@ -61,7 +62,7 @@ class SurveyServiceTest extends IntegrationTest {
         //then
         Survey survey = surveyRepository.findByMemberIdAndCurrentSemester(member.getId(),
                 CURRENT_SEMESTER).orElseThrow();
-        assertEquals(member, survey.getMember());
+        assertEquals(member.getId(), survey.getMember().getId());
         assertEquals(updatedSurveyRequest.getInterestFields(), survey.getInterestFields());
         assertEquals(updatedSurveyRequest.getInterestEtc(), survey.getInterestEtc());
         assertEquals(updatedSurveyRequest.getRegistrationReason(), survey.getRegistrationReason());

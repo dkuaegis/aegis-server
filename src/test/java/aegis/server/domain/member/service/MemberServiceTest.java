@@ -9,7 +9,9 @@ import aegis.server.global.security.dto.SessionUser;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.NoSuchElementException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -59,14 +61,16 @@ public class MemberServiceTest extends IntegrationTest {
             memberService.updateMember(sessionUser, updateRequest);
 
             // then
-            assertEquals(updateRequest.getBirthDate(), member.getBirthDate());
-            assertEquals(updateRequest.getGender(), member.getGender());
-            assertEquals(updateRequest.getStudentId(), member.getStudentId());
-            assertEquals(updateRequest.getPhoneNumber(), member.getPhoneNumber());
-            assertEquals(updateRequest.getDepartment(), member.getDepartment());
-            assertEquals(updateRequest.getAcademicStatus(), member.getAcademicStatus());
-            assertEquals(updateRequest.getGrade(), member.getGrade());
-            assertEquals(updateRequest.getSemester(), member.getSemester());
+            Member updatedMember = memberRepository.findById(member.getId()).orElseThrow();
+
+            assertEquals(updateRequest.getBirthDate(), updatedMember.getBirthDate());
+            assertEquals(updateRequest.getGender(), updatedMember.getGender());
+            assertEquals(updateRequest.getStudentId(), updatedMember.getStudentId());
+            assertEquals(updateRequest.getPhoneNumber(), updatedMember.getPhoneNumber());
+            assertEquals(updateRequest.getDepartment(), updatedMember.getDepartment());
+            assertEquals(updateRequest.getAcademicStatus(), updatedMember.getAcademicStatus());
+            assertEquals(updateRequest.getGrade(), updatedMember.getGrade());
+            assertEquals(updateRequest.getSemester(), updatedMember.getSemester());
         }
 
         @Test

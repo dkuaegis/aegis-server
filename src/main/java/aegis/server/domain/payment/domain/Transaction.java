@@ -6,6 +6,8 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import static aegis.server.global.constant.Constant.CURRENT_SEMESTER;
+
 @Entity
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -22,6 +24,8 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "transaction_id")
     private Long id;
+
+    private String currentSemester;
 
     // === 은행앱에서 발송한 거래 내역 정보 START ===
 
@@ -48,6 +52,7 @@ public class Transaction {
             BigDecimal balance
     ) {
         return Transaction.builder()
+                .currentSemester(CURRENT_SEMESTER)
                 .transactionTime(transactionTime)
                 .depositorName(depositorName)
                 .transactionType(transactionType)
