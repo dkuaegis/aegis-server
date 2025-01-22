@@ -45,11 +45,11 @@ public class PaymentServiceTest extends IntegrationTest {
             PaymentRequest request = new PaymentRequest(List.of());
 
             // when
-            paymentService.createPendingPayment(request, sessionUser);
+            paymentService.createOrUpdatePendingPayment(request, sessionUser);
 
             // then
             Payment payment = paymentRepository.findByMemberAndCurrentSemester(member, CURRENT_SEMESTER).orElseThrow();
-            assertEquals(member, payment.getMember());
+            assertEquals(member.getId(), payment.getMember().getId());
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
             assertEquals(CLUB_DUES, payment.getOriginalPrice());
         }
@@ -65,7 +65,7 @@ public class PaymentServiceTest extends IntegrationTest {
             PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
 
             // when
-            paymentService.createPendingPayment(request, sessionUser);
+            paymentService.createOrUpdatePendingPayment(request, sessionUser);
 
             // then
             Payment payment = paymentRepository.findByMemberAndCurrentSemester(member, CURRENT_SEMESTER).orElseThrow();
@@ -84,7 +84,7 @@ public class PaymentServiceTest extends IntegrationTest {
             PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
 
             // when
-            paymentService.createPendingPayment(request, sessionUser);
+            paymentService.createOrUpdatePendingPayment(request, sessionUser);
 
             // then
             IssuedCoupon updatedIssuedCoupon = issuedCouponRepository.findById(issuedCoupon.getId()).orElseThrow();
@@ -92,22 +92,25 @@ public class PaymentServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 중복된_결제정보_생성_시_기존_정보를_취소상태로_변경한다() {
+        void 중복된_결제정보_생성_시_기존_정보를_덮어씌운다() {
             // given
             Member member = createMember();
             SessionUser sessionUser = createSessionUser(member);
-            PaymentRequest request = new PaymentRequest(List.of());
+            PaymentRequest oldRequest = new PaymentRequest(List.of());
 
-            paymentService.createPendingPayment(request, sessionUser);
+            paymentService.createOrUpdatePendingPayment(oldRequest, sessionUser);
             Payment firstPayment = paymentRepository.findById(1L).orElseThrow();
 
             // when
-            paymentService.createPendingPayment(request, sessionUser);
-            Payment secondPayment = paymentRepository.findById(2L).orElseThrow();
+            Coupon coupon = createCoupon();
+            createIssuedCoupon(member, coupon);
+            PaymentRequest newRequest = new PaymentRequest(List.of(1L));
+            paymentService.createOrUpdatePendingPayment(newRequest, sessionUser);
+            Payment secondPayment = paymentRepository.findById(1L).orElseThrow();
 
             // then
-            assertEquals(PaymentStatus.CANCELED, firstPayment.getStatus());
             assertEquals(PaymentStatus.PENDING, secondPayment.getStatus());
+            assertEquals(CLUB_DUES.subtract(coupon.getDiscountAmount()), secondPayment.getFinalPrice());
         }
 
         @Test
@@ -123,7 +126,7 @@ public class PaymentServiceTest extends IntegrationTest {
 
             // when
             IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-                paymentService.createPendingPayment(request, sessionUser);
+                paymentService.createOrUpdatePendingPayment(request, sessionUser);
             });
 
             // then
@@ -143,7 +146,7 @@ public class PaymentServiceTest extends IntegrationTest {
 
             // when
             IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-                paymentService.createPendingPayment(request, sessionUser);
+                paymentService.createOrUpdatePendingPayment(request, sessionUser);
             });
 
             // then

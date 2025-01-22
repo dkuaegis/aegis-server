@@ -18,11 +18,11 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping
-    public ResponseEntity<Void> createPendingPayment(
+    public ResponseEntity<Void> createOrUpdatePendingPayment(
             @RequestBody PaymentRequest request,
             @LoginUser SessionUser user
     ) {
-        paymentService.createPendingPayment(request, user);
+        paymentService.createOrUpdatePendingPayment(request, user);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

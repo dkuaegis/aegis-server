@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -19,6 +20,9 @@ import static aegis.server.domain.payment.domain.Payment.expectedDepositorName;
 import static aegis.server.global.constant.Constant.CLUB_DUES;
 import static aegis.server.global.constant.Constant.CURRENT_SEMESTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class TransactionServiceTest extends IntegrationTest {
 
@@ -31,6 +35,9 @@ public class TransactionServiceTest extends IntegrationTest {
     @Autowired
     TransactionService transactionService;
 
+    @MockitoSpyBean
+    PaymentEventListener paymentEventListener;
+
     Member member;
 
     @BeforeEach
@@ -38,7 +45,7 @@ public class TransactionServiceTest extends IntegrationTest {
         member = createMember();
         SessionUser sessionUser = createSessionUser(member);
         PaymentRequest request = new PaymentRequest(List.of());
-        paymentService.createPendingPayment(request, sessionUser);
+        paymentService.createOrUpdatePendingPayment(request, sessionUser);
     }
 
     @Nested
@@ -58,6 +65,7 @@ public class TransactionServiceTest extends IntegrationTest {
 
             // then
             Payment payment = paymentRepository.findByMemberAndCurrentSemester(member, CURRENT_SEMESTER).orElseThrow();
+            verify(paymentEventListener, times(1)).handleTransactionCreatedEvent(any());
             assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
             assertEquals(CLUB_DUES, getCurrentCurrentDepositAmount(payment.getExpectedDepositorName()));
         }
