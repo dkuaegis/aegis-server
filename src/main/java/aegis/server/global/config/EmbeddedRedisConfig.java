@@ -11,14 +11,17 @@ import java.io.IOException;
 
 @Slf4j
 @Configuration
-@Profile({"test"})
+@Profile("test")
 public class EmbeddedRedisConfig {
 
     private RedisServer redisServer;
 
     @PostConstruct
     public void redisServer() throws IOException {
-        redisServer = new RedisServer(6379);
+        redisServer = RedisServer.newRedisServer()
+                .bind("127.0.0.1")
+                .port(6380)
+                .build();
         try {
             redisServer.start();
         } catch (Exception e) {
@@ -32,5 +35,4 @@ public class EmbeddedRedisConfig {
             redisServer.stop();
         }
     }
-
 }
