@@ -33,7 +33,10 @@ import static org.mockito.Mockito.doNothing;
 public abstract class IntegrationTest {
 
     @Autowired
-    protected DataBaseCleaner dataBaseCleaner;
+    protected DatabaseCleaner dataBaseCleaner;
+
+    @Autowired
+    protected RedisCleaner redisCleaner;
 
     @Autowired
     protected MemberRepository memberRepository;
@@ -59,6 +62,7 @@ public abstract class IntegrationTest {
     @BeforeEach
     void setUp() {
         dataBaseCleaner.clean();
+        redisCleaner.clean();
 
         doNothing().when(discordEventListener).handlePaymentCompletedEvent(any());
         doNothing().when(discordEventListener).handleOverpaidEvent(any());
