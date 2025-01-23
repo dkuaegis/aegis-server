@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class DataBaseCleaner implements InitializingBean {
+public class DatabaseCleaner implements InitializingBean {
 
     @PersistenceContext
     private EntityManager em;
