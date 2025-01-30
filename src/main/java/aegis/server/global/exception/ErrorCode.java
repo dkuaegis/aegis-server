@@ -8,8 +8,10 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum ErrorCode {
 
+    BAD_REQUEST(HttpStatus.BAD_REQUEST),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR),
-    METHOD_ARGUMENT_NOT_VALID(HttpStatus.BAD_REQUEST);
+    ;
 
     private final HttpStatus httpStatus;
 }

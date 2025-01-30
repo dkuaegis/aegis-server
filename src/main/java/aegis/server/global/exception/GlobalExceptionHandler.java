@@ -46,12 +46,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .toList();
 
         ArgumentNotValidErrorResponse errorResponse = ArgumentNotValidErrorResponse.of(
-                ErrorCode.METHOD_ARGUMENT_NOT_VALID,
+                ErrorCode.BAD_REQUEST,
                 fieldErrorDetails
         );
 
         return ResponseEntity
-                .status(ErrorCode.METHOD_ARGUMENT_NOT_VALID.getHttpStatus())
+                .status(ErrorCode.BAD_REQUEST.getHttpStatus())
                 .body(errorResponse);
     }
 }
