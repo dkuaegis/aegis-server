@@ -1,8 +1,12 @@
 package aegis.server.global.constant;
 
+import aegis.server.domain.member.domain.YearSemester;
+
 import java.util.List;
 
 public class Constant {
+
+    public static final YearSemester CURRENT_YEAR_SEMESTER = YearSemester.YEAR_SEMESTER_2025_1;
 
     public static final String PROD_CLIENT_JOIN_URL = "https://join.dk-aegis.org";
 
