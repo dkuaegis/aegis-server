@@ -1,5 +1,4 @@
-package aegis.server.domain.common;
-
+package aegis.server.domain.common.domain;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
