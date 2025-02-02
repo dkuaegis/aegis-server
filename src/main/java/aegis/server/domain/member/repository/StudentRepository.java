@@ -17,4 +17,10 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     default Optional<Student> findByMemberInCurrentYearSemester(Member member) {
         return findByMemberAndYearSemester(member, CURRENT_YEAR_SEMESTER);
     }
+
+    Optional<Student> findByMember_IdAndYearSemester(Long memberId, YearSemester yearSemester);
+
+    default Optional<Student> findByMemberIdInCurrentYearSemester(Long memberId) {
+        return findByMember_IdAndYearSemester(memberId, CURRENT_YEAR_SEMESTER);
+    }
 }
