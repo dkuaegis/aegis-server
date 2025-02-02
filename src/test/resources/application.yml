@@ -11,3 +11,6 @@ spring:
             client-secret: test-client-secret
   session:
     timeout: 0
+
+exception:
+  log-only-aegis-stack-trace: false
