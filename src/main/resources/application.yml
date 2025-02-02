@@ -30,5 +30,8 @@ spring:
       namespace: aegis:session
     timeout: ${SESSION_TIMEOUT}
 
+exception:
+  log-only-aegis-stack-trace: true
+
 server:
   forward-headers-strategy: framework

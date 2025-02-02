@@ -1,6 +1,7 @@
 package aegis.server.global.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -13,15 +14,58 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @Value("${exception.log-only-aegis-stack-trace}")
+    private boolean logOnlyAegisStackTrace;
+
+    private static final String[] EXCLUDED_CLASSES = {
+            "aegis.server.global.security.oidc.RefererFilter"
+    };
+
+    /**
+     * 예외 발생 시 스택 트레이스 중 {@link GlobalExceptionHandler#logOnlyAegisStackTrace} 값이 true면 aegis.server 패키지의 요소만 필터링하여 로깅합니다.
+     */
+    private void logFilteredException(Exception e, String errorType) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(errorType).append(": ").append(e.getMessage());
+
+        List<StackTraceElement> stackTraceElements;
+        if (logOnlyAegisStackTrace) {
+            stackTraceElements = Arrays.stream(e.getStackTrace())
+                    .filter(element -> element.getClassName().startsWith("aegis.server"))
+                    .filter(element -> Arrays.stream(EXCLUDED_CLASSES)
+                            .noneMatch(excluded -> excluded.equals(element.getClassName())))
+                    .toList();
+        } else {
+            stackTraceElements = Arrays.asList(e.getStackTrace());
+        }
+
+        for (StackTraceElement element : stackTraceElements) {
+            sb.append("\n")
+                    .append("\tat ")
+                    .append(element.getClassName())
+                    .append(".")
+                    .append(element.getMethodName())
+                    .append("(")
+                    .append(element.getFileName())
+                    .append(":")
+                    .append(element.getLineNumber())
+                    .append(")");
+        }
+        log.error(sb.toString());
+    }
+
+
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
-        log.error("CustomException : {}", e.getMessage(), e);
+        logFilteredException(e, "CustomException");
         return ResponseEntity
                 .status(e.getErrorCode().getHttpStatus())
                 .body(ErrorResponse.of(e.getErrorCode()));
@@ -29,7 +73,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
-        log.error("DataIntegrityViolationException : {}", e.getMessage(), e);
+        logFilteredException(e, "DataIntegrityViolationException");
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(ErrorResponse.of(ErrorCode.ALREADY_EXISTS));
@@ -37,7 +81,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
-        log.error("INTERNAL_SERVER_ERROR : {}", e.getMessage(), e);
+        logFilteredException(e, "INTERNAL_SERVER_ERROR");
         return ResponseEntity
                 .status(ErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
                 .body(ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR));
@@ -47,7 +91,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException e, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        log.error("METHOD_ARGUMENT_NOT_VALID : {}", e.getMessage(), e);
+        logFilteredException(e, "METHOD_ARGUMENT_NOT_VALID");
 
         List<FieldErrorDetail> fieldErrorDetails = e.getBindingResult().getFieldErrors().stream()
                 .map(fieldError -> FieldErrorDetail.of(
@@ -55,7 +99,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                         fieldError.getRejectedValue(),
                         fieldError.getDefaultMessage()
                 ))
-                .toList();
+                .collect(Collectors.toList());
 
         ArgumentNotValidErrorResponse errorResponse = ArgumentNotValidErrorResponse.of(
                 ErrorCode.BAD_REQUEST,
@@ -71,12 +115,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException e, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        log.error("HTTP_MESSAGE_NOT_READABLE : {}", e.getMessage(), e);
+        logFilteredException(e, "HTTP_MESSAGE_NOT_READABLE");
 
         Throwable cause = e.getCause();
 
         // 1. JSON 형식 오류
-        if (cause instanceof com.fasterxml.jackson.core.JsonParseException || cause instanceof com.fasterxml.jackson.databind.exc.MismatchedInputException) {
+        if (cause instanceof com.fasterxml.jackson.core.JsonParseException ||
+                cause instanceof com.fasterxml.jackson.databind.exc.MismatchedInputException) {
             return ResponseEntity
                     .status(ErrorCode.INVALID_JSON.getHttpStatus())
                     .body(ErrorResponse.of(ErrorCode.INVALID_JSON));
