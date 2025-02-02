@@ -12,14 +12,14 @@ import java.io.Serializable;
 @Builder(access = AccessLevel.PRIVATE)
 public class UserDetails implements Serializable {
 
-    private Long id;
+    private Long memberId;
     private String email;
     private String name;
     private Role role;
 
     public static UserDetails from(Member member) {
         return UserDetails.builder()
-                .id(member.getId())
+                .memberId(member.getId())
                 .email(member.getEmail())
                 .name(member.getName())
                 .role(member.getRole())

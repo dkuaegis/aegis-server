@@ -22,7 +22,7 @@ public class MemberService {
     private final StudentRepository studentRepository;
 
     public PersonalInfoResponse getPersonalInfo(UserDetails userDetails) {
-        Member member = memberRepository.findById(userDetails.getId())
+        Member member = memberRepository.findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
         Student student = studentRepository.findByMember(member)
                 .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
@@ -32,7 +32,7 @@ public class MemberService {
 
     @Transactional
     public void updatePersonalInfo(UserDetails userDetails, PersonalInfoUpdateRequest request) {
-        Member member = memberRepository.findById(userDetails.getId())
+        Member member = memberRepository.findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
         Student student = studentRepository.findByMemberInCurrentYearSemester(member)
                 .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));

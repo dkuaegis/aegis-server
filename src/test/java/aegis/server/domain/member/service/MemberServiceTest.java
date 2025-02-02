@@ -71,7 +71,7 @@ class MemberServiceTest extends IntegrationTest {
             // given
             Member member = createMember();
             UserDetails userDetails = createUserDetails(member);
-            ReflectionTestUtils.setField(userDetails, "id", member.getId() + 1L);
+            ReflectionTestUtils.setField(userDetails, "memberId", member.getId() + 1L);
 
             // when-then
             CustomException exception = assertThrows(CustomException.class, () ->
