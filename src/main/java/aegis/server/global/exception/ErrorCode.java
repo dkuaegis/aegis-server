@@ -26,6 +26,12 @@ public enum ErrorCode {
     ETC_INTEREST_NOT_FOUND(HttpStatus.BAD_REQUEST),
     SURVEY_NOT_FOUND(HttpStatus.NOT_FOUND),
 
+    // Coupon
+    COUPON_DISCOUNT_AMOUNT_NOT_POSITIVE(HttpStatus.BAD_REQUEST),
+    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND),
+    COUPON_ALREADY_EXISTS(HttpStatus.CONFLICT),
+    COUPON_ALREADY_USED(HttpStatus.CONFLICT),
+
     ;
     private final HttpStatus httpStatus;
 }

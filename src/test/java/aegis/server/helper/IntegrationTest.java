@@ -28,10 +28,11 @@ public class IntegrationTest {
     }
 
     protected Member createMember() {
-        Member member = Member.create("123456789012345678901", "test@dankook.ac.kr", "테스트사용자이름");
+        Member member = Member.create("12345678901234567890", "test@dankook.ac.kr", "테스트사용자이름");
         memberRepository.save(member);
 
-        // 테스트 내에서 createMember가 여러 번 호출되도 이메일과 이름의 고유성을 위하여 Reflection을 사용하여 수정
+        // 한 개의 테스트 케이스에서 여러 번 호출되도 Member 엔티티의 고유성을 위하여 Reflection을 사용하여 수정
+        ReflectionTestUtils.setField(member, "oidcId", member.getOidcId() + member.getId());
         ReflectionTestUtils.setField(member, "email", "test" + member.getId() + "@dankook.ac.kr");
         ReflectionTestUtils.setField(member, "name", "테스트사용자이름" + member.getId());
 
