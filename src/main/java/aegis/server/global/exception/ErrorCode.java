@@ -21,6 +21,11 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND),
     STUDENT_NOT_FOUND(HttpStatus.NOT_FOUND),
 
+    // Survey
+    INVALID_INTEREST(HttpStatus.BAD_REQUEST),
+    ETC_INTEREST_NOT_FOUND(HttpStatus.BAD_REQUEST),
+    SURVEY_NOT_FOUND(HttpStatus.NOT_FOUND),
+
     ;
     private final HttpStatus httpStatus;
 }

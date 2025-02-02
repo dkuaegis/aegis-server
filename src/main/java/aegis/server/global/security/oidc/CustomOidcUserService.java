@@ -26,12 +26,13 @@ public class CustomOidcUserService extends OidcUserService {
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         OidcUser oidcUser = super.loadUser(userRequest);
 
-        Member member = findOrCreateMemberAndStudent(oidcUser);
+        Member member = findOrCreateMember(oidcUser);
+        findOrCreateStudent(member);
 
         return new CustomOidcUser(oidcUser, member);
     }
 
-    private Member findOrCreateMemberAndStudent(OidcUser oidcUser) {
+    private Member findOrCreateMember(OidcUser oidcUser) {
         String oidcId = oidcUser.getSubject();
         String email = oidcUser.getEmail();
         String name = oidcUser.getFullName();
@@ -40,14 +41,14 @@ public class CustomOidcUserService extends OidcUserService {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
-        Member member = memberRepository.findByOidcId(oidcId).orElseGet(
-                () -> memberRepository.save(Member.createMember(oidcId, email, name))
+        return memberRepository.findByOidcId(oidcId).orElseGet(
+                () -> memberRepository.save(Member.create(oidcId, email, name))
         );
+    }
 
+    private void findOrCreateStudent(Member member) {
         studentRepository.findByMemberInCurrentYearSemester(member).orElseGet(
                 () -> studentRepository.save(Student.from(member))
         );
-
-        return member;
     }
 }

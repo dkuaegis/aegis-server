@@ -28,7 +28,7 @@ public class IntegrationTest {
     }
 
     protected Member createMember() {
-        Member member = Member.createMember("123456789012345678901", "test@dankook.ac.kr", "테스트사용자이름");
+        Member member = Member.create("123456789012345678901", "test@dankook.ac.kr", "테스트사용자이름");
         memberRepository.save(member);
 
         // 테스트 내에서 createMember가 여러 번 호출되도 이메일과 이름의 고유성을 위하여 Reflection을 사용하여 수정
