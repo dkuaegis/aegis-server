@@ -35,7 +35,7 @@ public class Member extends BaseEntity {
 
     private String phoneNumber;
 
-    public static Member createMember(String oidcId, String email, String name) {
+    public static Member create(String oidcId, String email, String name) {
         return Member.builder()
                 .role(Role.USER)
                 .oidcId(oidcId)
