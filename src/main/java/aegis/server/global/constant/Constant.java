@@ -1,6 +1,6 @@
 package aegis.server.global.constant;
 
-import aegis.server.domain.member.domain.YearSemester;
+import aegis.server.domain.common.domain.YearSemester;
 
 import java.util.List;
 
