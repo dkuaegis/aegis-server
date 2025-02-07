@@ -1,16 +1,23 @@
 package aegis.server.helper;
 
-import aegis.server.domain.member.domain.Member;
-import aegis.server.domain.member.domain.Student;
+import aegis.server.domain.coupon.domain.Coupon;
+import aegis.server.domain.coupon.domain.IssuedCoupon;
+import aegis.server.domain.coupon.repository.CouponRepository;
+import aegis.server.domain.coupon.repository.IssuedCouponRepository;
+import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.member.repository.StudentRepository;
 import aegis.server.global.security.oidc.UserDetails;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.math.BigDecimal;
+
 @SpringBootTest
+@ActiveProfiles("test")
 public class IntegrationTest {
 
     @Autowired
@@ -22,12 +29,18 @@ public class IntegrationTest {
     @Autowired
     StudentRepository studentRepository;
 
+    @Autowired
+    CouponRepository couponRepository;
+
+    @Autowired
+    IssuedCouponRepository issuedCouponRepository;
+
     @BeforeEach
     void setUp() {
         databaseCleaner.clean();
     }
 
-    protected Member createMember() {
+    protected Member createInitialMember() {
         Member member = Member.create("12345678901234567890", "test@dankook.ac.kr", "테스트사용자이름");
         memberRepository.save(member);
 
@@ -39,12 +52,48 @@ public class IntegrationTest {
         return memberRepository.save(member);
     }
 
-    protected Student createStudent(Member member) {
+    protected Member createMember() {
+        Member member = createInitialMember();
+        member.updateMember(
+                Gender.MALE,
+                "010101",
+                "010-1234-5678"
+        );
+
+        return memberRepository.save(member);
+    }
+
+    protected Student createIntialStudent(Member member) {
         Student student = Student.from(member);
+        return studentRepository.save(student);
+    }
+
+    protected Student createStudent(Member member) {
+        Student student = createIntialStudent(member);
+        student.updateStudent(
+                "32000001",
+                Department.SW융합대학_컴퓨터공학과,
+                AcademicStatus.ENROLLED,
+                Grade.THREE,
+                Semester.FIRST
+        );
+
         return studentRepository.save(student);
     }
 
     protected UserDetails createUserDetails(Member member) {
         return UserDetails.from(member);
+    }
+
+    protected Coupon createCoupon() {
+        Coupon coupon = Coupon.create("테스트쿠폰", BigDecimal.valueOf(5000L));
+        couponRepository.save(coupon);
+        ReflectionTestUtils.setField(coupon, "couponName", "테스트쿠폰" + coupon.getId());
+
+        return couponRepository.save(coupon);
+    }
+
+    protected IssuedCoupon createIssuedCoupon(Member member, Coupon coupon) {
+        return issuedCouponRepository.save(IssuedCoupon.of(coupon, member));
     }
 }

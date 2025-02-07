@@ -55,7 +55,7 @@ public class CouponService {
         Member member = memberRepository.findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        return issuedCouponRepository.findByMember(member).stream()
+        return issuedCouponRepository.findAllByMember(member).stream()
                 .filter(IssuedCoupon::getIsValid)
                 .map(IssuedCouponResponse::from)
                 .toList();
