@@ -34,6 +34,12 @@ public class TransactionServiceTest extends IntegrationTest {
     @Autowired
     PaymentRepository paymentRepository;
 
+    private final String TRANSACTION_LOG_FORMAT = """
+            [입금] %s원 %s
+            982-******-01-017
+            01/09 12:25 / 잔액 1000000원
+            """;
+
     private Member member;
     private Student student;
     private String expectedDepositorName;
@@ -55,11 +61,11 @@ public class TransactionServiceTest extends IntegrationTest {
         @Test
         void 결제를_COMPLETED_처리한다() {
             // given
-            String transactionLog = String.format("""
-                    [입금] %s원 %s
-                    982-******-01-017
-                    01/09 12:25 / 잔액 1000000원
-                    """, CLUB_DUES, expectedDepositorName);
+            String transactionLog = String.format(
+                    TRANSACTION_LOG_FORMAT,
+                    CLUB_DUES,
+                    expectedDepositorName
+            );
 
             // when
             transactionService.createTransaction(transactionLog);
@@ -76,11 +82,11 @@ public class TransactionServiceTest extends IntegrationTest {
         @Test
         void 잘못된_입금자명() {
             // given
-            String transactionLog = String.format("""
-                    [입금] %s원 %s
-                    982-******-01-017
-                    01/09 12:25 / 잔액 1000000원
-                    """, CLUB_DUES, expectedDepositorName + "WRONG");
+            String transactionLog = String.format(
+                    TRANSACTION_LOG_FORMAT,
+                    CLUB_DUES,
+                    expectedDepositorName + "WRONG"
+            );
 
             // when
             transactionService.createTransaction(transactionLog);
@@ -94,11 +100,11 @@ public class TransactionServiceTest extends IntegrationTest {
         @Test
         void 부족한_입금액() {
             // given
-            String transactionLog = String.format("""
-                    [입금] %s원 %s
-                    982-******-01-017
-                    01/09 12:25 / 잔액 1000000원
-                    """, CLUB_DUES.subtract(BigDecimal.ONE), expectedDepositorName);
+            String transactionLog = String.format(
+                    TRANSACTION_LOG_FORMAT,
+                    CLUB_DUES.subtract(BigDecimal.ONE),
+                    expectedDepositorName
+            );
 
             // when
             transactionService.createTransaction(transactionLog);
@@ -112,11 +118,11 @@ public class TransactionServiceTest extends IntegrationTest {
         @Test
         void 초과된_입금액() {
             // given
-            String transactionLog = String.format("""
-                    [입금] %s원 %s
-                    982-******-01-017
-                    01/09 12:25 / 잔액 1000000원
-                    """, CLUB_DUES.add(BigDecimal.ONE), expectedDepositorName);
+            String transactionLog = String.format(
+                    TRANSACTION_LOG_FORMAT,
+                    CLUB_DUES.add(BigDecimal.ONE),
+                    expectedDepositorName
+            );
 
             // when
             transactionService.createTransaction(transactionLog);
@@ -134,19 +140,19 @@ public class TransactionServiceTest extends IntegrationTest {
         @Test
         void 올바른_추가입금() {
             // given
-            String transactionLog1 = String.format("""
-                    [입금] %s원 %s
-                    982-******-01-017
-                    01/09 12:25 / 잔액 1000000원
-                    """, CLUB_DUES.subtract(BigDecimal.ONE), expectedDepositorName);
+            String transactionLog1 = String.format(
+                    TRANSACTION_LOG_FORMAT,
+                    CLUB_DUES.subtract(BigDecimal.ONE),
+                    expectedDepositorName
+            );
             transactionService.createTransaction(transactionLog1);
 
             // when
-            String transactionLog2 = String.format("""
-                    [입금] %s원 %s
-                    982-******-01-017
-                    01/09 12:25 / 잔액 1000000원
-                    """, BigDecimal.ONE, expectedDepositorName);
+            String transactionLog2 = String.format(
+                    TRANSACTION_LOG_FORMAT,
+                    BigDecimal.ONE,
+                    expectedDepositorName
+            );
             transactionService.createTransaction(transactionLog2);
 
             // then
@@ -157,19 +163,15 @@ public class TransactionServiceTest extends IntegrationTest {
         @Test
         void 초과된_추가입금() {
             // given
-            String transactionLog1 = String.format("""
-                    [입금] %s원 %s
-                    982-******-01-017
-                    01/09 12:25 / 잔액 1000000원
-                    """, CLUB_DUES.subtract(BigDecimal.ONE), expectedDepositorName);
+            String transactionLog1 = String.format(
+                    TRANSACTION_LOG_FORMAT,
+                    CLUB_DUES.subtract(BigDecimal.ONE),
+                    expectedDepositorName
+            );
             transactionService.createTransaction(transactionLog1);
 
             // when
-            String transactionLog2 = String.format("""
-                    [입금] %s원 %s
-                    982-******-01-017
-                    01/09 12:25 / 잔액 1000000원
-                    """, BigDecimal.TWO, expectedDepositorName);
+            String transactionLog2 = String.format(TRANSACTION_LOG_FORMAT, BigDecimal.TWO, expectedDepositorName);
             transactionService.createTransaction(transactionLog2);
 
             // then
