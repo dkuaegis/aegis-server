@@ -5,7 +5,10 @@ import aegis.server.domain.member.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long> {
-    List<IssuedCoupon> findByMember(Member member);
+    List<IssuedCoupon> findAllByMember(Member member);
+
+    Optional<IssuedCoupon> findByIdAndMember(Long id, Member member);
 }

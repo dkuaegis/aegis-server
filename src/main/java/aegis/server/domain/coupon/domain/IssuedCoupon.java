@@ -1,6 +1,7 @@
 package aegis.server.domain.coupon.domain;
 
 import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.payment.domain.Payment;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import jakarta.persistence.*;
@@ -28,6 +29,9 @@ public class IssuedCoupon {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Payment payment;
+
     private Boolean isValid;
 
     private LocalDateTime usedAt;
@@ -36,14 +40,16 @@ public class IssuedCoupon {
         return IssuedCoupon.builder()
                 .coupon(coupon)
                 .member(member)
+                .payment(null)
                 .isValid(true)
                 .build();
     }
 
-    public void use() {
+    public void use(Payment payment) {
         if (!isValid) {
             throw new CustomException(ErrorCode.COUPON_ALREADY_USED);
         }
+        this.payment = payment;
         this.isValid = false;
         this.usedAt = LocalDateTime.now();
     }

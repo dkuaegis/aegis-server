@@ -32,6 +32,13 @@ public enum ErrorCode {
     COUPON_ALREADY_EXISTS(HttpStatus.CONFLICT),
     COUPON_ALREADY_USED(HttpStatus.CONFLICT),
 
+    ISSUED_COUPON_NOT_FOUND_FOR_MEMBER(HttpStatus.NOT_FOUND),
+
+    // Payment
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND),
+    PAYMENT_ALREADY_COMPLETED(HttpStatus.CONFLICT),
+    PAYMENT_ALREADY_OVER_PAID(HttpStatus.CONFLICT),
+
     ;
     private final HttpStatus httpStatus;
 }

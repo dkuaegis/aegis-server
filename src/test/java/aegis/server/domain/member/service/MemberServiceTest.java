@@ -45,8 +45,8 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 성공한다() {
             // given
-            Member member = createMember();
-            Student student = createStudent(member);
+            Member member = createInitialMember();
+            Student student = createInitialStudent(member);
             UserDetails userDetails = createUserDetails(member);
 
             // when
@@ -69,7 +69,7 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void member를_찾을_수_없다면_실패한다() {
             // given
-            Member member = createMember();
+            Member member = createInitialMember();
             UserDetails userDetails = createUserDetails(member);
             ReflectionTestUtils.setField(userDetails, "memberId", member.getId() + 1L);
 
@@ -83,7 +83,7 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void student를_찾을_수_없다면_실패한다() {
             // given
-            Member member = createMember();
+            Member member = createInitialMember();
             UserDetails userDetails = createUserDetails(member);
 
             // when-then

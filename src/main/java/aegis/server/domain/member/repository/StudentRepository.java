@@ -1,8 +1,8 @@
 package aegis.server.domain.member.repository;
 
+import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.domain.Student;
-import aegis.server.domain.member.domain.YearSemester;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

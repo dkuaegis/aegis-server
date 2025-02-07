@@ -1,10 +1,13 @@
 package aegis.server.global.constant;
 
-import aegis.server.domain.member.domain.YearSemester;
+import aegis.server.domain.common.domain.YearSemester;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class Constant {
+
+    public static final BigDecimal CLUB_DUES = BigDecimal.valueOf(10000);
 
     public static final YearSemester CURRENT_YEAR_SEMESTER = YearSemester.YEAR_SEMESTER_2025_1;
 

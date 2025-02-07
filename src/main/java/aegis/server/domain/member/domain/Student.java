@@ -1,6 +1,7 @@
 package aegis.server.domain.member.domain;
 
 import aegis.server.domain.common.domain.BaseEntity;
+import aegis.server.domain.common.domain.YearSemester;
 import jakarta.persistence.*;
 import lombok.*;
 

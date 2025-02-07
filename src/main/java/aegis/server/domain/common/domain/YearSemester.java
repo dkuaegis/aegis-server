@@ -1,4 +1,4 @@
-package aegis.server.domain.member.domain;
+package aegis.server.domain.common.domain;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
