@@ -63,13 +63,13 @@ public class IntegrationTest {
         return memberRepository.save(member);
     }
 
-    protected Student createIntialStudent(Member member) {
+    protected Student createInitialStudent(Member member) {
         Student student = Student.from(member);
         return studentRepository.save(student);
     }
 
     protected Student createStudent(Member member) {
-        Student student = createIntialStudent(member);
+        Student student = createInitialStudent(member);
         student.updateStudent(
                 "32000001",
                 Department.SW융합대학_컴퓨터공학과,

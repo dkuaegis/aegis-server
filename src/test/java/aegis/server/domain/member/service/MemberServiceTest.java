@@ -46,7 +46,7 @@ class MemberServiceTest extends IntegrationTest {
         void 성공한다() {
             // given
             Member member = createInitialMember();
-            Student student = createIntialStudent(member);
+            Student student = createInitialStudent(member);
             UserDetails userDetails = createUserDetails(member);
 
             // when
