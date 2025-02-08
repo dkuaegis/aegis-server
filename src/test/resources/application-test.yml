@@ -17,3 +17,9 @@ spring:
 
 exception:
   log-only-aegis-stack-trace: false
+
+discord:
+  token: test-discord-token
+  guild-id: test-guild-id
+  alarm-channel-id: test-alarm-channel-id
+  complete-role-id: test-complete-role-id

@@ -4,17 +4,23 @@ import aegis.server.domain.coupon.domain.Coupon;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
 import aegis.server.domain.coupon.repository.CouponRepository;
 import aegis.server.domain.coupon.repository.IssuedCouponRepository;
+import aegis.server.domain.discord.service.listener.DiscordEventListener;
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.member.repository.StudentRepository;
 import aegis.server.global.security.oidc.UserDetails;
+import net.dv8tion.jda.api.JDA;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -22,6 +28,9 @@ public class IntegrationTest {
 
     @Autowired
     DatabaseCleaner databaseCleaner;
+
+    @Autowired
+    RedisCleaner redisCleaner;
 
     @Autowired
     MemberRepository memberRepository;
@@ -35,9 +44,20 @@ public class IntegrationTest {
     @Autowired
     IssuedCouponRepository issuedCouponRepository;
 
+    @MockitoBean
+    JDA jda;
+
+    @MockitoBean
+    DiscordEventListener discordEventListener;
+
     @BeforeEach
     void setUp() {
         databaseCleaner.clean();
+        redisCleaner.clean();
+
+        doNothing().when(discordEventListener).handlePaymentCompletedEvent(any());
+        doNothing().when(discordEventListener).handleOverpaidEvent(any());
+        doNothing().when(discordEventListener).handleMissingDepositorNameEvent(any());
     }
 
     protected Member createInitialMember() {
