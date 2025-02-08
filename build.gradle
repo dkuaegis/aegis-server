@@ -37,6 +37,7 @@ dependencies {
 
     implementation 'net.dv8tion:JDA:5.3.0'
 
+    testImplementation 'com.github.fppt:jedis-mock:1.1.8'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
