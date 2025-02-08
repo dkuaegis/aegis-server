@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.NoSuchElementException;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
@@ -45,9 +46,10 @@ public class DiscordService {
     @Transactional
     public void verifyAndUpdateDiscordId(String verificationCode, String discordId) {
         DiscordVerification discordVerification = discordVerificationRepository.findById(verificationCode)
-                .orElseThrow(); // 메서드가 try-catch문 안에서 호출되므로 여기서 CustomException을 발생시키지 않는다
+                .orElseThrow(NoSuchElementException::new); // 메서드가 try-catch문 안에서 호출되므로 여기서 CustomException을 발생시키지 않는다
 
-        Member member = memberRepository.findById(discordVerification.getMemberId()).orElseThrow();
+        Member member = memberRepository.findById(discordVerification.getMemberId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         member.updateDiscordId(discordId);
 

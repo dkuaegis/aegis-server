@@ -6,10 +6,13 @@ import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.NoSuchElementException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DiscordServiceTest extends IntegrationTest {
 
@@ -36,7 +39,7 @@ public class DiscordServiceTest extends IntegrationTest {
     }
 
     @Test
-    void 디스코드_ID_인증() {
+    void 디스코드_연동_성공() {
         // given
         Member member = createMember();
         UserDetails userDetails = createUserDetails(member);
@@ -50,5 +53,54 @@ public class DiscordServiceTest extends IntegrationTest {
         // then
         assertEquals(0, discordVerificationRepository.count());
         assertEquals(discordId, memberRepository.findById(member.getId()).get().getDiscordId());
+    }
+
+    @Nested
+    class 디스코드_연동_실패 {
+
+        @Test
+        void 잘못된_인증_코드() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            discordService.createVerificationCode(userDetails);
+
+            // when-then
+            assertThrows(NoSuchElementException.class,
+                    () -> discordService.verifyAndUpdateDiscordId("WRONG_CODE", "1234"));
+            assertEquals(1, discordVerificationRepository.count());
+            assertNull(memberRepository.findById(member.getId()).get().getDiscordId());
+        }
+
+        @Test
+        void 만료된_인증_코드() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            DiscordVerificationCodeResponse response = discordService.createVerificationCode(userDetails);
+
+            // when
+            discordVerificationRepository.deleteById(response.getCode());
+
+            // then
+            assertThrows(NoSuchElementException.class,
+                    () -> discordService.verifyAndUpdateDiscordId(response.getCode(), "1234"));
+            assertNull(memberRepository.findById(member.getId()).get().getDiscordId());
+        }
+
+        @Test
+        void 이미_사용된_인증_코드() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            DiscordVerificationCodeResponse response = discordService.createVerificationCode(userDetails);
+            discordService.verifyAndUpdateDiscordId(response.getCode(), "1234");
+
+            // when-then
+            assertThrows(NoSuchElementException.class,
+                    () -> discordService.verifyAndUpdateDiscordId(response.getCode(), "1234"));
+            assertEquals(0, discordVerificationRepository.count());
+            assertEquals("1234", memberRepository.findById(member.getId()).get().getDiscordId());
+        }
     }
 }
