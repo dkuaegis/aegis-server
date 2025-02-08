@@ -59,10 +59,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                     .append(element.getLineNumber())
                     .append(")");
         }
-        log.error(sb.toString());
+
+        // 예외 타입에 따라 로깅 레벨을 다르게 설정
+        // WARN:  500 미만의 HTTP 상태 코드를 가지는 CustomException과 DataIntegrityViolationException
+        // ERROR: 500 이상의 HTTP 상태 코드를 가지는 CustomException과 일반 Exception
+        if (e instanceof CustomException customException) {
+            if (customException.getErrorCode().getHttpStatus().value() >= 500) {
+                log.error(sb.toString());
+            } else {
+                log.warn(sb.toString());
+            }
+        } else if (e instanceof DataIntegrityViolationException) {
+            log.warn(sb.toString());
+        } else {
+            log.error(sb.toString());
+        }
     }
-
-
+    
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
         logFilteredException(e, "CustomException");
