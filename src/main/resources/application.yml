@@ -30,3 +30,9 @@ payment:
 
 time:
   zone: Asia/Seoul
+
+discord:
+  token: ${DISCORD_BOT_TOKEN}
+  guild-id: ${DISCORD_GUILD_ID}
+  alarm-channel-id: ${DISCORD_ALARM_CHANNEL_ID}
+  complete-role-id: ${DISCORD_COMPLETE_ROLE_ID}

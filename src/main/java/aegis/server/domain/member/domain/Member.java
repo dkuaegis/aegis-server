@@ -19,6 +19,9 @@ public class Member extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String oidcId;
 
+    @Column(unique = true)
+    private String discordId;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -52,5 +55,9 @@ public class Member extends BaseEntity {
         this.gender = gender;
         this.birthdate = birthdate;
         this.phoneNumber = phoneNumber;
+    }
+
+    public void updateDiscordId(String discordId) {
+        this.discordId = discordId;
     }
 }
