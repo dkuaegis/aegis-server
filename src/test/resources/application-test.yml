@@ -18,6 +18,9 @@ spring:
 exception:
   log-only-aegis-stack-trace: false
 
+internal-api-key:
+  tx-track-api: test-api-key
+
 discord:
   token: test-discord-token
   guild-id: test-guild-id

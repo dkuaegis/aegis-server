@@ -49,6 +49,7 @@ public class SecurityConfig {
         );
 
         http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/internal/transaction").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
         );
