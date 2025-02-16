@@ -18,6 +18,9 @@ spring:
 exception:
   log-only-aegis-stack-trace: false
 
+email-restriction:
+  enabled: true
+
 internal-api-key:
   tx-track-api: test-api-key
 

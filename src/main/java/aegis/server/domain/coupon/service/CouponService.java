@@ -14,6 +14,7 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,13 +48,20 @@ public class CouponService {
 
     @Transactional
     public void deleteCoupon(Long couponId) {
-        couponRepository.findById(couponId)
-                .ifPresentOrElse(
-                        couponRepository::delete,
-                        () -> {
-                            throw new CustomException(ErrorCode.COUPON_NOT_FOUND);
-                        }
-                );
+        try {
+            couponRepository.findById(couponId)
+                    .ifPresentOrElse(
+                            coupon -> {
+                                couponRepository.delete(coupon);
+                                couponRepository.flush();
+                            },
+                            () -> {
+                                throw new CustomException(ErrorCode.COUPON_NOT_FOUND);
+                            }
+                    );
+        } catch (DataIntegrityViolationException e) {
+            throw new CustomException(ErrorCode.COUPON_ISSUED_COUPON_EXISTS);
+        }
     }
 
     public List<IssuedCouponResponse> findAllIssuedCoupons() {
