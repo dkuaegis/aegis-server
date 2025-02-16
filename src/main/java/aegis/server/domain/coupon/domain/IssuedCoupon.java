@@ -1,5 +1,6 @@
 package aegis.server.domain.coupon.domain;
 
+import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.global.exception.CustomException;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IssuedCoupon {
+public class IssuedCoupon extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

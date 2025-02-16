@@ -1,7 +1,6 @@
 package aegis.server.global.config;
 
 import aegis.server.domain.timetable.dto.external.EverytimeResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import org.springframework.context.annotation.Bean;
@@ -19,11 +18,6 @@ public class TimetableConfig {
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
-    }
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
     }
 
     @Bean

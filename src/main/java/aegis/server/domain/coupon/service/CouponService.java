@@ -45,6 +45,17 @@ public class CouponService {
         couponRepository.save(coupon);
     }
 
+    @Transactional
+    public void deleteCoupon(Long couponId) {
+        couponRepository.findById(couponId)
+                .ifPresentOrElse(
+                        couponRepository::delete,
+                        () -> {
+                            throw new CustomException(ErrorCode.COUPON_NOT_FOUND);
+                        }
+                );
+    }
+
     public List<IssuedCouponResponse> findAllIssuedCoupons() {
         return issuedCouponRepository.findAll().stream()
                 .map(IssuedCouponResponse::from)
@@ -73,5 +84,16 @@ public class CouponService {
                 .toList();
 
         issuedCouponRepository.saveAll(issuedCoupons);
+    }
+
+    @Transactional
+    public void deleteIssuedCoupon(Long issuedCouponId) {
+        issuedCouponRepository.findById(issuedCouponId)
+                .ifPresentOrElse(
+                        issuedCouponRepository::delete,
+                        () -> {
+                            throw new CustomException(ErrorCode.ISSUED_COUPON_NOT_FOUND);
+                        }
+                );
     }
 }

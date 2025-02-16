@@ -7,6 +7,7 @@ import aegis.server.domain.member.repository.StudentRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -20,6 +21,9 @@ public class CustomOidcUserService extends OidcUserService {
 
     private final MemberRepository memberRepository;
     private final StudentRepository studentRepository;
+
+    @Value("${email-restriction.enabled}")
+    private boolean emailRestrictionEnabled;
 
     @Override
     @Transactional
@@ -37,9 +41,12 @@ public class CustomOidcUserService extends OidcUserService {
         String email = oidcUser.getEmail();
         String name = oidcUser.getFullName();
 
-        if (email == null || !email.endsWith("@dankook.ac.kr")) {
+        if (email == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
+        } else if (emailRestrictionEnabled && !email.endsWith("@dankook.ac.kr")) {
+            throw new CustomException(ErrorCode.NOT_DKU_EMAIL);
         }
+
 
         return memberRepository.findByOidcId(oidcId).orElseGet(
                 () -> memberRepository.save(Member.create(oidcId, email, name))

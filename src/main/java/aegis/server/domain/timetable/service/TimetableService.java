@@ -43,7 +43,6 @@ public class TimetableService {
     private final HttpHeaders timetableHttpHeaders;
 
     private final JAXBContext jaxbContext;
-    private final ObjectMapper objectMapper;
 
     private final PasswordEncoder bcryptEncoder;
 
@@ -91,6 +90,7 @@ public class TimetableService {
 
     private String convertTimetableToJson(Map<String, List<LectureInfo>> timetable) {
         try {
+            ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.writeValueAsString(timetable);
         } catch (Exception e) {
             throw new CustomException(ErrorCode.TIMETABLE_PARSE_JSON_FAILED);

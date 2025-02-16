@@ -20,7 +20,10 @@ spring:
     timeout: ${SESSION_TIMEOUT}
 
 exception:
-  log-only-aegis-stack-trace: true
+  log-only-aegis-stack-trace: ${LOG_ONLY_AEGIS_STACK_TRACE}
+
+email-restriction:
+  enabled: ${EMAIL_RESTRICTION_ENABLED}
 
 server:
   forward-headers-strategy: framework

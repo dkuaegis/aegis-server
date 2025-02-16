@@ -17,6 +17,8 @@ public enum ErrorCode {
 
     ALREADY_EXISTS(HttpStatus.CONFLICT),
 
+    NOT_DKU_EMAIL(HttpStatus.BAD_REQUEST),
+
     // Member & Student
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND),
     STUDENT_NOT_FOUND(HttpStatus.NOT_FOUND),
@@ -47,7 +49,9 @@ public enum ErrorCode {
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND),
     COUPON_ALREADY_EXISTS(HttpStatus.CONFLICT),
     COUPON_ALREADY_USED(HttpStatus.CONFLICT),
+    COUPON_ISSUED_COUPON_EXISTS(HttpStatus.CONFLICT), // 발급된 쿠폰이 존재하는 경우 발급된 쿠폰을 모두 지워야 삭제 가능
 
+    ISSUED_COUPON_NOT_FOUND(HttpStatus.NOT_FOUND),
     ISSUED_COUPON_NOT_FOUND_FOR_MEMBER(HttpStatus.NOT_FOUND),
 
     // Payment
