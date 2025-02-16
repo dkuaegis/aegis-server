@@ -13,6 +13,11 @@ public class Constant {
 
     public static final String PROD_CLIENT_JOIN_URL = "https://join.dk-aegis.org";
 
+    public static final String DEV_CLIENT_JOIN_URL = "https://dev-join.dk-aegis.org";
+    public static final String DEV_1_CLIENT_JOIN_URL = "https://dev-1-join.dk-aegis.org";
+    public static final String DEV_2_CLIENT_JOIN_URL = "https://dev-2-join.dk-aegis.org";
+    public static final String DEV_3_CLIENT_JOIN_URL = "https://dev-3-join.dk-aegis.org";
+
     public static final String LOCAL_VITE_BUILD_CLIENT_URL = "http://localhost:4173";
     public static final String LOCAL_VITE_CLIENT_URL = "http://localhost:5173";
 
@@ -22,6 +27,10 @@ public class Constant {
 
     public static final List<String> ALLOWED_CLIENT_URLS = List.of(
             PROD_CLIENT_JOIN_URL,
+            DEV_CLIENT_JOIN_URL,
+            DEV_1_CLIENT_JOIN_URL,
+            DEV_2_CLIENT_JOIN_URL,
+            DEV_3_CLIENT_JOIN_URL,
             LOCAL_VITE_BUILD_CLIENT_URL,
             LOCAL_VITE_CLIENT_URL,
             CF_TUNNEL_4173_URL,
