@@ -34,6 +34,12 @@ public class AdminCouponController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCoupon(@PathVariable Long id) {
+        couponService.deleteCoupon(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     @GetMapping("/issued")
     public ResponseEntity<List<IssuedCouponResponse>> getAllIssuedCoupons() {
         List<IssuedCouponResponse> response = couponService.findAllIssuedCoupons();
@@ -46,5 +52,11 @@ public class AdminCouponController {
     ) {
         couponService.createIssuedCoupon(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @DeleteMapping("/issued/{id}")
+    public ResponseEntity<Void> deleteIssuedCoupon(@PathVariable Long id) {
+        couponService.deleteIssuedCoupon(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

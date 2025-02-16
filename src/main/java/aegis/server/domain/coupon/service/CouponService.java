@@ -14,6 +14,7 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +46,24 @@ public class CouponService {
         couponRepository.save(coupon);
     }
 
+    @Transactional
+    public void deleteCoupon(Long couponId) {
+        try {
+            couponRepository.findById(couponId)
+                    .ifPresentOrElse(
+                            coupon -> {
+                                couponRepository.delete(coupon);
+                                couponRepository.flush();
+                            },
+                            () -> {
+                                throw new CustomException(ErrorCode.COUPON_NOT_FOUND);
+                            }
+                    );
+        } catch (DataIntegrityViolationException e) {
+            throw new CustomException(ErrorCode.COUPON_ISSUED_COUPON_EXISTS);
+        }
+    }
+
     public List<IssuedCouponResponse> findAllIssuedCoupons() {
         return issuedCouponRepository.findAll().stream()
                 .map(IssuedCouponResponse::from)
@@ -73,5 +92,16 @@ public class CouponService {
                 .toList();
 
         issuedCouponRepository.saveAll(issuedCoupons);
+    }
+
+    @Transactional
+    public void deleteIssuedCoupon(Long issuedCouponId) {
+        issuedCouponRepository.findById(issuedCouponId)
+                .ifPresentOrElse(
+                        issuedCouponRepository::delete,
+                        () -> {
+                            throw new CustomException(ErrorCode.ISSUED_COUPON_NOT_FOUND);
+                        }
+                );
     }
 }
