@@ -21,7 +21,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 import static aegis.server.global.constant.Constant.ALLOWED_CLIENT_URLS;
-import static aegis.server.global.constant.Constant.PROD_CLIENT_JOIN_URL;
 
 @Configuration
 @EnableWebSecurity
@@ -44,12 +43,12 @@ public class SecurityConfig {
         http.exceptionHandling(exceptionHandling -> exceptionHandling
                 .authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                    response.sendRedirect(PROD_CLIENT_JOIN_URL);
                 })
         );
 
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/internal/transaction").permitAll()
+                .requestMatchers("/test/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
         );
@@ -66,7 +65,6 @@ public class SecurityConfig {
                 .successHandler(customSuccessHandler)
                 .failureHandler((request, response, authException) -> {
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                    response.sendRedirect(PROD_CLIENT_JOIN_URL);
                 })
         );
 

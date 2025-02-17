@@ -18,7 +18,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static aegis.server.global.constant.Constant.ALLOWED_CLIENT_URLS;
-import static aegis.server.global.constant.Constant.PROD_CLIENT_JOIN_URL;
 
 @Component
 public class RefererFilter extends OncePerRequestFilter {
@@ -37,7 +36,6 @@ public class RefererFilter extends OncePerRequestFilter {
                     session.setAttribute("redirectUri", referer);
                 } else {
                     response.setStatus(HttpStatus.BAD_REQUEST.value());
-                    response.sendRedirect(PROD_CLIENT_JOIN_URL);
                     return;
                 }
             }
