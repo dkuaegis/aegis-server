@@ -5,7 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
-public class CodeGenerator {
+public final class CodeGenerator {
 
     public static String generateCouponCode(int codeLength) {
         String uuid = UUID.randomUUID().toString();
