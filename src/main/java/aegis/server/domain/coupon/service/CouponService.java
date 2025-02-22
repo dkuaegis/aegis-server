@@ -126,11 +126,7 @@ public class CouponService {
         Coupon coupon = couponRepository.findById(request.couponId())
                 .orElseThrow(() -> new CustomException(ErrorCode.COUPON_NOT_FOUND));
 
-        String code;
-        do {
-            code = CodeGenerator.generateCouponCode(8);
-        } while (couponCodeRepository.existsByCode(code));
-
+        String code = generateUniqueCode();
         CouponCode couponCode = CouponCode.of(coupon, code);
 
         couponCodeRepository.save(couponCode);
@@ -159,5 +155,18 @@ public class CouponService {
                             throw new CustomException(ErrorCode.COUPON_CODE_NOT_FOUND);
                         }
                 );
+    }
+
+    private String generateUniqueCode() {
+        String code;
+        int maxAttempts = 100;
+        int attempts = 0;
+        do {
+            if (attempts++ >= maxAttempts) {
+                throw new CustomException(ErrorCode.COUPON_CODE_CANNOT_ISSUE_CODE);
+            }
+            code = CodeGenerator.generateCouponCode(8);
+        } while (couponCodeRepository.existsByCode(code));
+        return code;
     }
 }

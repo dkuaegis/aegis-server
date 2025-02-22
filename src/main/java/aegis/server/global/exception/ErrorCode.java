@@ -56,6 +56,7 @@ public enum ErrorCode {
 
     COUPON_CODE_NOT_FOUND(HttpStatus.NOT_FOUND),
     COUPON_CODE_ALREADY_USED(HttpStatus.CONFLICT),
+    COUPON_CODE_CANNOT_ISSUE_CODE(HttpStatus.INTERNAL_SERVER_ERROR),
 
     // Payment
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND),
