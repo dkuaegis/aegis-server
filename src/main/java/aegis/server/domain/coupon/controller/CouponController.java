@@ -5,6 +5,7 @@ import aegis.server.domain.coupon.dto.response.IssuedCouponResponse;
 import aegis.server.domain.coupon.service.CouponService;
 import aegis.server.global.security.annotation.LoginUser;
 import aegis.server.global.security.oidc.UserDetails;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class CouponController {
     @PostMapping("/code")
     public ResponseEntity<Void> codeCouponIssue(
             @LoginUser UserDetails userDetails,
-            @RequestBody CouponCodeUseRequest request
+            @Valid @RequestBody CouponCodeUseRequest request
     ) {
         couponService.useCouponCode(userDetails, request);
         return ResponseEntity.ok().build();
