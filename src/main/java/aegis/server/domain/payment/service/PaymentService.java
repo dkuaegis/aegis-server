@@ -7,6 +7,8 @@ import aegis.server.domain.member.domain.Student;
 import aegis.server.domain.member.repository.StudentRepository;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
+import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
+import aegis.server.domain.payment.dto.internal.PaymentInfo;
 import aegis.server.domain.payment.dto.request.PaymentRequest;
 import aegis.server.domain.payment.dto.response.PaymentStatusResponse;
 import aegis.server.domain.payment.repository.PaymentRepository;
@@ -15,6 +17,7 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +34,7 @@ public class PaymentService {
     private final TransactionRepository transactionRepository;
     private final IssuedCouponRepository issuedCouponRepository;
     private final StudentRepository studentRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public PaymentStatusResponse checkPaymentStatus(UserDetails userDetails) {
         Student student = studentRepository.findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
@@ -54,6 +58,11 @@ public class PaymentService {
 
         validatePaymentStatus(payment);
         applyCouponsIfPresent(payment, request.getIssuedCouponIds());
+
+        if (payment.getFinalPrice().equals(BigDecimal.ZERO)) {
+            payment.updateStatus(PaymentStatus.COMPLETED);
+            applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
+        }
     }
 
     private Payment createNewPayment(Student student) {

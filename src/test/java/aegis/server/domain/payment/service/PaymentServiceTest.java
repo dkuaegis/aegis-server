@@ -2,6 +2,7 @@ package aegis.server.domain.payment.service;
 
 import aegis.server.domain.coupon.domain.Coupon;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
+import aegis.server.domain.coupon.repository.CouponRepository;
 import aegis.server.domain.coupon.repository.IssuedCouponRepository;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.domain.Student;
@@ -37,6 +38,9 @@ public class PaymentServiceTest extends IntegrationTest {
 
     @Autowired
     IssuedCouponRepository issuedCouponRepository;
+
+    @Autowired
+    CouponRepository couponRepository;
 
     private Member member;
     private Student student;
@@ -81,6 +85,23 @@ public class PaymentServiceTest extends IntegrationTest {
             Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student).get();
             BigDecimal discountedPrice = CLUB_DUES.subtract(coupon.getDiscountAmount());
             assertEquals(discountedPrice, payment.getFinalPrice());
+        }
+
+        @Test
+        void 결제_금액이_0원일_시_즉시_완료한다() {
+            // given
+            Coupon coupon = Coupon.create("전액 쿠폰", CLUB_DUES);
+            couponRepository.save(coupon);
+            createIssuedCoupon(member, coupon);
+            PaymentRequest request = new PaymentRequest(List.of(1L));
+
+            // when
+            paymentService.createOrUpdatePendingPayment(request, userDetails);
+
+            // then
+            Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student).get();
+            System.out.println(payment.getFinalPrice());
+            assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
         }
 
         @Test
