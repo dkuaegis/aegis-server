@@ -1,13 +1,19 @@
 package aegis.server.domain.coupon.service;
 
 import aegis.server.domain.coupon.domain.Coupon;
+import aegis.server.domain.coupon.domain.CouponCode;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
+import aegis.server.domain.coupon.dto.request.CouponCodeCreateRequest;
+import aegis.server.domain.coupon.dto.request.CouponCodeUseRequest;
 import aegis.server.domain.coupon.dto.request.CouponCreateRequest;
 import aegis.server.domain.coupon.dto.request.CouponIssueRequest;
+import aegis.server.domain.coupon.repository.CouponCodeRepository;
 import aegis.server.domain.coupon.repository.CouponRepository;
 import aegis.server.domain.coupon.repository.IssuedCouponRepository;
+import aegis.server.domain.member.domain.Member;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
+import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -28,6 +34,9 @@ class CouponServiceTest extends IntegrationTest {
 
     @Autowired
     IssuedCouponRepository issuedCouponRepository;
+
+    @Autowired
+    CouponCodeRepository couponCodeRepository;
 
     private static final String COUPON_NAME = "쿠폰명";
 
@@ -202,6 +211,76 @@ class CouponServiceTest extends IntegrationTest {
             CustomException exception = assertThrows(CustomException.class,
                     () -> couponService.deleteIssuedCoupon(999L));
             assertEquals(ErrorCode.ISSUED_COUPON_NOT_FOUND, exception.getErrorCode());
+        }
+    }
+
+    @Test
+    void 쿠폰코드_발급에_성공한다() {
+        // given
+        createMember();
+        CouponCreateRequest couponRequest = new CouponCreateRequest("쿠폰코드발급테스트", BigDecimal.valueOf(5000));
+        couponService.createCoupon(couponRequest);
+
+        CouponCodeCreateRequest codeCreateRequest = new CouponCodeCreateRequest(1L);
+
+        // when
+        couponService.createCouponCode(codeCreateRequest);
+
+        // then
+        CouponCode couponCode = couponCodeRepository.findById(1L).get();
+        assertEquals(1L, couponCode.getCoupon().getId());
+    }
+
+    @Nested
+    class 쿠폰코드_사용 {
+        @Test
+        void 성공한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            create5000DiscountCoupon();
+
+            CouponCodeCreateRequest codeCreateRequest = new CouponCodeCreateRequest(1L);
+            couponService.createCouponCode(codeCreateRequest);
+            CouponCode couponCode = couponCodeRepository.findById(1L).get();
+
+            // when
+            couponService.useCouponCode(userDetails, new CouponCodeUseRequest(couponCode.getCode()));
+
+            // then
+            CouponCode updatedCouponCode = couponCodeRepository.findById(1L).get();
+            assertEquals(false, updatedCouponCode.getIsValid());
+            assertNotNull(updatedCouponCode.getIssuedCoupon());
+        }
+
+        @Test
+        void 존재하지_않는_쿠폰코드이면_실패한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+
+            // when-then
+            CustomException exception = assertThrows(CustomException.class,
+                    () -> couponService.useCouponCode(userDetails, new CouponCodeUseRequest("존재하지않는쿠폰코드")));
+            assertEquals(ErrorCode.COUPON_CODE_NOT_FOUND, exception.getErrorCode());
+        }
+
+        @Test
+        void 이미_사용된_쿠폰코드이면_실패한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            create5000DiscountCoupon();
+
+            CouponCodeCreateRequest codeCreateRequest = new CouponCodeCreateRequest(1L);
+            couponService.createCouponCode(codeCreateRequest);
+            CouponCode couponCode = couponCodeRepository.findById(1L).get();
+
+            couponService.useCouponCode(userDetails, new CouponCodeUseRequest(couponCode.getCode()));
+
+            // when-then
+            CustomException exception = assertThrows(CustomException.class,
+                    () -> couponService.useCouponCode(userDetails, new CouponCodeUseRequest(couponCode.getCode())));
         }
     }
 }

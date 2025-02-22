@@ -1,7 +1,9 @@
 package aegis.server.domain.coupon.controller;
 
+import aegis.server.domain.coupon.dto.request.CouponCodeCreateRequest;
 import aegis.server.domain.coupon.dto.request.CouponCreateRequest;
 import aegis.server.domain.coupon.dto.request.CouponIssueRequest;
+import aegis.server.domain.coupon.dto.response.CouponCodeResponse;
 import aegis.server.domain.coupon.dto.response.CouponResponse;
 import aegis.server.domain.coupon.dto.response.IssuedCouponResponse;
 import aegis.server.domain.coupon.service.CouponService;
@@ -40,6 +42,8 @@ public class AdminCouponController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    // - - -
+
     @GetMapping("/issued")
     public ResponseEntity<List<IssuedCouponResponse>> getAllIssuedCoupons() {
         List<IssuedCouponResponse> response = couponService.findAllIssuedCoupons();
@@ -57,6 +61,28 @@ public class AdminCouponController {
     @DeleteMapping("/issued/{id}")
     public ResponseEntity<Void> deleteIssuedCoupon(@PathVariable Long id) {
         couponService.deleteIssuedCoupon(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    // - - -
+
+    @GetMapping("/code")
+    public ResponseEntity<List<CouponCodeResponse>> getAllCodeCoupons() {
+        List<CouponCodeResponse> response = couponService.findAllCouponCode();
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PostMapping("/code")
+    public ResponseEntity<Void> createCodeCoupon(
+            @Valid @RequestBody CouponCodeCreateRequest request
+    ) {
+        couponService.createCouponCode(request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @DeleteMapping("/code/{id}")
+    public ResponseEntity<Void> deleteCodeCoupon(@PathVariable Long id) {
+        couponService.deleteCodeCoupon(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
