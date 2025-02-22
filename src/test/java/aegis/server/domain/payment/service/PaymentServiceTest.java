@@ -70,7 +70,7 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void 쿠폰_적용_시_할인된_가격이_적용된다() {
             // given
-            Coupon coupon = createCoupon();
+            Coupon coupon = create5000DiscountCoupon();
             IssuedCoupon issuedCoupon = createIssuedCoupon(member, coupon);
             PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
 
@@ -86,7 +86,7 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void 쿠폰_적용_시_사용_처리_된다() {
             // given
-            Coupon coupon = createCoupon();
+            Coupon coupon = create5000DiscountCoupon();
             IssuedCoupon issuedCoupon = createIssuedCoupon(member, coupon);
             PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
 
@@ -101,7 +101,7 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void 본인에게_발급되지_않은_쿠폰_사용_시_실패한다() {
             // given
-            Coupon coupon = createCoupon();
+            Coupon coupon = create5000DiscountCoupon();
             Member anotherMember = createMember();
             IssuedCoupon issuedCoupon = createIssuedCoupon(anotherMember, coupon);
             PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
@@ -115,14 +115,14 @@ public class PaymentServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 중복된_결제정보_생성_시_기존_정보를_덮어씌운다() {
+        void 중복된_결제정보_생성_시_기존_정보를_덮어씌운다_1() {
             // given
             PaymentRequest oldRequest = new PaymentRequest(List.of());
 
             paymentService.createOrUpdatePendingPayment(oldRequest, userDetails);
 
             // when
-            Coupon coupon = createCoupon();
+            Coupon coupon = create5000DiscountCoupon();
             createIssuedCoupon(member, coupon);
             PaymentRequest newRequest = new PaymentRequest(List.of(1L));
             paymentService.createOrUpdatePendingPayment(newRequest, userDetails);
@@ -131,6 +131,25 @@ public class PaymentServiceTest extends IntegrationTest {
             // then
             assertEquals(PaymentStatus.PENDING, secondPayment.getStatus());
             assertEquals(CLUB_DUES.subtract(coupon.getDiscountAmount()), secondPayment.getFinalPrice());
+        }
+
+        @Test
+        void 중복된_결제정보_생성_시_기존_정보를_덮어씌운다_2() {
+            // given
+            Coupon coupon = create5000DiscountCoupon();
+            createIssuedCoupon(member, coupon);
+            PaymentRequest oldRequest = new PaymentRequest(List.of(1L));
+
+            paymentService.createOrUpdatePendingPayment(oldRequest, userDetails);
+
+            // when
+            PaymentRequest newRequest = new PaymentRequest(List.of());
+            paymentService.createOrUpdatePendingPayment(newRequest, userDetails);
+            Payment secondPayment = paymentRepository.findById(1L).get();
+
+            // then
+            assertEquals(PaymentStatus.PENDING, secondPayment.getStatus());
+            assertEquals(CLUB_DUES, secondPayment.getFinalPrice());
         }
 
         @Test

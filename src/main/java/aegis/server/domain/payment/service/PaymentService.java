@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -71,15 +71,11 @@ public class PaymentService {
     }
 
     private void applyCouponsIfPresent(Payment payment, List<Long> issuedCouponIds) {
-        if (!issuedCouponIds.isEmpty()) {
-            Member member = payment.getStudent().getMember();
-            List<IssuedCoupon> validIssuedCoupons = new ArrayList<>();
-            for (Long issuedCouponId : issuedCouponIds) {
-                IssuedCoupon issuedCoupon = issuedCouponRepository.findByIdAndMember(issuedCouponId, member)
-                        .orElseThrow(() -> new CustomException(ErrorCode.ISSUED_COUPON_NOT_FOUND_FOR_MEMBER));
-                validIssuedCoupons.add(issuedCoupon);
-            }
-            payment.applyCoupons(validIssuedCoupons);
-        }
+        Member member = payment.getStudent().getMember();
+        List<IssuedCoupon> validIssuedCoupons = issuedCouponIds.stream()
+                .map(issuedCouponId -> issuedCouponRepository.findByIdAndMember(issuedCouponId, member)
+                        .orElseThrow(() -> new CustomException(ErrorCode.ISSUED_COUPON_NOT_FOUND_FOR_MEMBER)))
+                .collect(Collectors.toList());
+        payment.applyCoupons(validIssuedCoupons);
     }
 }
