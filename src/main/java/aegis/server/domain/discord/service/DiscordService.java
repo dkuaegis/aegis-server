@@ -79,7 +79,7 @@ public class DiscordService {
         );
     }
 
-    public String generateUniqueCode() {
+    private String generateUniqueCode() {
         String code;
         int maxAttempts = 100;
         int attempts = 0;
