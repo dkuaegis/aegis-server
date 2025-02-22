@@ -105,7 +105,7 @@ public class IntegrationTest {
         return UserDetails.from(member);
     }
 
-    protected Coupon createCoupon() {
+    protected Coupon create5000DiscountCoupon() {
         Coupon coupon = Coupon.create("테스트쿠폰", BigDecimal.valueOf(5000L));
         couponRepository.save(coupon);
         ReflectionTestUtils.setField(coupon, "couponName", "테스트쿠폰" + coupon.getId());
