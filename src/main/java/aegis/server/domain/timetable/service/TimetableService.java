@@ -35,18 +35,27 @@ public class TimetableService {
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
         String identifier = extractIdentifier(request.url());
 
-        // 식별자 중복 검사
-        if (timetableRepository.existsByIdentifierAndYearSemester(identifier, CURRENT_YEAR_SEMESTER)) {
-            throw new CustomException(ErrorCode.TIMETABLE_IDENTIFIER_ALREADY_EXISTS);
-        }
-
         // 크롤러를 통해 시간표 데이터 가져오기 및 변환
         EverytimeResponse response = timetableCrawlerService.fetchAndParseTimetable(identifier);
         timetableCrawlerService.validateResponse(response);
         Map<String, List<LectureInfo>> timetable = timetableCrawlerService.convertToTimetable(response);
         String timetableJsonString = timetableCrawlerService.convertTimetableToJson(timetable);
 
-        // 기존 시간표 업데이트 또는 신규 생성
+        // 식별자 중복 체크: 동일 학기 내에 동일 식별자가 존재하는지 확인
+        Optional<Timetable> timetableByIdentifier = timetableRepository.findByIdentifierAndYearSemester(identifier, CURRENT_YEAR_SEMESTER);
+        if (timetableByIdentifier.isPresent()) {
+            Timetable existingByIdentifier = timetableByIdentifier.get();
+            // 식별자가 다른 회원의 것이라면 오류 발생
+            if (!existingByIdentifier.getMember().equals(member)) {
+                throw new CustomException(ErrorCode.TIMETABLE_IDENTIFIER_ALREADY_EXISTS);
+            }
+            // 동일 회원의 시간표인 경우 업데이트
+            existingByIdentifier.updateIdentifier(identifier);
+            existingByIdentifier.updateJsonData(timetableJsonString);
+            return timetable;
+        }
+
+        // 식별자가 존재하지 않을 경우, 현재 회원의 기존 시간표가 있는지 확인
         Optional<Timetable> optionalTimetable = timetableRepository.findByMemberAndYearSemester(member, CURRENT_YEAR_SEMESTER);
         if (optionalTimetable.isPresent()) {
             Timetable existingTimetable = optionalTimetable.get();
