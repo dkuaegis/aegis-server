@@ -47,10 +47,19 @@ public class CustomOidcUserService extends OidcUserService {
             throw new CustomException(ErrorCode.NOT_DKU_EMAIL);
         }
 
+        Member member = memberRepository.findByOidcId(oidcId).orElse(null);
+        if (member == null) {
+            memberRepository.save(Member.create(oidcId, email, name));
+        } else {
+            if (!member.getEmail().equals(email)) {
+                member.updateEmail(email);
+            }
+            if (!member.getName().equals(name)) {
+                member.updateName(name);
+            }
+        }
 
-        return memberRepository.findByOidcId(oidcId).orElseGet(
-                () -> memberRepository.save(Member.create(oidcId, email, name))
-        );
+        return member;
     }
 
     private void findOrCreateStudent(Member member) {
