@@ -66,7 +66,7 @@ class TimetableServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 기존_시간표_업데이트에_성공한다() {
+        void 식별자가_다른_시간표_업데이트에_성공한다() {
             // given
             Member member = createMember();
             memberRepository.save(member);
@@ -74,6 +74,32 @@ class TimetableServiceTest extends IntegrationTest {
             TimetableCreateRequest request = new TimetableCreateRequest(VALID_EVERYTIME_URL);
 
             Timetable existingTimetable = Timetable.create(member, "old_identifier", "old_json");
+            timetableRepository.save(existingTimetable);
+
+            Map<String, List<LectureInfo>> mockTimetable = createMockTimetable();
+            when(timetableCrawlerService.fetchAndParseTimetable(any())).thenReturn(new EverytimeResponse());
+            when(timetableCrawlerService.convertToTimetable(any())).thenReturn(mockTimetable);
+            when(timetableCrawlerService.convertTimetableToJson(any())).thenReturn("new_json");
+
+            // when
+            Map<String, List<LectureInfo>> result = timetableService.createOrUpdateTimetable(userDetails, request);
+
+            // then
+            Timetable updatedTimetable = timetableRepository.findById(existingTimetable.getId()).get();
+            assertEquals(VALID_IDENTIFIER, updatedTimetable.getIdentifier());
+            assertEquals("new_json", updatedTimetable.getJsonData());
+            assertEquals(mockTimetable, result);
+        }
+
+        @Test
+        void 식별자가_같은_시간표_업데이트에_성공한다() {
+            // given
+            Member member = createMember();
+            memberRepository.save(member);
+            UserDetails userDetails = createUserDetails(member);
+            TimetableCreateRequest request = new TimetableCreateRequest(VALID_EVERYTIME_URL);
+
+            Timetable existingTimetable = Timetable.create(member, VALID_IDENTIFIER, "old_json");
             timetableRepository.save(existingTimetable);
 
             Map<String, List<LectureInfo>> mockTimetable = createMockTimetable();
