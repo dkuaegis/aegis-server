@@ -49,7 +49,7 @@ public class CustomOidcUserService extends OidcUserService {
 
         Member member = memberRepository.findByOidcId(oidcId).orElse(null);
         if (member == null) {
-            memberRepository.save(Member.create(oidcId, email, name));
+            return memberRepository.save(Member.create(oidcId, email, name));
         } else {
             if (!member.getEmail().equals(email)) {
                 member.updateEmail(email);
