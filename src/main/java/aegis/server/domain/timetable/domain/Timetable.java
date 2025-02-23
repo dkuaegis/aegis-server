@@ -2,12 +2,18 @@ package aegis.server.domain.timetable.domain;
 
 import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.common.domain.YearSemester;
+import aegis.server.domain.member.domain.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
 @Entity
+@Table(
+        indexes = {
+                @Index(name = "idx_timetable_identifier_year_semester", columnList = "identifier, year_semester")
+        }
+)
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -19,9 +25,11 @@ public class Timetable extends BaseEntity {
     @Column(name = "timetable_id")
     private Long id;
 
-    private String hashedOidcId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
 
-    private String hashedIdentifier;
+    private String identifier;
 
     @Enumerated(EnumType.STRING)
     private YearSemester yearSemester;
@@ -29,17 +37,17 @@ public class Timetable extends BaseEntity {
     @Column(length = 5000)
     private String jsonData;
 
-    public static Timetable create(String hashedOidcId, String hashedIdentifier, String jsonData) {
+    public static Timetable create(Member member, String identifier, String jsonData) {
         return Timetable.builder()
-                .hashedOidcId(hashedOidcId)
-                .hashedIdentifier(hashedIdentifier)
+                .member(member)
+                .identifier(identifier)
                 .yearSemester(CURRENT_YEAR_SEMESTER)
                 .jsonData(jsonData)
                 .build();
     }
 
-    public void updateHashedIdentifier(String hashedIdentifier) {
-        this.hashedIdentifier = hashedIdentifier;
+    public void updateIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
     public void updateJsonData(String jsonData) {
