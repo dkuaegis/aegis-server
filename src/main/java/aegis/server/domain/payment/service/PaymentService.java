@@ -60,7 +60,7 @@ public class PaymentService {
         applyCouponsIfPresent(payment, request.getIssuedCouponIds());
 
         if (payment.getFinalPrice().equals(BigDecimal.ZERO)) {
-            payment.updateStatus(PaymentStatus.COMPLETED);
+            payment.confirmPayment(PaymentStatus.COMPLETED);
             applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
         }
     }
