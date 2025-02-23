@@ -45,11 +45,11 @@ public class PaymentEventListener {
         BigDecimal currentDepositAmount = transactionRepository.sumAmountByDepositorName(transactionInfo.depositorName());
 
         if (isCompleted(payment, currentDepositAmount)) {
-            payment.updateStatus(PaymentStatus.COMPLETED);
+            payment.confirmPayment(PaymentStatus.COMPLETED);
             logCompleted(payment);
             applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
         } else if (isOverpaid(payment, currentDepositAmount)) {
-            payment.updateStatus(PaymentStatus.OVERPAID);
+            payment.confirmPayment(PaymentStatus.OVERPAID);
             logOverpaid(transactionInfo, payment, currentDepositAmount);
             applicationEventPublisher.publishEvent(new OverpaidEvent(transactionInfo));
         }

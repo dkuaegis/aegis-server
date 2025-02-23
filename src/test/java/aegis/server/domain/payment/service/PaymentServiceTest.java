@@ -105,7 +105,8 @@ public class PaymentServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 쿠폰_적용_시_사용_처리_된다() {
+        @Transactional
+        void 쿠폰_적용_시_결제_정보에_저장된다() {
             // given
             Coupon coupon = create5000DiscountCoupon();
             IssuedCoupon issuedCoupon = createIssuedCoupon(member, coupon);
@@ -115,8 +116,8 @@ public class PaymentServiceTest extends IntegrationTest {
             paymentService.createOrUpdatePendingPayment(request, userDetails);
 
             // then
-            IssuedCoupon updatedIssuedCoupon = issuedCouponRepository.findById(issuedCoupon.getId()).get();
-            assertEquals(false, updatedIssuedCoupon.getIsValid());
+            Payment payment = paymentRepository.findById(1L).get();
+            assertEquals(1, payment.getUsedCoupons().size());
         }
 
         @Test

@@ -3,6 +3,8 @@ package aegis.server.domain.payment.domain;
 import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
 import aegis.server.domain.member.domain.Student;
+import aegis.server.global.exception.CustomException;
+import aegis.server.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -63,7 +65,8 @@ public class Payment {
     }
 
     public void applyCoupons(List<IssuedCoupon> issuedCoupons) {
-        issuedCoupons.forEach(issuedCoupon -> issuedCoupon.use(this));
+        this.usedCoupons.clear();
+        this.usedCoupons.addAll(issuedCoupons);
 
         BigDecimal totalDiscountAmount = calculateTotalDiscountAmount(issuedCoupons);
 
@@ -80,7 +83,11 @@ public class Payment {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public void updateStatus(PaymentStatus status) {
+    public void confirmPayment(PaymentStatus status) {
+        if (status.equals(PaymentStatus.PENDING)) {
+            throw new CustomException(ErrorCode.PAYMENT_CANNOT_BE_CONFIRMED);
+        }
         this.status = status;
+        this.usedCoupons.forEach(issuedCoupon -> issuedCoupon.use(this));
     }
 }
