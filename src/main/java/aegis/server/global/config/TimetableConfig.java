@@ -6,8 +6,6 @@ import jakarta.xml.bind.JAXBException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
@@ -41,10 +39,5 @@ public class TimetableConfig {
     @Bean
     public JAXBContext jaxbContext() throws JAXBException {
         return JAXBContext.newInstance(EverytimeResponse.class);
-    }
-
-    @Bean
-    public PasswordEncoder bcryptEncoder() {
-        return new BCryptPasswordEncoder(4);
     }
 }
