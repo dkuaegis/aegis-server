@@ -57,6 +57,14 @@ public class Member extends BaseEntity {
         this.phoneNumber = phoneNumber;
     }
 
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    public void updateEmail(String email) {
+        this.email = email;
+    }
+
     public void updateDiscordId(String discordId) {
         this.discordId = discordId;
     }
