@@ -21,9 +21,10 @@ server:
   servlet:
     session:
       cookie:
-        same-site: strict
+        same-site: lax
         secure: true
         domain: dkuaegis.org
+
 logging:
   level:
     org.springframework.security: DEBUG
