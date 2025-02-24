@@ -1,5 +1,6 @@
 package aegis.server.global.config;
 
+import aegis.server.global.security.oidc.CustomAuthenticationFailureHandler;
 import aegis.server.global.security.oidc.CustomOidcUserService;
 import aegis.server.global.security.oidc.CustomSuccessHandler;
 import aegis.server.global.security.oidc.RefererFilter;
@@ -29,6 +30,7 @@ public class SecurityConfig {
 
     private final CustomOidcUserService customOidcUserService;
     private final CustomSuccessHandler customSuccessHandler;
+    private final CustomAuthenticationFailureHandler authenticationFailureHandler;
     private final RefererFilter refererFilter;
 
     @Bean
@@ -49,6 +51,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/internal/transaction").permitAll()
                 .requestMatchers("/test/**").permitAll()
+                .requestMatchers("/auth/error/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
         );
@@ -63,9 +66,7 @@ public class SecurityConfig {
                 .userInfoEndpoint(userInfo ->
                         userInfo.oidcUserService(customOidcUserService))
                 .successHandler(customSuccessHandler)
-                .failureHandler((request, response, authException) -> {
-                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                })
+                .failureHandler(authenticationFailureHandler)
         );
 
         http.addFilterBefore(refererFilter, OAuth2AuthorizationRequestRedirectFilter.class);

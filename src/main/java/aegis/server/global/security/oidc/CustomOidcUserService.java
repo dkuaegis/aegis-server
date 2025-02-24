@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +45,7 @@ public class CustomOidcUserService extends OidcUserService {
         if (email == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         } else if (emailRestrictionEnabled && !email.endsWith("@dankook.ac.kr")) {
-            throw new CustomException(ErrorCode.NOT_DKU_EMAIL);
+            throw new OAuth2AuthenticationException(new OAuth2Error("NOT_DKU_EMAIL"));
         }
 
         Member member = memberRepository.findByOidcId(oidcId).orElse(null);
