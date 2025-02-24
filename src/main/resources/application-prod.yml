@@ -24,3 +24,6 @@ server:
         same-site: strict
         secure: true
         domain: dkuaegis.org
+logging:
+  level:
+    org.springframework.security: DEBUG
