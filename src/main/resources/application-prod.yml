@@ -21,7 +21,7 @@ server:
   servlet:
     session:
       cookie:
-        same-site: none
+        same-site: strict
         secure: true
 
 logging:
