@@ -11,12 +11,12 @@ public class Constant {
 
     public static final YearSemester CURRENT_YEAR_SEMESTER = YearSemester.YEAR_SEMESTER_2025_1;
 
-    public static final String PROD_CLIENT_JOIN_URL = "https://join.dk-aegis.org";
+    public static final String PROD_CLIENT_JOIN_URL = "https://join.dkuaegis.org";
 
-    public static final String DEV_CLIENT_JOIN_URL = "https://dev-join.dk-aegis.org";
-    public static final String DEV_1_CLIENT_JOIN_URL = "https://dev-1-join.dk-aegis.org";
-    public static final String DEV_2_CLIENT_JOIN_URL = "https://dev-2-join.dk-aegis.org";
-    public static final String DEV_3_CLIENT_JOIN_URL = "https://dev-3-join.dk-aegis.org";
+    public static final String DEV_CLIENT_JOIN_URL = "https://dev-join.dkuaegis.org";
+    public static final String DEV_1_CLIENT_JOIN_URL = "https://dev-1-join.dkuaegis.org";
+    public static final String DEV_2_CLIENT_JOIN_URL = "https://dev-2-join.dkuaegis.org";
+    public static final String DEV_3_CLIENT_JOIN_URL = "https://dev-3-join.dkuaegis.org";
 
     public static final String LOCAL_VITE_BUILD_CLIENT_URL = "http://localhost:4173";
     public static final String LOCAL_VITE_CLIENT_URL = "http://localhost:5173";
