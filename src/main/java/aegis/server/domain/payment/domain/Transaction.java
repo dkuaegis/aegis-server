@@ -1,5 +1,6 @@
 package aegis.server.domain.payment.domain;
 
+import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.common.domain.YearSemester;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,7 +20,7 @@ import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
                 @Index(name = "idx_transaction_depositor_name", columnList = "depositorName"),
         }
 )
-public class Transaction {
+public class Transaction extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

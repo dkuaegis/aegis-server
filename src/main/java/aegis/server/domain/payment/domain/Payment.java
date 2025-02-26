@@ -1,5 +1,6 @@
 package aegis.server.domain.payment.domain;
 
+import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
 import aegis.server.domain.member.domain.Student;
@@ -20,7 +21,7 @@ import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Payment {
+public class Payment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
