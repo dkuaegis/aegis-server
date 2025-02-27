@@ -36,6 +36,7 @@ public class SurveyService {
                         survey -> survey.update(
                                 surveyCommon.interests(),
                                 surveyCommon.interestsEtc(),
+                                surveyCommon.acquisitionType(),
                                 surveyCommon.joinReason(),
                                 surveyCommon.feedback()
                         ),
@@ -44,6 +45,7 @@ public class SurveyService {
                                         student,
                                         surveyCommon.interests(),
                                         surveyCommon.interestsEtc(),
+                                        surveyCommon.acquisitionType(),
                                         surveyCommon.joinReason(),
                                         surveyCommon.feedback()
                                 )

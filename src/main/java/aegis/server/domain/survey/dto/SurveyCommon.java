@@ -1,5 +1,6 @@
 package aegis.server.domain.survey.dto;
 
+import aegis.server.domain.survey.domain.AcquisitionType;
 import aegis.server.domain.survey.domain.Interest;
 import aegis.server.domain.survey.domain.Survey;
 import jakarta.annotation.Nullable;
@@ -15,6 +16,8 @@ public record SurveyCommon(
         Set<Interest> interests,
         @Nullable
         Map<Interest, @NotBlank String> interestsEtc,
+        @NotEmpty
+        AcquisitionType acquisitionType,
         @Size(min = 5, max = 1000)
         String joinReason,
         @Size(max = 1000)
@@ -24,6 +27,7 @@ public record SurveyCommon(
         return new SurveyCommon(
                 survey.getInterests(),
                 survey.getInterestsEtc(),
+                survey.getAcquisitionType(),
                 survey.getJoinReason(),
                 survey.getFeedback()
         );

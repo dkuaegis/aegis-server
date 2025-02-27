@@ -2,6 +2,7 @@ package aegis.server.domain.survey.service;
 
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.domain.Student;
+import aegis.server.domain.survey.domain.AcquisitionType;
 import aegis.server.domain.survey.domain.Interest;
 import aegis.server.domain.survey.domain.Survey;
 import aegis.server.domain.survey.dto.SurveyCommon;
@@ -33,6 +34,7 @@ class SurveyServiceTest extends IntegrationTest {
     private final SurveyCommon validSurveyRequest = new SurveyCommon(
             Set.of(Interest.WEB_BACKEND, Interest.DEVOPS, Interest.GAME_ETC),
             Map.of(Interest.GAME_ETC, "게임 기획"),
+            AcquisitionType.EVERYTIME,
             "가입 이유",
             "운영진에게 하고 싶은 말"
     );
@@ -70,6 +72,7 @@ class SurveyServiceTest extends IntegrationTest {
             SurveyCommon updatedSurveyRequest = new SurveyCommon(
                     Set.of(Interest.AI, Interest.ETC),
                     Map.of(Interest.ETC, "임베디드"),
+                    AcquisitionType.KAKAOTALK,
                     "업데이트된 사유",
                     "업데이트된 피드백"
             );
@@ -96,6 +99,7 @@ class SurveyServiceTest extends IntegrationTest {
             SurveyCommon invalidSurveyRequest = new SurveyCommon(
                     Set.of(Interest.WEB_BACKEND),
                     Map.of(Interest.AI, "인공지능"),
+                    AcquisitionType.KAKAOTALK,
                     "가입 이유",
                     "운영진에게 하고 싶은 말"
             );
@@ -117,6 +121,7 @@ class SurveyServiceTest extends IntegrationTest {
             SurveyCommon invalidSurveyRequest = new SurveyCommon(
                     Set.of(Interest.WEB_BACKEND),
                     Map.of(Interest.ETC, "임베디드"),
+                    AcquisitionType.KAKAOTALK,
                     "가입 이유",
                     "운영진에게 하고 싶은 말"
             );
