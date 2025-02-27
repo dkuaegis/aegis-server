@@ -6,6 +6,7 @@ import aegis.server.domain.survey.domain.Survey;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.util.Map;
@@ -16,7 +17,7 @@ public record SurveyCommon(
         Set<Interest> interests,
         @Nullable
         Map<Interest, @NotBlank String> interestsEtc,
-        @NotEmpty
+        @NotNull
         AcquisitionType acquisitionType,
         @Size(min = 5, max = 1000)
         String joinReason,
