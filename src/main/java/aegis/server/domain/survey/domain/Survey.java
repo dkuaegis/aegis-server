@@ -39,6 +39,9 @@ public class Survey extends BaseEntity {
     @MapKeyEnumerated(EnumType.STRING)
     private Map<Interest, String> interestsEtc;
 
+    @Enumerated(EnumType.STRING)
+    private AcquisitionType acquisitionType;
+
     @Column(length = 1000)
     private String joinReason;
 
@@ -68,6 +71,7 @@ public class Survey extends BaseEntity {
             Student student,
             Set<Interest> interests,
             Map<Interest, String> interestsEtc,
+            AcquisitionType acquisitionType,
             String joinReason,
             String feedback
     ) {
@@ -77,6 +81,7 @@ public class Survey extends BaseEntity {
                 .student(student)
                 .interests(interests)
                 .interestsEtc(interestsEtc)
+                .acquisitionType(acquisitionType)
                 .joinReason(joinReason)
                 .feedback(feedback)
                 .build();
@@ -85,6 +90,7 @@ public class Survey extends BaseEntity {
     public void update(
             Set<Interest> interests,
             Map<Interest, String> interestsEtc,
+            AcquisitionType acquisitionType,
             String joinReason,
             String feedback
     ) {
@@ -92,6 +98,7 @@ public class Survey extends BaseEntity {
 
         this.interests = interests;
         this.interestsEtc = interestsEtc;
+        this.acquisitionType = acquisitionType;
         this.joinReason = joinReason;
         this.feedback = feedback;
     }
