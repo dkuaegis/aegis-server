@@ -36,7 +36,8 @@ class MemberServiceTest extends IntegrationTest {
             Department.SW융합대학_컴퓨터공학과,
             AcademicStatus.ENROLLED,
             Grade.THREE,
-            Semester.FIRST
+            Semester.FIRST,
+            false
     );
 
     @Nested
