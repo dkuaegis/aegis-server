@@ -41,6 +41,9 @@ public class Student extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Semester semester;
 
+    // 신규 등록인지 확인하는 필드
+    private Boolean fresh;
+
     public static Student from(Member member) {
         return Student.builder()
                 .member(member)
@@ -53,12 +56,14 @@ public class Student extends BaseEntity {
             Department department,
             AcademicStatus academicStatus,
             Grade grade,
-            Semester semester
+            Semester semester,
+            Boolean fresh
     ) {
         this.studentId = studentId;
         this.department = department;
         this.academicStatus = academicStatus;
         this.grade = grade;
         this.semester = semester;
+        this.fresh = fresh;
     }
 }

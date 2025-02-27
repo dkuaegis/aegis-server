@@ -22,6 +22,7 @@ public record PersonalInfoUpdateRequest(
         @NotNull Department department,
         @NotNull AcademicStatus academicStatus,
         @NotNull Grade grade,
-        @NotNull Semester semester
+        @NotNull Semester semester,
+        @NotNull Boolean fresh
 ) {
 }

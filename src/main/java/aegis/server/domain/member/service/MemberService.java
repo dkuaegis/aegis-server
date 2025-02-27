@@ -47,7 +47,8 @@ public class MemberService {
                 request.department(),
                 request.academicStatus(),
                 request.grade(),
-                request.semester()
+                request.semester(),
+                request.fresh()
         );
     }
 }
