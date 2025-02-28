@@ -11,7 +11,8 @@ public record PersonalInfoResponse(
         Department department,
         AcademicStatus academicStatus,
         Grade grade,
-        Semester semester
+        Semester semester,
+        Boolean fresh
 ) {
     public static PersonalInfoResponse from(Member member, Student student) {
         return new PersonalInfoResponse(
@@ -23,7 +24,8 @@ public record PersonalInfoResponse(
                 student.getDepartment(),
                 student.getAcademicStatus(),
                 student.getGrade(),
-                student.getSemester()
+                student.getSemester(),
+                student.getFresh()
         );
     }
 }
