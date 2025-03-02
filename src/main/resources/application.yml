@@ -42,3 +42,9 @@ discord:
   guild-id: ${DISCORD_GUILD_ID}
   alarm-channel-id: ${DISCORD_ALARM_CHANNEL_ID}
   complete-role-id: ${DISCORD_COMPLETE_ROLE_ID}
+
+google:
+  credentials:
+    json: ${GOOGLE_CREDENTIALS_JSON}
+  spreadsheets:
+    id: ${GOOGLE_SPREADSHEET_ID}

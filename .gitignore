@@ -45,3 +45,5 @@ out/
 ### ETC ###
 *.old
 diff.*
+.aider*
+aegis-*.json
