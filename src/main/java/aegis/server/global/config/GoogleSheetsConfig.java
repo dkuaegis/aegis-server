@@ -11,6 +11,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,6 +20,7 @@ import java.util.Base64;
 import java.util.List;
 
 @Configuration
+@Profile("!test")
 public class GoogleSheetsConfig {
 
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
