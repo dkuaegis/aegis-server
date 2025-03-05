@@ -8,6 +8,8 @@
 //import aegis.server.domain.payment.repository.PaymentRepository;
 //import aegis.server.domain.survey.domain.Survey;
 //import aegis.server.domain.survey.repository.SurveyRepository;
+//import aegis.server.global.exception.CustomException;
+//import aegis.server.global.exception.ErrorCode;
 //import com.google.api.services.sheets.v4.Sheets;
 //import com.google.api.services.sheets.v4.model.ValueRange;
 //import lombok.RequiredArgsConstructor;
@@ -21,7 +23,6 @@
 //import java.util.ArrayList;
 //import java.util.Comparator;
 //import java.util.List;
-//import java.util.NoSuchElementException;
 //import java.util.stream.Collectors;
 //
 //import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
@@ -60,7 +61,7 @@
 //            Survey survey = surveys.stream()
 //                    .filter(s -> s.getStudent().equals(student))
 //                    .findFirst()
-//                    .orElseThrow(() -> new NoSuchElementException("Survey not found"));
+//                    .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_NOT_FOUND));
 //
 //            ImportData data = new ImportData(
 //                    payment.getUpdatedAt(),

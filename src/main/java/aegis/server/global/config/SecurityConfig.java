@@ -50,6 +50,7 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/internal/transaction").permitAll()
+                .requestMatchers("/internal/importer").permitAll()
                 .requestMatchers("/test/**").permitAll()
                 .requestMatchers("/auth/error/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")

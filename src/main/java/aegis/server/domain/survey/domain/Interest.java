@@ -14,19 +14,19 @@ public enum Interest {
     SECURITY_FORENSIC("포렌식"),
     SECURITY_MALWARE("악성코드분석"),
     SECURITY_CRYPTOGRAPHY("암호학"),
-    SECURITY_NOT_SURE("아직 잘 모르겠어요"),
+    SECURITY_NOT_SURE("보안 아직 잘 모르겠어요"),
     SECURITY_ETC("보안 기타"),
 
     // 웹 분야
     WEB_FRONTEND("프론트엔드"),
     WEB_BACKEND("백엔드"),
-    WEB_NOT_SURE("아직 잘 모르겠어요"),
+    WEB_NOT_SURE("웹 아직 잘 모르겠어요"),
     WEB_ETC("웹 기타"),
 
     // 게임 분야
     GAME_CLIENT("클라이언트"),
     GAME_SERVER("서버"),
-    GAME_NOT_SURE("아직 잘 모르겠어요"),
+    GAME_NOT_SURE("게임 아직 잘 모르겠어요"),
     GAME_ETC("게임 기타"),
 
     // 기타 분야
