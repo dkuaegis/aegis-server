@@ -6,6 +6,8 @@ import aegis.server.domain.survey.domain.Interest;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,8 +33,15 @@ public record ImportData(
         BigDecimal finalPrice
 ) {
     public List<Object> toRowData() {
+        String formattedDateTime = "";
+        if (joinDateTime != null) {
+            ZonedDateTime utcTime = joinDateTime.atZone(ZoneId.of("UTC"));
+            ZonedDateTime koreaTime = utcTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+            formattedDateTime = koreaTime.toLocalDateTime().toString();
+        }
+
         return List.of(
-                joinDateTime != null ? joinDateTime.toString() : "",
+                formattedDateTime,
                 name,
                 studentId,
                 department != null ? department.getValue() : "",
@@ -46,8 +55,8 @@ public record ImportData(
                 gender != null ? gender.getValue() : "",
                 fresh != null ? (fresh ? "신규" : "재등록") : "NULL",
                 interests != null ? interests.stream()
-                        .map(Interest::getValue).collect(Collectors.joining(",")) : "",
-                acquisitionType != null ? acquisitionType.toString() : "NULL",
+                        .map(Interest::toString).collect(Collectors.joining(",")) : "",
+                acquisitionType != null ? acquisitionType.getValue() : "NULL",
                 joinReason,
                 feedback != null && !feedback.isEmpty() ? feedback : "NULL",
                 finalPrice != null ? finalPrice.toString() : ""
