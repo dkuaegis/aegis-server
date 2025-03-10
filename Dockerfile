@@ -23,8 +23,10 @@ COPY --from=builder /tmp/opentelemetry-javaagent.jar /app/opentelemetry-javaagen
 
 EXPOSE 8080
 
+ENV SIGNOZ_ENDPOINT=""
+
 ENTRYPOINT ["java", \
     "-javaagent:/app/opentelemetry-javaagent.jar", \
-    "-Dotel.exporter.otlp.endpoint=http://signoz-otel-collector:4317", \
+    "-Dotel.exporter.otlp.endpoint=${SIGNOZ_ENDPOINT}", \
     "-Dotel.resource.attributes=service.name=aegis-server", \
     "-jar", "/app/app.jar"]
