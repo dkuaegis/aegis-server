@@ -47,3 +47,6 @@ out/
 diff.*
 .aider*
 aegis-*.json
+
+### Environment Variables ###
+.env
