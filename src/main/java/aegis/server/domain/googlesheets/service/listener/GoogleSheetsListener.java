@@ -12,6 +12,7 @@ import aegis.server.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
@@ -31,11 +32,17 @@ public class GoogleSheetsListener {
     private final MemberRepository memberRepository;
     private final StudentRepository studentRepository;
 
+    @Async("googleSheetsTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = REQUIRES_NEW, readOnly = true)
     public void handlePaymentCompletedEvent(PaymentCompletedEvent event) {
         PaymentInfo paymentInfo = event.paymentInfo();
-
+        
+        log.info(
+            "[GoogleSheetsSyncListener][PaymentCompletedEvent] Google Sheets 회원 등록 처리 시작: paymentId={}",
+            paymentInfo.id()
+        );
+        
         try {
             Member member = memberRepository.findById(paymentInfo.memberId())
                     .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
