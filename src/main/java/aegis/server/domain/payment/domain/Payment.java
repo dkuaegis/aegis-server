@@ -50,8 +50,7 @@ public class Payment extends BaseEntity {
     private String expectedDepositorName;
 
     public static String expectedDepositorName(Student student) {
-        return student.getMember().getName()
-                + student.getStudentId().substring(student.getStudentId().length() - 6);
+        return student.getMember().getName();
     }
 
     public static Payment of(Student student) {
