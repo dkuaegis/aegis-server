@@ -48,8 +48,7 @@ public class TransactionServiceTest extends IntegrationTest {
     void setUp() {
         member = createMember();
         student = createStudent(member);
-        expectedDepositorName = member.getName()
-                + student.getStudentId().substring(student.getStudentId().length() - 6);
+        expectedDepositorName = member.getName();
         UserDetails userDetails = UserDetails.from(member);
         PaymentRequest request = new PaymentRequest(List.of());
         paymentService.createOrUpdatePendingPayment(request, userDetails);
