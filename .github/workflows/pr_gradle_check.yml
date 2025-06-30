@@ -2,11 +2,11 @@ name: Run Gradle Check on PR
 
 on:
   pull_request:
-    branches:
-      - main
 
 permissions:
+  contents: read
   pull-requests: write
+  checks: write
 
 jobs:
   check:
