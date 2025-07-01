@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.3'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.diffplug.spotless' version '7.0.4'
 }
 
 group = 'aegis'
@@ -11,6 +12,16 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+}
+
+spotless {
+    java {
+        removeUnusedImports()
+    }
+}
+
+tasks.named('compileJava') {
+    dependsOn 'spotlessApply'
 }
 
 configurations {
