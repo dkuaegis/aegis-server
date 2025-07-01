@@ -35,7 +35,8 @@ public class GoogleSheetsService {
     private static final String REGISTRATION_SHEET_RANGE = "database!A2:R";
 
     public void addMemberRegistration(Member member, Student student, PaymentInfo paymentInfo) throws IOException {
-        Survey survey = surveyRepository.findByStudent(student)
+        Survey survey = surveyRepository
+                .findByStudent(student)
                 .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_NOT_FOUND));
 
         ImportData importData = new ImportData(
@@ -56,13 +57,12 @@ public class GoogleSheetsService {
                 survey.getAcquisitionType(),
                 survey.getJoinReason(),
                 survey.getFeedback(),
-                paymentInfo.finalPrice()
-        );
+                paymentInfo.finalPrice());
 
-        ValueRange body = new ValueRange()
-                .setValues(List.of(importData.toRowData()));
+        ValueRange body = new ValueRange().setValues(List.of(importData.toRowData()));
 
-        sheets.spreadsheets().values()
+        sheets.spreadsheets()
+                .values()
                 .append(spreadsheetId, REGISTRATION_SHEET_RANGE, body)
                 .setValueInputOption("RAW")
                 .setInsertDataOption("INSERT_ROWS")

@@ -66,8 +66,8 @@ public class CustomOidcUserService extends OidcUserService {
     }
 
     private void findOrCreateStudent(Member member) {
-        studentRepository.findByMemberInCurrentYearSemester(member).orElseGet(
-                () -> studentRepository.save(Student.from(member))
-        );
+        studentRepository
+                .findByMemberInCurrentYearSemester(member)
+                .orElseGet(() -> studentRepository.save(Student.from(member)));
     }
 }

@@ -75,8 +75,7 @@ public class Survey extends BaseEntity {
             Map<Interest, String> interestsEtc,
             AcquisitionType acquisitionType,
             String joinReason,
-            String feedback
-    ) {
+            String feedback) {
         validateEtcInterests(interests, interestsEtc);
 
         return Survey.builder()
@@ -94,8 +93,7 @@ public class Survey extends BaseEntity {
             Map<Interest, String> interestsEtc,
             AcquisitionType acquisitionType,
             String joinReason,
-            String feedback
-    ) {
+            String feedback) {
         validateEtcInterests(interests, interestsEtc);
 
         this.interests = interests;

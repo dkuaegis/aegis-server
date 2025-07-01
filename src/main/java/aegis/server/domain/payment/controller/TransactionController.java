@@ -25,11 +25,12 @@ public class TransactionController {
 
     @Hidden
     @Operation(summary = "거래 생성", description = "외부 시스템에서 거래 데이터를 생성합니다. (내부 API)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "거래 생성 성공"),
-            @ApiResponse(responseCode = "400", description = "거래 데이터 형식 오류"),
-            @ApiResponse(responseCode = "500", description = "거래 로그 파싱 실패 또는 데이터베이스 오류")
-    })
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "거래 생성 성공"),
+                @ApiResponse(responseCode = "400", description = "거래 데이터 형식 오류"),
+                @ApiResponse(responseCode = "500", description = "거래 로그 파싱 실패 또는 데이터베이스 오류")
+            })
     @PostMapping
     public void createTransaction(@RequestBody String request) {
         transactionService.createTransaction(request);

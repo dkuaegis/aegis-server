@@ -37,7 +37,9 @@ public class DiscordServiceTest extends IntegrationTest {
         DiscordVerificationCodeResponse response = discordService.createVerificationCode(userDetails);
 
         // then
-        assertEquals(response.getCode(), discordVerificationRepository.findAll().getFirst().getCode());
+        assertEquals(
+                response.getCode(),
+                discordVerificationRepository.findAll().getFirst().getCode());
     }
 
     @Test
@@ -68,8 +70,8 @@ public class DiscordServiceTest extends IntegrationTest {
             discordService.createVerificationCode(userDetails);
 
             // when-then
-            assertThrows(NoSuchElementException.class,
-                    () -> discordService.verifyAndUpdateDiscordId("WRONG_CODE", "1234"));
+            assertThrows(
+                    NoSuchElementException.class, () -> discordService.verifyAndUpdateDiscordId("WRONG_CODE", "1234"));
             assertEquals(1, discordVerificationRepository.count());
             assertNull(memberRepository.findById(member.getId()).get().getDiscordId());
         }
@@ -85,7 +87,8 @@ public class DiscordServiceTest extends IntegrationTest {
             discordVerificationRepository.deleteById(response.getCode());
 
             // then
-            assertThrows(NoSuchElementException.class,
+            assertThrows(
+                    NoSuchElementException.class,
                     () -> discordService.verifyAndUpdateDiscordId(response.getCode(), "1234"));
             assertNull(memberRepository.findById(member.getId()).get().getDiscordId());
         }
@@ -99,7 +102,8 @@ public class DiscordServiceTest extends IntegrationTest {
             discordService.verifyAndUpdateDiscordId(response.getCode(), "1234");
 
             // when-then
-            assertThrows(NoSuchElementException.class,
+            assertThrows(
+                    NoSuchElementException.class,
                     () -> discordService.verifyAndUpdateDiscordId(response.getCode(), "1234"));
             assertEquals(0, discordVerificationRepository.count());
             assertEquals("1234", memberRepository.findById(member.getId()).get().getDiscordId());

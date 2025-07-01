@@ -37,40 +37,35 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .headers(headers -> headers
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
-                );
+                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
 
-        http.exceptionHandling(exceptionHandling -> exceptionHandling
-                .authenticationEntryPoint((request, response, authException)
-                        -> response.setStatus(HttpStatus.UNAUTHORIZED.value()))
-        );
+        http.exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(
+                (request, response, authException) -> response.setStatus(HttpStatus.UNAUTHORIZED.value())));
 
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/internal/transaction").permitAll()
-                .requestMatchers("/internal/importer").permitAll()
-                .requestMatchers("/test/**").permitAll()
-                .requestMatchers("/auth/error/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/docs/**").permitAll()
-                .anyRequest().authenticated()
-        );
+        http.authorizeHttpRequests(auth -> auth.requestMatchers("/internal/transaction")
+                .permitAll()
+                .requestMatchers("/internal/importer")
+                .permitAll()
+                .requestMatchers("/test/**")
+                .permitAll()
+                .requestMatchers("/auth/error/**")
+                .permitAll()
+                .requestMatchers("/admin/**")
+                .hasRole("ADMIN")
+                .requestMatchers("/docs/**")
+                .permitAll()
+                .anyRequest()
+                .authenticated());
 
         http.logout(logout -> logout.logoutSuccessUrl("/"));
 
-        http.sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.NEVER)
-        );
+        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.NEVER));
 
-        http.oauth2Login(oauth2 -> oauth2
-                .userInfoEndpoint(userInfo ->
-                        userInfo.oidcUserService(customOidcUserService))
+        http.oauth2Login(oauth2 -> oauth2.userInfoEndpoint(userInfo -> userInfo.oidcUserService(customOidcUserService))
                 .successHandler(customSuccessHandler)
-                .failureHandler(authenticationFailureHandler)
-        );
+                .failureHandler(authenticationFailureHandler));
 
         http.addFilterBefore(refererFilter, OAuth2AuthorizationRequestRedirectFilter.class);
 

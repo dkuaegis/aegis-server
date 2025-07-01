@@ -32,9 +32,7 @@ public class TransactionService {
         logTransactionInfo(transaction);
 
         if (isDeposit(transaction)) {
-            applicationEventPublisher.publishEvent(
-                    new TransactionCreatedEvent(TransactionInfo.from(transaction))
-            );
+            applicationEventPublisher.publishEvent(new TransactionCreatedEvent(TransactionInfo.from(transaction)));
         }
     }
 
@@ -44,8 +42,7 @@ public class TransactionService {
                 transaction.getId(),
                 transaction.getTransactionType(),
                 transaction.getDepositorName(),
-                transaction.getAmount()
-        );
+                transaction.getAmount());
     }
 
     private boolean isDeposit(Transaction transaction) {

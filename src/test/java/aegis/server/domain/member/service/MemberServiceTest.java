@@ -18,7 +18,6 @@ import aegis.server.helper.IntegrationTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-
 class MemberServiceTest extends IntegrationTest {
 
     @Autowired
@@ -39,8 +38,7 @@ class MemberServiceTest extends IntegrationTest {
             AcademicStatus.ENROLLED,
             Grade.THREE,
             Semester.FIRST,
-            false
-    );
+            false);
 
     @Nested
     class 개인정보_수정 {
@@ -77,9 +75,9 @@ class MemberServiceTest extends IntegrationTest {
             ReflectionTestUtils.setField(userDetails, "memberId", member.getId() + 1L);
 
             // when-then
-            CustomException exception = assertThrows(CustomException.class, () ->
-                    memberService.updatePersonalInfo(userDetails, personalInfoUpdateRequest)
-            );
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> memberService.updatePersonalInfo(userDetails, personalInfoUpdateRequest));
             assertEquals(ErrorCode.MEMBER_NOT_FOUND, exception.getErrorCode());
         }
 
@@ -90,9 +88,9 @@ class MemberServiceTest extends IntegrationTest {
             UserDetails userDetails = createUserDetails(member);
 
             // when-then
-            CustomException exception = assertThrows(CustomException.class, () ->
-                    memberService.updatePersonalInfo(userDetails, personalInfoUpdateRequest)
-            );
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> memberService.updatePersonalInfo(userDetails, personalInfoUpdateRequest));
             assertEquals(ErrorCode.STUDENT_NOT_FOUND, exception.getErrorCode());
         }
     }

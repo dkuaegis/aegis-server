@@ -25,11 +25,7 @@ public class DiscordConfig {
     @Bean
     public JDA jda() {
         JDA jda = JDABuilder.createDefault(token)
-                .enableIntents(
-                        GatewayIntent.GUILD_MEMBERS,
-                        GatewayIntent.GUILD_MESSAGES,
-                        GatewayIntent.MESSAGE_CONTENT
-                )
+                .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
                 .addEventListeners(discordSlashCommandListener)
                 .build();
 

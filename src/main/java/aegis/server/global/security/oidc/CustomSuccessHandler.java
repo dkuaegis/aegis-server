@@ -20,10 +20,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     @Override
     public void onAuthenticationSuccess(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            Authentication authentication
-    ) throws IOException {
+            HttpServletRequest request, HttpServletResponse response, Authentication authentication)
+            throws IOException {
         CustomOidcUser customOidcUser = (CustomOidcUser) authentication.getPrincipal();
         UserDetails userDetails = customOidcUser.getUserDetails();
 

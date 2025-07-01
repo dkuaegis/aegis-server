@@ -47,10 +47,6 @@ public class RedisConfig {
     @Bean()
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(
-                new RedisStandaloneConfiguration(
-                        redisServer.getHost(),
-                        redisServer.getBindPort()
-                )
-        );
+                new RedisStandaloneConfiguration(redisServer.getHost(), redisServer.getBindPort()));
     }
 }

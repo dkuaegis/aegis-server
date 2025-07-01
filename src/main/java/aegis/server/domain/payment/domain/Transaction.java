@@ -19,9 +19,8 @@ import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         indexes = {
-                @Index(name = "idx_transaction_depositor_name", columnList = "depositorName"),
-        }
-)
+            @Index(name = "idx_transaction_depositor_name", columnList = "depositorName"),
+        })
 public class Transaction extends BaseEntity {
 
     @Id
@@ -51,8 +50,7 @@ public class Transaction extends BaseEntity {
             String depositorName,
             TransactionType transactionType,
             BigDecimal amount,
-            BigDecimal balance
-    ) {
+            BigDecimal balance) {
         return Transaction.builder()
                 .yearSemester(CURRENT_YEAR_SEMESTER)
                 .transactionTime(transactionTime)

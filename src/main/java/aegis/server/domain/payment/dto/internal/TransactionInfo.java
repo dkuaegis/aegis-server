@@ -12,8 +12,7 @@ public record TransactionInfo(
         String depositorName,
         TransactionType transactionType,
         BigDecimal amount,
-        BigDecimal balance
-) {
+        BigDecimal balance) {
     public static TransactionInfo from(Transaction transaction) {
         return new TransactionInfo(
                 transaction.getId(),
@@ -21,7 +20,6 @@ public record TransactionInfo(
                 transaction.getDepositorName(),
                 transaction.getTransactionType(),
                 transaction.getAmount(),
-                transaction.getBalance()
-        );
+                transaction.getBalance());
     }
 }

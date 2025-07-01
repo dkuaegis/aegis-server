@@ -30,8 +30,7 @@ public record ImportData(
         AcquisitionType acquisitionType,
         String joinReason,
         String feedback,
-        BigDecimal finalPrice
-) {
+        BigDecimal finalPrice) {
     public List<Object> toRowData() {
         String formattedDateTime = "";
         if (joinDateTime != null) {
@@ -54,12 +53,10 @@ public record ImportData(
                 birthDate,
                 gender != null ? gender.getValue() : "",
                 fresh != null ? (fresh ? "신규" : "재등록") : "NULL",
-                interests != null ? interests.stream()
-                        .map(Interest::toString).collect(Collectors.joining(",")) : "",
+                interests != null ? interests.stream().map(Interest::toString).collect(Collectors.joining(",")) : "",
                 acquisitionType != null ? acquisitionType.getValue() : "NULL",
                 joinReason,
                 feedback != null && !feedback.isEmpty() ? feedback : "NULL",
-                finalPrice != null ? finalPrice.toString() : ""
-        );
+                finalPrice != null ? finalPrice.toString() : "");
     }
 }

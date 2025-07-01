@@ -17,10 +17,10 @@ public class CustomOidcUser extends DefaultOidcUser {
 
     public CustomOidcUser(OidcUser oidcUser, Member member) {
         super(
-                Collections.singleton(new SimpleGrantedAuthority(member.getRole().getKey())),
+                Collections.singleton(
+                        new SimpleGrantedAuthority(member.getRole().getKey())),
                 oidcUser.getIdToken(),
-                oidcUser.getUserInfo()
-        );
+                oidcUser.getUserInfo());
         this.userDetails = UserDetails.from(member);
     }
 }

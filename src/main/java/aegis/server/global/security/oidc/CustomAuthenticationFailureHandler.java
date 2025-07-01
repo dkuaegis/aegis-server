@@ -15,10 +15,8 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
 
     @Override
     public void onAuthenticationFailure(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            AuthenticationException exception
-    ) throws IOException {
+            HttpServletRequest request, HttpServletResponse response, AuthenticationException exception)
+            throws IOException {
         if (exception instanceof OAuth2AuthenticationException oauth2Exception) {
             String errorCode = oauth2Exception.getError().getErrorCode();
             if ("NOT_DKU_EMAIL".equals(errorCode)) {

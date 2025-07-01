@@ -36,9 +36,8 @@ public class GoogleSheetsConfig {
         byte[] decodedBytes = Base64.getDecoder().decode(credentialsJson);
 
         // 디코딩된 바이트 배열로부터 GoogleCredentials 생성
-        GoogleCredentials credential = GoogleCredentials.fromStream(
-                new ByteArrayInputStream(decodedBytes)
-        ).createScoped(SCOPES);
+        GoogleCredentials credential = GoogleCredentials.fromStream(new ByteArrayInputStream(decodedBytes))
+                .createScoped(SCOPES);
 
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         return new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, new HttpCredentialsAdapter(credential))

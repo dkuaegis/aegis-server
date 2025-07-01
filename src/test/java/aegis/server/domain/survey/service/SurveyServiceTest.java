@@ -38,8 +38,7 @@ class SurveyServiceTest extends IntegrationTest {
             Map.of(Interest.GAME_ETC, "게임 기획"),
             AcquisitionType.EVERYTIME,
             "가입 이유",
-            "운영진에게 하고 싶은 말"
-    );
+            "운영진에게 하고 싶은 말");
 
     @Nested
     class 설문조사_저장_및_수정 {
@@ -54,7 +53,7 @@ class SurveyServiceTest extends IntegrationTest {
             // when
             surveyService.createOrUpdateSurvey(userDetails, validSurveyRequest);
 
-            //then
+            // then
             Survey survey = surveyRepository.findByStudent(student).get();
 
             assertEquals(validSurveyRequest.interests(), survey.getInterests());
@@ -76,8 +75,7 @@ class SurveyServiceTest extends IntegrationTest {
                     Map.of(Interest.ETC, "임베디드"),
                     AcquisitionType.KAKAOTALK,
                     "업데이트된 사유",
-                    "업데이트된 피드백"
-            );
+                    "업데이트된 피드백");
 
             // when
             surveyService.createOrUpdateSurvey(userDetails, updatedSurveyRequest);
@@ -103,13 +101,11 @@ class SurveyServiceTest extends IntegrationTest {
                     Map.of(Interest.AI, "인공지능"),
                     AcquisitionType.KAKAOTALK,
                     "가입 이유",
-                    "운영진에게 하고 싶은 말"
-            );
+                    "운영진에게 하고 싶은 말");
 
             // when-then
-            CustomException exception = assertThrows(CustomException.class, () ->
-                    surveyService.createOrUpdateSurvey(userDetails, invalidSurveyRequest)
-            );
+            CustomException exception = assertThrows(
+                    CustomException.class, () -> surveyService.createOrUpdateSurvey(userDetails, invalidSurveyRequest));
             assertEquals(ErrorCode.INVALID_INTEREST, exception.getErrorCode());
         }
 
@@ -125,13 +121,11 @@ class SurveyServiceTest extends IntegrationTest {
                     Map.of(Interest.ETC, "임베디드"),
                     AcquisitionType.KAKAOTALK,
                     "가입 이유",
-                    "운영진에게 하고 싶은 말"
-            );
+                    "운영진에게 하고 싶은 말");
 
             // when-then
-            CustomException exception = assertThrows(CustomException.class, () ->
-                    surveyService.createOrUpdateSurvey(userDetails, invalidSurveyRequest)
-            );
+            CustomException exception = assertThrows(
+                    CustomException.class, () -> surveyService.createOrUpdateSurvey(userDetails, invalidSurveyRequest));
             assertEquals(ErrorCode.ETC_INTEREST_NOT_FOUND, exception.getErrorCode());
         }
     }

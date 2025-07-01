@@ -16,6 +16,8 @@ java {
 
 spotless {
     java {
+        palantirJavaFormat()
+        removeUnusedImports()
         importOrder(
                 'java',
                 'javax',
@@ -29,9 +31,8 @@ spotless {
                 'aegis',
                 '\\#'
         )
-        endWithNewline()
         trimTrailingWhitespace()
-        removeUnusedImports()
+        endWithNewline()
     }
 }
 

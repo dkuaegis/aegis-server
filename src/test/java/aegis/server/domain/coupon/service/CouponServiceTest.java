@@ -66,12 +66,12 @@ class CouponServiceTest extends IntegrationTest {
             CouponCreateRequest request2 = new CouponCreateRequest(COUPON_NAME, BigDecimal.valueOf(-5000L));
 
             // when-then
-            CustomException exception1 = assertThrows(CustomException.class,
-                    () -> couponService.createCoupon(request1));
+            CustomException exception1 =
+                    assertThrows(CustomException.class, () -> couponService.createCoupon(request1));
             assertEquals(ErrorCode.COUPON_DISCOUNT_AMOUNT_NOT_POSITIVE, exception1.getErrorCode());
 
-            CustomException exception2 = assertThrows(CustomException.class,
-                    () -> couponService.createCoupon(request2));
+            CustomException exception2 =
+                    assertThrows(CustomException.class, () -> couponService.createCoupon(request2));
             assertEquals(ErrorCode.COUPON_DISCOUNT_AMOUNT_NOT_POSITIVE, exception2.getErrorCode());
         }
 
@@ -82,8 +82,7 @@ class CouponServiceTest extends IntegrationTest {
             couponService.createCoupon(request);
 
             // when-then
-            CustomException exception = assertThrows(CustomException.class,
-                    () -> couponService.createCoupon(request));
+            CustomException exception = assertThrows(CustomException.class, () -> couponService.createCoupon(request));
             assertEquals(ErrorCode.COUPON_ALREADY_EXISTS, exception.getErrorCode());
         }
 
@@ -95,7 +94,8 @@ class CouponServiceTest extends IntegrationTest {
                 createMember();
                 createMember();
 
-                CouponCreateRequest couponCreateRequest = new CouponCreateRequest(COUPON_NAME, BigDecimal.valueOf(5000L));
+                CouponCreateRequest couponCreateRequest =
+                        new CouponCreateRequest(COUPON_NAME, BigDecimal.valueOf(5000L));
                 couponService.createCoupon(couponCreateRequest);
 
                 CouponIssueRequest couponIssueRequest = new CouponIssueRequest(1L, List.of(1L, 2L));
@@ -115,7 +115,8 @@ class CouponServiceTest extends IntegrationTest {
                 // given
                 createMember();
 
-                CouponCreateRequest couponCreateRequest = new CouponCreateRequest(COUPON_NAME, BigDecimal.valueOf(5000L));
+                CouponCreateRequest couponCreateRequest =
+                        new CouponCreateRequest(COUPON_NAME, BigDecimal.valueOf(5000L));
                 couponService.createCoupon(couponCreateRequest);
 
                 CouponIssueRequest couponIssueRequest = new CouponIssueRequest(1L, List.of(1L, 2L));
@@ -137,8 +138,8 @@ class CouponServiceTest extends IntegrationTest {
                 CouponIssueRequest couponIssueRequest = new CouponIssueRequest(1L, List.of(1L));
 
                 // when-then
-                CustomException exception = assertThrows(CustomException.class,
-                        () -> couponService.createIssuedCoupon(couponIssueRequest));
+                CustomException exception =
+                        assertThrows(CustomException.class, () -> couponService.createIssuedCoupon(couponIssueRequest));
                 assertEquals(ErrorCode.COUPON_NOT_FOUND, exception.getErrorCode());
             }
         }
@@ -163,8 +164,7 @@ class CouponServiceTest extends IntegrationTest {
         @Test
         void 존재하지_않는_쿠폰이면_실패한다() {
             // when-then
-            CustomException exception = assertThrows(CustomException.class,
-                    () -> couponService.deleteCoupon(999L));
+            CustomException exception = assertThrows(CustomException.class, () -> couponService.deleteCoupon(999L));
             assertEquals(ErrorCode.COUPON_NOT_FOUND, exception.getErrorCode());
         }
 
@@ -180,8 +180,7 @@ class CouponServiceTest extends IntegrationTest {
             couponService.createIssuedCoupon(issueRequest);
 
             // when-then
-            CustomException exception = assertThrows(CustomException.class,
-                    () -> couponService.deleteCoupon(1L));
+            CustomException exception = assertThrows(CustomException.class, () -> couponService.deleteCoupon(1L));
             assertEquals(ErrorCode.COUPON_ISSUED_COUPON_EXISTS, exception.getErrorCode());
         }
     }
@@ -210,8 +209,8 @@ class CouponServiceTest extends IntegrationTest {
         @Test
         void 존재하지_않는_발급된_쿠폰이면_실패한다() {
             // when-then
-            CustomException exception = assertThrows(CustomException.class,
-                    () -> couponService.deleteIssuedCoupon(999L));
+            CustomException exception =
+                    assertThrows(CustomException.class, () -> couponService.deleteIssuedCoupon(999L));
             assertEquals(ErrorCode.ISSUED_COUPON_NOT_FOUND, exception.getErrorCode());
         }
     }
@@ -262,7 +261,8 @@ class CouponServiceTest extends IntegrationTest {
             UserDetails userDetails = createUserDetails(member);
 
             // when-then
-            CustomException exception = assertThrows(CustomException.class,
+            CustomException exception = assertThrows(
+                    CustomException.class,
                     () -> couponService.useCouponCode(userDetails, new CouponCodeUseRequest("존재하지않는쿠폰코드")));
             assertEquals(ErrorCode.COUPON_CODE_NOT_FOUND, exception.getErrorCode());
         }
@@ -281,7 +281,8 @@ class CouponServiceTest extends IntegrationTest {
             couponService.useCouponCode(userDetails, new CouponCodeUseRequest(couponCode.getCode()));
 
             // when-then
-            CustomException exception = assertThrows(CustomException.class,
+            CustomException exception = assertThrows(
+                    CustomException.class,
                     () -> couponService.useCouponCode(userDetails, new CouponCodeUseRequest(couponCode.getCode())));
         }
     }

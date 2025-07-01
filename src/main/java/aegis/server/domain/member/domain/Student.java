@@ -59,8 +59,7 @@ public class Student extends BaseEntity {
             AcademicStatus academicStatus,
             Grade grade,
             Semester semester,
-            Boolean fresh
-    ) {
+            Boolean fresh) {
         this.studentId = studentId;
         this.department = department;
         this.academicStatus = academicStatus;

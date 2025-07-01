@@ -17,5 +17,4 @@ public class ClockConfig {
     public Clock clock() {
         return Clock.system(ZoneId.of(zoneId));
     }
-
 }

@@ -24,7 +24,8 @@ public class SurveyService {
 
     public SurveyCommon getSurvey(UserDetails userDetails) {
         Student student = findStudentByMemberId(userDetails.getMemberId());
-        Survey survey = surveyRepository.findByStudent(student)
+        Survey survey = surveyRepository
+                .findByStudent(student)
                 .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_NOT_FOUND));
 
         return SurveyCommon.from(survey);
@@ -33,30 +34,27 @@ public class SurveyService {
     @Transactional
     public void createOrUpdateSurvey(UserDetails userDetails, SurveyCommon surveyCommon) {
         Student student = findStudentByMemberId(userDetails.getMemberId());
-        surveyRepository.findByStudent(student)
+        surveyRepository
+                .findByStudent(student)
                 .ifPresentOrElse(
                         survey -> survey.update(
                                 surveyCommon.interests(),
                                 surveyCommon.interestsEtc(),
                                 surveyCommon.acquisitionType(),
                                 surveyCommon.joinReason(),
-                                surveyCommon.feedback()
-                        ),
-                        () -> surveyRepository.save(
-                                Survey.create(
-                                        student,
-                                        surveyCommon.interests(),
-                                        surveyCommon.interestsEtc(),
-                                        surveyCommon.acquisitionType(),
-                                        surveyCommon.joinReason(),
-                                        surveyCommon.feedback()
-                                )
-                        )
-                );
+                                surveyCommon.feedback()),
+                        () -> surveyRepository.save(Survey.create(
+                                student,
+                                surveyCommon.interests(),
+                                surveyCommon.interestsEtc(),
+                                surveyCommon.acquisitionType(),
+                                surveyCommon.joinReason(),
+                                surveyCommon.feedback())));
     }
 
     private Student findStudentByMemberId(Long memberId) {
-        return studentRepository.findByMemberIdInCurrentYearSemester(memberId)
+        return studentRepository
+                .findByMemberIdInCurrentYearSemester(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
     }
 }

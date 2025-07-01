@@ -32,18 +32,13 @@ public class DiscordSlashCommandListener extends ListenerAdapter {
 
         try {
             discordService.verifyAndUpdateDiscordId(verificationCode, discordId);
-            event.reply("디스코드 연동이 완료되었습니다.")
-                    .setEphemeral(true)
-                    .queue();
+            event.reply("디스코드 연동이 완료되었습니다.").setEphemeral(true).queue();
         } catch (Exception e) {
-            event.reply("인증코드가 올바르지 않거나 만료되었습니다.")
-                    .setEphemeral(true)
-                    .queue();
+            event.reply("인증코드가 올바르지 않거나 만료되었습니다.").setEphemeral(true).queue();
             log.warn(
                     "[DiscordSlashCommandListener] 디스코드 연동 실패: discordId={}, verificationCode={}",
                     discordId,
-                    verificationCode
-            );
+                    verificationCode);
         }
     }
 }

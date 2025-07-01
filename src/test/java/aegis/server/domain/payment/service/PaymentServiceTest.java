@@ -67,7 +67,9 @@ public class PaymentServiceTest extends IntegrationTest {
             paymentService.createOrUpdatePendingPayment(request, userDetails);
 
             // then
-            Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student).get();
+            Payment payment = paymentRepository
+                    .findByStudentInCurrentYearSemester(student)
+                    .get();
             assertEquals(student.getId(), payment.getStudent().getId());
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
             assertEquals(CLUB_DUES, payment.getFinalPrice());
@@ -84,7 +86,9 @@ public class PaymentServiceTest extends IntegrationTest {
             paymentService.createOrUpdatePendingPayment(request, userDetails);
 
             // then
-            Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student).get();
+            Payment payment = paymentRepository
+                    .findByStudentInCurrentYearSemester(student)
+                    .get();
             BigDecimal discountedPrice = CLUB_DUES.subtract(coupon.getDiscountAmount());
             assertEquals(discountedPrice, payment.getFinalPrice());
         }
@@ -101,7 +105,9 @@ public class PaymentServiceTest extends IntegrationTest {
             paymentService.createOrUpdatePendingPayment(request, userDetails);
 
             // then
-            Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student).get();
+            Payment payment = paymentRepository
+                    .findByStudentInCurrentYearSemester(student)
+                    .get();
             System.out.println(payment.getFinalPrice());
             assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
         }
@@ -131,10 +137,11 @@ public class PaymentServiceTest extends IntegrationTest {
             PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
 
             // when-then
-            CustomException exception = assertThrows(CustomException.class,
-                    () -> paymentService.createOrUpdatePendingPayment(request, userDetails));
+            CustomException exception = assertThrows(
+                    CustomException.class, () -> paymentService.createOrUpdatePendingPayment(request, userDetails));
             assertEquals(ErrorCode.ISSUED_COUPON_NOT_FOUND_FOR_MEMBER, exception.getErrorCode());
-            IssuedCoupon shouldNotBeUpdatedIssuedCoupon = issuedCouponRepository.findById(issuedCoupon.getId()).get();
+            IssuedCoupon shouldNotBeUpdatedIssuedCoupon =
+                    issuedCouponRepository.findById(issuedCoupon.getId()).get();
             assertEquals(true, shouldNotBeUpdatedIssuedCoupon.getIsValid());
         }
 
@@ -187,8 +194,8 @@ public class PaymentServiceTest extends IntegrationTest {
             paymentRepository.save(payment);
 
             // when-then
-            CustomException exception = assertThrows(CustomException.class,
-                    () -> paymentService.createOrUpdatePendingPayment(request, userDetails));
+            CustomException exception = assertThrows(
+                    CustomException.class, () -> paymentService.createOrUpdatePendingPayment(request, userDetails));
             assertEquals(ErrorCode.PAYMENT_ALREADY_COMPLETED, exception.getErrorCode());
         }
 
@@ -203,8 +210,8 @@ public class PaymentServiceTest extends IntegrationTest {
             paymentRepository.save(payment);
 
             // when-then
-            CustomException exception = assertThrows(CustomException.class,
-                    () -> paymentService.createOrUpdatePendingPayment(request, userDetails));
+            CustomException exception = assertThrows(
+                    CustomException.class, () -> paymentService.createOrUpdatePendingPayment(request, userDetails));
             assertEquals(ErrorCode.PAYMENT_ALREADY_OVER_PAID, exception.getErrorCode());
         }
     }

@@ -37,11 +37,7 @@ public class CouponCode extends BaseEntity {
     private LocalDateTime usedAt;
 
     public static CouponCode of(Coupon coupon, String code) {
-        return CouponCode.builder()
-                .coupon(coupon)
-                .code(code)
-                .isValid(true)
-                .build();
+        return CouponCode.builder().coupon(coupon).code(code).isValid(true).build();
     }
 
     public void use(IssuedCoupon issuedCoupon) {

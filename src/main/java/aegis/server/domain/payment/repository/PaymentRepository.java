@@ -20,7 +20,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
         return findByStudentAndYearSemester(student, CURRENT_YEAR_SEMESTER);
     }
 
-    Optional<Payment> findByExpectedDepositorNameAndYearSemester(String expectedDepositorName, YearSemester yearSemester);
+    Optional<Payment> findByExpectedDepositorNameAndYearSemester(
+            String expectedDepositorName, YearSemester yearSemester);
 
     default Optional<Payment> findByExpectedDepositorNameInCurrentYearSemester(String expectedDepositorName) {
         return findByExpectedDepositorNameAndYearSemester(expectedDepositorName, CURRENT_YEAR_SEMESTER);

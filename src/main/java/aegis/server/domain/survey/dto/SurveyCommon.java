@@ -14,24 +14,17 @@ import aegis.server.domain.survey.domain.Interest;
 import aegis.server.domain.survey.domain.Survey;
 
 public record SurveyCommon(
-        @NotEmpty
-        Set<Interest> interests,
-        @Nullable
-        Map<Interest, @NotBlank String> interestsEtc,
-        @NotNull
-        AcquisitionType acquisitionType,
-        @Size(min = 5, max = 1000)
-        String joinReason,
-        @Size(max = 1000)
-        String feedback
-) {
+        @NotEmpty Set<Interest> interests,
+        @Nullable Map<Interest, @NotBlank String> interestsEtc,
+        @NotNull AcquisitionType acquisitionType,
+        @Size(min = 5, max = 1000) String joinReason,
+        @Size(max = 1000) String feedback) {
     public static SurveyCommon from(Survey survey) {
         return new SurveyCommon(
                 survey.getInterests(),
                 survey.getInterestsEtc(),
                 survey.getAcquisitionType(),
                 survey.getJoinReason(),
-                survey.getFeedback()
-        );
+                survey.getFeedback());
     }
 }

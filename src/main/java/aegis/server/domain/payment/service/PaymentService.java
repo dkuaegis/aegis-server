@@ -39,23 +39,28 @@ public class PaymentService {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     public PaymentStatusResponse checkPaymentStatus(UserDetails userDetails) {
-        Student student = studentRepository.findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
+        Student student = studentRepository
+                .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
 
-        Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student)
+        Payment payment = paymentRepository
+                .findByStudentInCurrentYearSemester(student)
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        BigDecimal currentDepositAmount = transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName());
+        BigDecimal currentDepositAmount =
+                transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName());
 
         return PaymentStatusResponse.from(payment, currentDepositAmount);
     }
 
     @Transactional
     public void createOrUpdatePendingPayment(PaymentRequest request, UserDetails userDetails) {
-        Student student = studentRepository.findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
+        Student student = studentRepository
+                .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
 
-        Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student)
+        Payment payment = paymentRepository
+                .findByStudentInCurrentYearSemester(student)
                 .orElseGet(() -> createNewPayment(student));
 
         validatePaymentStatus(payment);
@@ -84,7 +89,8 @@ public class PaymentService {
     private void applyCouponsIfPresent(Payment payment, List<Long> issuedCouponIds) {
         Member member = payment.getStudent().getMember();
         List<IssuedCoupon> validIssuedCoupons = issuedCouponIds.stream()
-                .map(issuedCouponId -> issuedCouponRepository.findByIdAndMember(issuedCouponId, member)
+                .map(issuedCouponId -> issuedCouponRepository
+                        .findByIdAndMember(issuedCouponId, member)
                         .orElseThrow(() -> new CustomException(ErrorCode.ISSUED_COUPON_NOT_FOUND_FOR_MEMBER)))
                 .collect(Collectors.toList());
         payment.applyCoupons(validIssuedCoupons);

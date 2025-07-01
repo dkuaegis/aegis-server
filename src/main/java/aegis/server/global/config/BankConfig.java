@@ -22,5 +22,4 @@ public class BankConfig {
             default -> throw new IllegalStateException("지원하지 않는 은행입니다: " + bankType);
         };
     }
-
 }

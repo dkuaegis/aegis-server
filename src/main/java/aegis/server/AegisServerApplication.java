@@ -11,5 +11,4 @@ public class AegisServerApplication {
     public static void main(String[] args) {
         SpringApplication.run(AegisServerApplication.class, args);
     }
-
 }

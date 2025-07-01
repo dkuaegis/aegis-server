@@ -36,15 +36,16 @@ public class PaymentEventListener {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleTransactionCreatedEvent(TransactionCreatedEvent event) {
         TransactionInfo transactionInfo = event.transactionInfo();
-        paymentRepository.findByExpectedDepositorNameInCurrentYearSemester(transactionInfo.depositorName())
+        paymentRepository
+                .findByExpectedDepositorNameInCurrentYearSemester(transactionInfo.depositorName())
                 .ifPresentOrElse(
                         payment -> processPayment(transactionInfo, payment),
-                        () -> handleMissingDepositorName(transactionInfo)
-                );
+                        () -> handleMissingDepositorName(transactionInfo));
     }
 
     private void processPayment(TransactionInfo transactionInfo, Payment payment) {
-        BigDecimal currentDepositAmount = transactionRepository.sumAmountByDepositorName(transactionInfo.depositorName());
+        BigDecimal currentDepositAmount =
+                transactionRepository.sumAmountByDepositorName(transactionInfo.depositorName());
 
         if (isCompleted(payment, currentDepositAmount)) {
             payment.confirmPayment(PaymentStatus.COMPLETED);
@@ -69,8 +70,7 @@ public class PaymentEventListener {
                 "[PaymentEventListener][TransactionCreatedEvent] 결제 완료: paymentId={}, studentId={}, depositorName={}",
                 payment.getId(),
                 payment.getStudent().getId(),
-                payment.getExpectedDepositorName()
-        );
+                payment.getExpectedDepositorName());
     }
 
     private void logOverpaid(TransactionInfo transactionInfo, Payment payment, BigDecimal currentDepositAmount) {
@@ -80,8 +80,7 @@ public class PaymentEventListener {
                 payment.getId(),
                 payment.getExpectedDepositorName(),
                 payment.getFinalPrice(),
-                currentDepositAmount
-        );
+                currentDepositAmount);
     }
 
     private void logMissingDepositorName(TransactionInfo transactionInfo) {
@@ -89,8 +88,7 @@ public class PaymentEventListener {
                 "[PaymentEventListener][TransactionCreatedEvent] 입금자명과 일치하는 결제 정보가 없습니다: transactionId={}, depositorName={}, amount={}",
                 transactionInfo.id(),
                 transactionInfo.depositorName(),
-                transactionInfo.amount()
-        );
+                transactionInfo.amount());
     }
 
     private boolean isCompleted(Payment payment, BigDecimal currentDepositAmount) {

@@ -77,11 +77,7 @@ public class IntegrationTest {
 
     protected Member createMember() {
         Member member = createInitialMember();
-        member.updateMember(
-                Gender.MALE,
-                "010101",
-                "010-1234-5678"
-        );
+        member.updateMember(Gender.MALE, "010101", "010-1234-5678");
 
         return memberRepository.save(member);
     }
@@ -94,13 +90,7 @@ public class IntegrationTest {
     protected Student createStudent(Member member) {
         Student student = createInitialStudent(member);
         student.updateStudent(
-                "32000001",
-                Department.SW융합대학_컴퓨터공학과,
-                AcademicStatus.ENROLLED,
-                Grade.THREE,
-                Semester.FIRST,
-                false
-        );
+                "32000001", Department.SW융합대학_컴퓨터공학과, AcademicStatus.ENROLLED, Grade.THREE, Semester.FIRST, false);
 
         return studentRepository.save(student);
     }

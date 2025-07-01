@@ -67,30 +67,25 @@ public class DiscordEventListener {
                 "[DiscordEventListener][PaymentCompletedEvent] 디스코드 회원 역할 승급: paymentId={}, memberId={}, discordId={}",
                 event.paymentInfo().id(),
                 event.paymentInfo().memberId(),
-                discordId
-        );
+                discordId);
     }
 
     @EventListener
     public void handleMissingDepositorNameEvent(MissingDepositorNameEvent event) {
-        alarmChannel().sendMessage(
-                String.format(
+        alarmChannel()
+                .sendMessage(String.format(
                         "[MISSING_DEPOSITOR_NAME]\nTX ID: %s 입금자명: %s",
-                        event.transactionInfo().id(),
-                        event.transactionInfo().depositorName()
-                )
-        ).queue();
+                        event.transactionInfo().id(), event.transactionInfo().depositorName()))
+                .queue();
     }
 
     @EventListener
     public void handleOverpaidEvent(OverpaidEvent event) {
-        alarmChannel().sendMessage(
-                String.format(
+        alarmChannel()
+                .sendMessage(String.format(
                         "[OVERPAID]\nTX ID: %s 입금자명: %s",
-                        event.transactionInfo().id(),
-                        event.transactionInfo().depositorName()
-                )
-        ).queue();
+                        event.transactionInfo().id(), event.transactionInfo().depositorName()))
+                .queue();
     }
 
     private TextChannel alarmChannel() {

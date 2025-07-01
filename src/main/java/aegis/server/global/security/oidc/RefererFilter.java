@@ -27,9 +27,8 @@ public class RefererFilter extends OncePerRequestFilter {
     private final RequestMatcher authorizationRequestMatcher = new AntPathRequestMatcher("/oauth2/authorization/**");
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         if (authorizationRequestMatcher.matches(request)) {
             String referer = request.getHeader("Referer");
             if (referer != null && !referer.isEmpty()) {

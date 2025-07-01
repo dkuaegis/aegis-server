@@ -41,15 +41,16 @@ public class GoogleSheetsListener {
         PaymentInfo paymentInfo = event.paymentInfo();
 
         log.info(
-            "[GoogleSheetsSyncListener][PaymentCompletedEvent] Google Sheets 회원 등록 처리 시작: paymentId={}",
-            paymentInfo.id()
-        );
+                "[GoogleSheetsSyncListener][PaymentCompletedEvent] Google Sheets 회원 등록 처리 시작: paymentId={}",
+                paymentInfo.id());
 
         try {
-            Member member = memberRepository.findById(paymentInfo.memberId())
+            Member member = memberRepository
+                    .findById(paymentInfo.memberId())
                     .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-            Student student = studentRepository.findById(paymentInfo.studentId())
+            Student student = studentRepository
+                    .findById(paymentInfo.studentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
 
             googleSheetsService.addMemberRegistration(member, student, paymentInfo);
@@ -58,21 +59,18 @@ public class GoogleSheetsListener {
                     "[GoogleSheetsSyncListener][PaymentCompletedEvent] Google Sheets 회원 등록 정보 추가 완료: paymentId={}, memberId={}, name={}",
                     paymentInfo.id(),
                     paymentInfo.memberId(),
-                    member.getName()
-            );
+                    member.getName());
         } catch (IOException e) {
             log.error(
                     "[GoogleSheetsSyncListener][PaymentCompletedEvent] Google Sheets 회원 등록 정보 추가 실패: paymentId={}, error={}",
                     paymentInfo.id(),
-                    e.getMessage()
-            );
+                    e.getMessage());
         } catch (Exception e) {
             log.error(
                     "[GoogleSheetsSyncListener][PaymentCompletedEvent] 예상치 못한 오류 발생: paymentId={}, error={}",
                     paymentInfo.id(),
                     e.getMessage(),
-                    e
-            );
+                    e);
         }
     }
 }
