@@ -19,6 +19,16 @@ spring:
       namespace: aegis:session
     timeout: ${SESSION_TIMEOUT}
 
+springdoc:
+  swagger-ui:
+    path: /docs/swagger-ui.html
+    url: /docs/api
+    disable-swagger-default-url: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /docs/api
+
 exception:
   log-only-aegis-stack-trace: ${LOG_ONLY_AEGIS_STACK_TRACE}
 

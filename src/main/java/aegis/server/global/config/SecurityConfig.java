@@ -43,9 +43,8 @@ public class SecurityConfig {
                 );
 
         http.exceptionHandling(exceptionHandling -> exceptionHandling
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                })
+                .authenticationEntryPoint((request, response, authException)
+                        -> response.setStatus(HttpStatus.UNAUTHORIZED.value()))
         );
 
         http.authorizeHttpRequests(auth -> auth
@@ -54,6 +53,7 @@ public class SecurityConfig {
                 .requestMatchers("/test/**").permitAll()
                 .requestMatchers("/auth/error/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/docs/**").permitAll()
                 .anyRequest().authenticated()
         );
 
