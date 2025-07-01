@@ -37,12 +37,12 @@ public class GoogleSheetsListener {
     @Transactional(propagation = REQUIRES_NEW, readOnly = true)
     public void handlePaymentCompletedEvent(PaymentCompletedEvent event) {
         PaymentInfo paymentInfo = event.paymentInfo();
-        
+
         log.info(
             "[GoogleSheetsSyncListener][PaymentCompletedEvent] Google Sheets 회원 등록 처리 시작: paymentId={}",
             paymentInfo.id()
         );
-        
+
         try {
             Member member = memberRepository.findById(paymentInfo.memberId())
                     .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
