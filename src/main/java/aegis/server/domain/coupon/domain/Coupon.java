@@ -1,12 +1,14 @@
 package aegis.server.domain.coupon.domain;
 
+import java.math.BigDecimal;
+
+import jakarta.persistence.*;
+
+import lombok.*;
+
 import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
-import jakarta.persistence.*;
-import lombok.*;
-
-import java.math.BigDecimal;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"coupon_name", "discount_amount"})})

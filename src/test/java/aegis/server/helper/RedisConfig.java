@@ -1,17 +1,20 @@
 package aegis.server.helper;
 
-import com.github.fppt.jedismock.RedisServer;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisURI;
+import java.io.IOException;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 
-import java.io.IOException;
+import com.github.fppt.jedismock.RedisServer;
 
 @Configuration
 public class RedisConfig {
@@ -44,10 +47,6 @@ public class RedisConfig {
     @Bean()
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(
-                new RedisStandaloneConfiguration(
-                        redisServer.getHost(),
-                        redisServer.getBindPort()
-                )
-        );
+                new RedisStandaloneConfiguration(redisServer.getHost(), redisServer.getBindPort()));
     }
 }

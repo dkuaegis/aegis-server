@@ -1,5 +1,11 @@
 package aegis.server.domain.member.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.dto.request.PersonalInfoUpdateRequest;
 import aegis.server.domain.member.repository.MemberRepository;
@@ -8,14 +14,9 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
 
 class MemberServiceTest extends IntegrationTest {
 
@@ -37,8 +38,7 @@ class MemberServiceTest extends IntegrationTest {
             AcademicStatus.ENROLLED,
             Grade.THREE,
             Semester.FIRST,
-            false
-    );
+            false);
 
     @Nested
     class 개인정보_수정 {
@@ -75,9 +75,9 @@ class MemberServiceTest extends IntegrationTest {
             ReflectionTestUtils.setField(userDetails, "memberId", member.getId() + 1L);
 
             // when-then
-            CustomException exception = assertThrows(CustomException.class, () ->
-                    memberService.updatePersonalInfo(userDetails, personalInfoUpdateRequest)
-            );
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> memberService.updatePersonalInfo(userDetails, personalInfoUpdateRequest));
             assertEquals(ErrorCode.MEMBER_NOT_FOUND, exception.getErrorCode());
         }
 
@@ -88,9 +88,9 @@ class MemberServiceTest extends IntegrationTest {
             UserDetails userDetails = createUserDetails(member);
 
             // when-then
-            CustomException exception = assertThrows(CustomException.class, () ->
-                    memberService.updatePersonalInfo(userDetails, personalInfoUpdateRequest)
-            );
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> memberService.updatePersonalInfo(userDetails, personalInfoUpdateRequest));
             assertEquals(ErrorCode.STUDENT_NOT_FOUND, exception.getErrorCode());
         }
     }

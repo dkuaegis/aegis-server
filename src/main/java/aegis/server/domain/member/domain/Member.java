@@ -1,8 +1,10 @@
 package aegis.server.domain.member.domain;
 
-import aegis.server.domain.common.domain.BaseEntity;
 import jakarta.persistence.*;
+
 import lombok.*;
+
+import aegis.server.domain.common.domain.BaseEntity;
 
 @Entity
 @Getter
@@ -47,11 +49,7 @@ public class Member extends BaseEntity {
                 .build();
     }
 
-    public void updateMember(
-            Gender gender,
-            String birthdate,
-            String phoneNumber
-    ) {
+    public void updateMember(Gender gender, String birthdate, String phoneNumber) {
         this.gender = gender;
         this.birthdate = birthdate;
         this.phoneNumber = phoneNumber;

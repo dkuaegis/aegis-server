@@ -1,13 +1,13 @@
 package aegis.server.global.exception;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
-
     BAD_REQUEST(HttpStatus.BAD_REQUEST),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR),
@@ -34,7 +34,6 @@ public enum ErrorCode {
     DISCORD_CHANNEL_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR),
     DISCORD_ROLE_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR),
 
-
     // Coupon
     COUPON_DISCOUNT_AMOUNT_NOT_POSITIVE(HttpStatus.BAD_REQUEST),
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND),
@@ -54,8 +53,6 @@ public enum ErrorCode {
     PAYMENT_ALREADY_COMPLETED(HttpStatus.CONFLICT),
     PAYMENT_ALREADY_OVER_PAID(HttpStatus.CONFLICT),
     PAYMENT_CANNOT_BE_CONFIRMED(HttpStatus.INTERNAL_SERVER_ERROR),
-
-
     ;
     private final HttpStatus httpStatus;
 }

@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum Semester {
-
     FIRST("1학기"),
     SECOND("2학기");
 

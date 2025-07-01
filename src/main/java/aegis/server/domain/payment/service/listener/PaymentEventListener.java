@@ -1,5 +1,17 @@
 package aegis.server.domain.payment.service.listener;
 
+import java.math.BigDecimal;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.domain.event.MissingDepositorNameEvent;
@@ -10,16 +22,6 @@ import aegis.server.domain.payment.dto.internal.PaymentInfo;
 import aegis.server.domain.payment.dto.internal.TransactionInfo;
 import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.domain.payment.repository.TransactionRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
-
-import java.math.BigDecimal;
 
 @Slf4j
 @Component
@@ -34,15 +36,16 @@ public class PaymentEventListener {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleTransactionCreatedEvent(TransactionCreatedEvent event) {
         TransactionInfo transactionInfo = event.transactionInfo();
-        paymentRepository.findByExpectedDepositorNameInCurrentYearSemester(transactionInfo.depositorName())
+        paymentRepository
+                .findByExpectedDepositorNameInCurrentYearSemester(transactionInfo.depositorName())
                 .ifPresentOrElse(
                         payment -> processPayment(transactionInfo, payment),
-                        () -> handleMissingDepositorName(transactionInfo)
-                );
+                        () -> handleMissingDepositorName(transactionInfo));
     }
 
     private void processPayment(TransactionInfo transactionInfo, Payment payment) {
-        BigDecimal currentDepositAmount = transactionRepository.sumAmountByDepositorName(transactionInfo.depositorName());
+        BigDecimal currentDepositAmount =
+                transactionRepository.sumAmountByDepositorName(transactionInfo.depositorName());
 
         if (isCompleted(payment, currentDepositAmount)) {
             payment.confirmPayment(PaymentStatus.COMPLETED);
@@ -67,8 +70,7 @@ public class PaymentEventListener {
                 "[PaymentEventListener][TransactionCreatedEvent] 결제 완료: paymentId={}, studentId={}, depositorName={}",
                 payment.getId(),
                 payment.getStudent().getId(),
-                payment.getExpectedDepositorName()
-        );
+                payment.getExpectedDepositorName());
     }
 
     private void logOverpaid(TransactionInfo transactionInfo, Payment payment, BigDecimal currentDepositAmount) {
@@ -78,8 +80,7 @@ public class PaymentEventListener {
                 payment.getId(),
                 payment.getExpectedDepositorName(),
                 payment.getFinalPrice(),
-                currentDepositAmount
-        );
+                currentDepositAmount);
     }
 
     private void logMissingDepositorName(TransactionInfo transactionInfo) {
@@ -87,8 +88,7 @@ public class PaymentEventListener {
                 "[PaymentEventListener][TransactionCreatedEvent] 입금자명과 일치하는 결제 정보가 없습니다: transactionId={}, depositorName={}, amount={}",
                 transactionInfo.id(),
                 transactionInfo.depositorName(),
-                transactionInfo.amount()
-        );
+                transactionInfo.amount());
     }
 
     private boolean isCompleted(Payment payment, BigDecimal currentDepositAmount) {

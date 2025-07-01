@@ -1,9 +1,9 @@
 package aegis.server.domain.payment.dto.internal;
 
-import aegis.server.domain.payment.domain.Payment;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import aegis.server.domain.payment.domain.Payment;
 
 public record PaymentInfo(
         Long id,
@@ -11,8 +11,7 @@ public record PaymentInfo(
         Long memberId,
         BigDecimal finalPrice,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
-) {
+        LocalDateTime updatedAt) {
     public static PaymentInfo from(Payment payment) {
         return new PaymentInfo(
                 payment.getId(),
@@ -20,7 +19,6 @@ public record PaymentInfo(
                 payment.getStudent().getMember().getId(),
                 payment.getFinalPrice(),
                 payment.getCreatedAt(),
-                payment.getUpdatedAt()
-        );
+                payment.getUpdatedAt());
     }
 }

@@ -1,10 +1,11 @@
 package aegis.server.domain.payment.repository;
 
-import aegis.server.domain.payment.domain.Transaction;
+import java.math.BigDecimal;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.math.BigDecimal;
+import aegis.server.domain.payment.domain.Transaction;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 

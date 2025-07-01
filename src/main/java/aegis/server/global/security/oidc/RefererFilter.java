@@ -1,21 +1,23 @@
 package aegis.server.global.security.oidc;
 
-import aegis.server.global.exception.CustomException;
-import aegis.server.global.exception.ErrorCode;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import aegis.server.global.exception.CustomException;
+import aegis.server.global.exception.ErrorCode;
 
 import static aegis.server.global.constant.Constant.ALLOWED_CLIENT_URLS;
 
@@ -25,9 +27,8 @@ public class RefererFilter extends OncePerRequestFilter {
     private final RequestMatcher authorizationRequestMatcher = new AntPathRequestMatcher("/oauth2/authorization/**");
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         if (authorizationRequestMatcher.matches(request)) {
             String referer = request.getHeader("Referer");
             if (referer != null && !referer.isEmpty()) {

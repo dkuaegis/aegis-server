@@ -1,5 +1,20 @@
 package aegis.server.domain.discord.service.listener;
 
+import java.util.Optional;
+
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.UserSnowflake;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.event.MissingDepositorNameEvent;
@@ -7,18 +22,6 @@ import aegis.server.domain.payment.domain.event.OverpaidEvent;
 import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.UserSnowflake;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -64,30 +67,25 @@ public class DiscordEventListener {
                 "[DiscordEventListener][PaymentCompletedEvent] 디스코드 회원 역할 승급: paymentId={}, memberId={}, discordId={}",
                 event.paymentInfo().id(),
                 event.paymentInfo().memberId(),
-                discordId
-        );
+                discordId);
     }
 
     @EventListener
     public void handleMissingDepositorNameEvent(MissingDepositorNameEvent event) {
-        alarmChannel().sendMessage(
-                String.format(
+        alarmChannel()
+                .sendMessage(String.format(
                         "[MISSING_DEPOSITOR_NAME]\nTX ID: %s 입금자명: %s",
-                        event.transactionInfo().id(),
-                        event.transactionInfo().depositorName()
-                )
-        ).queue();
+                        event.transactionInfo().id(), event.transactionInfo().depositorName()))
+                .queue();
     }
 
     @EventListener
     public void handleOverpaidEvent(OverpaidEvent event) {
-        alarmChannel().sendMessage(
-                String.format(
+        alarmChannel()
+                .sendMessage(String.format(
                         "[OVERPAID]\nTX ID: %s 입금자명: %s",
-                        event.transactionInfo().id(),
-                        event.transactionInfo().depositorName()
-                )
-        ).queue();
+                        event.transactionInfo().id(), event.transactionInfo().depositorName()))
+                .queue();
     }
 
     private TextChannel alarmChannel() {

@@ -1,17 +1,19 @@
 package aegis.server.helper;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.metamodel.EntityType;
-import org.hibernate.Session;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.stereotype.Component;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.metamodel.EntityType;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Component;
+
+import org.hibernate.Session;
 
 @Component
 public class DatabaseCleaner implements InitializingBean {

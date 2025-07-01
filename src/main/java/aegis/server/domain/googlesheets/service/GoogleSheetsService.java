@@ -1,5 +1,17 @@
 package aegis.server.domain.googlesheets.service;
 
+import java.io.IOException;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.model.ValueRange;
+
+import lombok.RequiredArgsConstructor;
+
 import aegis.server.domain.googlesheets.dto.ImportData;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.domain.Student;
@@ -8,15 +20,6 @@ import aegis.server.domain.survey.domain.Survey;
 import aegis.server.domain.survey.repository.SurveyRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
-import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.model.ValueRange;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.util.List;
 
 @Profile("!test")
 @Service
@@ -32,7 +35,8 @@ public class GoogleSheetsService {
     private static final String REGISTRATION_SHEET_RANGE = "database!A2:R";
 
     public void addMemberRegistration(Member member, Student student, PaymentInfo paymentInfo) throws IOException {
-        Survey survey = surveyRepository.findByStudent(student)
+        Survey survey = surveyRepository
+                .findByStudent(student)
                 .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_NOT_FOUND));
 
         ImportData importData = new ImportData(
@@ -53,13 +57,12 @@ public class GoogleSheetsService {
                 survey.getAcquisitionType(),
                 survey.getJoinReason(),
                 survey.getFeedback(),
-                paymentInfo.finalPrice()
-        );
+                paymentInfo.finalPrice());
 
-        ValueRange body = new ValueRange()
-                .setValues(List.of(importData.toRowData()));
+        ValueRange body = new ValueRange().setValues(List.of(importData.toRowData()));
 
-        sheets.spreadsheets().values()
+        sheets.spreadsheets()
+                .values()
                 .append(spreadsheetId, REGISTRATION_SHEET_RANGE, body)
                 .setValueInputOption("RAW")
                 .setInsertDataOption("INSERT_ROWS")

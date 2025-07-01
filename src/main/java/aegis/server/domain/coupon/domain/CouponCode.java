@@ -1,12 +1,14 @@
 package aegis.server.domain.coupon.domain;
 
+import java.time.LocalDateTime;
+
+import jakarta.persistence.*;
+
+import lombok.*;
+
 import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
-import jakarta.persistence.*;
-import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -35,11 +37,7 @@ public class CouponCode extends BaseEntity {
     private LocalDateTime usedAt;
 
     public static CouponCode of(Coupon coupon, String code) {
-        return CouponCode.builder()
-                .coupon(coupon)
-                .code(code)
-                .isValid(true)
-                .build();
+        return CouponCode.builder().coupon(coupon).code(code).isValid(true).build();
     }
 
     public void use(IssuedCoupon issuedCoupon) {

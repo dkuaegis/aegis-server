@@ -1,5 +1,17 @@
 package aegis.server.helper;
 
+import java.math.BigDecimal;
+
+import net.dv8tion.jda.api.JDA;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import org.junit.jupiter.api.BeforeEach;
+
 import aegis.server.domain.coupon.domain.Coupon;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
 import aegis.server.domain.coupon.repository.CouponRepository;
@@ -9,15 +21,6 @@ import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.member.repository.StudentRepository;
 import aegis.server.global.security.oidc.UserDetails;
-import net.dv8tion.jda.api.JDA;
-import org.junit.jupiter.api.BeforeEach;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import java.math.BigDecimal;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -74,11 +77,7 @@ public class IntegrationTest {
 
     protected Member createMember() {
         Member member = createInitialMember();
-        member.updateMember(
-                Gender.MALE,
-                "010101",
-                "010-1234-5678"
-        );
+        member.updateMember(Gender.MALE, "010101", "010-1234-5678");
 
         return memberRepository.save(member);
     }
@@ -91,13 +90,7 @@ public class IntegrationTest {
     protected Student createStudent(Member member) {
         Student student = createInitialStudent(member);
         student.updateStudent(
-                "32000001",
-                Department.SW융합대학_컴퓨터공학과,
-                AcademicStatus.ENROLLED,
-                Grade.THREE,
-                Semester.FIRST,
-                false
-        );
+                "32000001", Department.SW융합대학_컴퓨터공학과, AcademicStatus.ENROLLED, Grade.THREE, Semester.FIRST, false);
 
         return studentRepository.save(student);
     }

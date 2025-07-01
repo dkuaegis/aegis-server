@@ -1,36 +1,36 @@
-//package aegis.server.domain.googlesheets.service;
+// package aegis.server.domain.googlesheets.service;
 //
-//import aegis.server.domain.googlesheets.dto.ImportData;
-//import aegis.server.domain.member.domain.Member;
-//import aegis.server.domain.member.domain.Student;
-//import aegis.server.domain.payment.domain.Payment;
-//import aegis.server.domain.payment.domain.PaymentStatus;
-//import aegis.server.domain.payment.repository.PaymentRepository;
-//import aegis.server.domain.survey.domain.Survey;
-//import aegis.server.domain.survey.repository.SurveyRepository;
-//import aegis.server.global.exception.CustomException;
-//import aegis.server.global.exception.ErrorCode;
-//import com.google.api.services.sheets.v4.Sheets;
-//import com.google.api.services.sheets.v4.model.ValueRange;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.transaction.annotation.Transactional;
-//import org.springframework.web.bind.annotation.GetMapping;
-//import org.springframework.web.bind.annotation.RequestMapping;
-//import org.springframework.web.bind.annotation.RestController;
+// import aegis.server.domain.googlesheets.dto.ImportData;
+// import aegis.server.domain.member.domain.Member;
+// import aegis.server.domain.member.domain.Student;
+// import aegis.server.domain.payment.domain.Payment;
+// import aegis.server.domain.payment.domain.PaymentStatus;
+// import aegis.server.domain.payment.repository.PaymentRepository;
+// import aegis.server.domain.survey.domain.Survey;
+// import aegis.server.domain.survey.repository.SurveyRepository;
+// import aegis.server.global.exception.CustomException;
+// import aegis.server.global.exception.ErrorCode;
+// import com.google.api.services.sheets.v4.Sheets;
+// import com.google.api.services.sheets.v4.model.ValueRange;
+// import lombok.RequiredArgsConstructor;
+// import org.springframework.beans.factory.annotation.Value;
+// import org.springframework.transaction.annotation.Transactional;
+// import org.springframework.web.bind.annotation.GetMapping;
+// import org.springframework.web.bind.annotation.RequestMapping;
+// import org.springframework.web.bind.annotation.RestController;
 //
-//import java.io.IOException;
-//import java.util.ArrayList;
-//import java.util.Comparator;
-//import java.util.List;
-//import java.util.stream.Collectors;
+// import java.io.IOException;
+// import java.util.ArrayList;
+// import java.util.Comparator;
+// import java.util.List;
+// import java.util.stream.Collectors;
 //
-//import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
+// import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 //
-//@RestController
-//@RequestMapping("/internal/importer")
-//@RequiredArgsConstructor
-//public class GoogleSheetsImporter {
+// @RestController
+// @RequestMapping("/internal/importer")
+// @RequiredArgsConstructor
+// public class GoogleSheetsImporter {
 //
 //    private final SurveyRepository surveyRepository;
 //    private final PaymentRepository paymentRepository;
@@ -45,7 +45,8 @@
 //    @Transactional
 //    @GetMapping
 //    public void importEntireData() throws IOException {
-//        List<Payment> payments = paymentRepository.findAllByStatusAndYearSemester(PaymentStatus.COMPLETED, CURRENT_YEAR_SEMESTER);
+//        List<Payment> payments = paymentRepository.findAllByStatusAndYearSemester(PaymentStatus.COMPLETED,
+// CURRENT_YEAR_SEMESTER);
 //
 //        List<Student> students = payments.stream()
 //                .map(Payment::getStudent)
@@ -103,4 +104,4 @@
 //                .setInsertDataOption("INSERT_ROWS")
 //                .execute();
 //    }
-//}
+// }
