@@ -16,6 +16,7 @@ java {
 
 spotless {
     java {
+        endWithNewline()
         removeUnusedImports()
     }
 }
