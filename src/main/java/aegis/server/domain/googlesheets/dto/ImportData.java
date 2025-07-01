@@ -1,9 +1,5 @@
 package aegis.server.domain.googlesheets.dto;
 
-import aegis.server.domain.member.domain.*;
-import aegis.server.domain.survey.domain.AcquisitionType;
-import aegis.server.domain.survey.domain.Interest;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -11,6 +7,10 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import aegis.server.domain.member.domain.*;
+import aegis.server.domain.survey.domain.AcquisitionType;
+import aegis.server.domain.survey.domain.Interest;
 
 public record ImportData(
         LocalDateTime joinDateTime,

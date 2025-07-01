@@ -1,13 +1,14 @@
 package aegis.server.domain.payment.dto.response;
 
-import aegis.server.domain.payment.domain.Payment;
-import aegis.server.domain.payment.domain.PaymentStatus;
+import java.math.BigDecimal;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.math.BigDecimal;
+import aegis.server.domain.payment.domain.Payment;
+import aegis.server.domain.payment.domain.PaymentStatus;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

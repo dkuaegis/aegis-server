@@ -1,5 +1,11 @@
 package aegis.server.domain.member.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.dto.request.PersonalInfoUpdateRequest;
 import aegis.server.domain.member.repository.MemberRepository;
@@ -8,10 +14,6 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

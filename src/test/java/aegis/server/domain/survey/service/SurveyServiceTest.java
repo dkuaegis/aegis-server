@@ -1,5 +1,14 @@
 package aegis.server.domain.survey.service;
 
+import java.util.Map;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.domain.Student;
 import aegis.server.domain.survey.domain.AcquisitionType;
@@ -11,13 +20,6 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Map;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

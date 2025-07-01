@@ -1,23 +1,26 @@
 package aegis.server.domain.discord.controller;
 
-import aegis.server.domain.discord.dto.response.DiscordIdResponse;
-import aegis.server.domain.discord.dto.response.DiscordVerificationCodeResponse;
-import aegis.server.domain.discord.service.DiscordService;
-import aegis.server.global.security.annotation.LoginUser;
-import aegis.server.global.security.oidc.UserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import aegis.server.domain.discord.dto.response.DiscordIdResponse;
+import aegis.server.domain.discord.dto.response.DiscordVerificationCodeResponse;
+import aegis.server.domain.discord.service.DiscordService;
+import aegis.server.global.security.annotation.LoginUser;
+import aegis.server.global.security.oidc.UserDetails;
 
 @Tag(name = "Discord", description = "디스코드 연동 관리 API")
 @Slf4j

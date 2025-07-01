@@ -1,9 +1,11 @@
 package aegis.server.domain.member.domain;
 
+import jakarta.persistence.*;
+
+import lombok.*;
+
 import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.common.domain.YearSemester;
-import jakarta.persistence.*;
-import lombok.*;
 
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 

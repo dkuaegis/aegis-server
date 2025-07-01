@@ -1,5 +1,17 @@
 package aegis.server.domain.discord.service;
 
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import aegis.server.domain.discord.domain.DiscordVerification;
 import aegis.server.domain.discord.dto.response.DiscordIdResponse;
 import aegis.server.domain.discord.dto.response.DiscordVerificationCodeResponse;
@@ -9,16 +21,6 @@ import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Service

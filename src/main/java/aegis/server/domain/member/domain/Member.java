@@ -1,8 +1,10 @@
 package aegis.server.domain.member.domain;
 
-import aegis.server.domain.common.domain.BaseEntity;
 import jakarta.persistence.*;
+
 import lombok.*;
+
+import aegis.server.domain.common.domain.BaseEntity;
 
 @Entity
 @Getter

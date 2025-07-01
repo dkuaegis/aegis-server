@@ -1,13 +1,14 @@
 package aegis.server.domain.payment.repository;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.member.domain.Student;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.List;
-import java.util.Optional;
 
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 

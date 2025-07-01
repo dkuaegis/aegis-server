@@ -1,16 +1,18 @@
 package aegis.server.domain.survey.domain;
 
-import aegis.server.domain.common.domain.BaseEntity;
-import aegis.server.domain.member.domain.Student;
-import aegis.server.global.exception.CustomException;
-import aegis.server.global.exception.ErrorCode;
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import jakarta.persistence.*;
+
+import lombok.*;
+
+import aegis.server.domain.common.domain.BaseEntity;
+import aegis.server.domain.member.domain.Student;
+import aegis.server.global.exception.CustomException;
+import aegis.server.global.exception.ErrorCode;
 
 @Entity
 @Getter

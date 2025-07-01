@@ -1,12 +1,13 @@
 package aegis.server.global.security.oidc;
 
-import aegis.server.domain.member.domain.Member;
-import aegis.server.domain.member.domain.Role;
+import java.io.Serializable;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.io.Serializable;
+import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.domain.Role;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)

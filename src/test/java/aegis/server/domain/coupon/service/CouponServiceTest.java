@@ -1,5 +1,13 @@
 package aegis.server.domain.coupon.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import aegis.server.domain.coupon.domain.Coupon;
 import aegis.server.domain.coupon.domain.CouponCode;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
@@ -15,12 +23,6 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 

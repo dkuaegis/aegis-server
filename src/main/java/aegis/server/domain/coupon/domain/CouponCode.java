@@ -1,12 +1,14 @@
 package aegis.server.domain.coupon.domain;
 
+import java.time.LocalDateTime;
+
+import jakarta.persistence.*;
+
+import lombok.*;
+
 import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
-import jakarta.persistence.*;
-import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter

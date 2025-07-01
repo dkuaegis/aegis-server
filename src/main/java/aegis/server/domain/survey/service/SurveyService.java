@@ -1,5 +1,10 @@
 package aegis.server.domain.survey.service;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+
 import aegis.server.domain.member.domain.Student;
 import aegis.server.domain.member.repository.StudentRepository;
 import aegis.server.domain.survey.domain.Survey;
@@ -8,9 +13,6 @@ import aegis.server.domain.survey.repository.SurveyRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor

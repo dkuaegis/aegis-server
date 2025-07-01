@@ -1,9 +1,9 @@
 package aegis.server.domain.coupon.dto.response;
 
-import aegis.server.domain.coupon.domain.Coupon;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import aegis.server.domain.coupon.domain.Coupon;
 
 public record CouponResponse(
         Long couponId,

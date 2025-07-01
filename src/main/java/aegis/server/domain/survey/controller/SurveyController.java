@@ -1,19 +1,23 @@
 package aegis.server.domain.survey.controller;
 
-import aegis.server.domain.survey.dto.SurveyCommon;
-import aegis.server.domain.survey.service.SurveyService;
-import aegis.server.global.security.annotation.LoginUser;
-import aegis.server.global.security.oidc.UserDetails;
+import jakarta.validation.Valid;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import lombok.RequiredArgsConstructor;
+
+import aegis.server.domain.survey.dto.SurveyCommon;
+import aegis.server.domain.survey.service.SurveyService;
+import aegis.server.global.security.annotation.LoginUser;
+import aegis.server.global.security.oidc.UserDetails;
 
 @Tag(name = "Survey", description = "설문조사 관리 API")
 @RestController

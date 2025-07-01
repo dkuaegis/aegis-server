@@ -1,20 +1,24 @@
 package aegis.server.domain.member.controller;
 
-import aegis.server.domain.member.dto.request.PersonalInfoUpdateRequest;
-import aegis.server.domain.member.dto.response.PersonalInfoResponse;
-import aegis.server.domain.member.service.MemberService;
-import aegis.server.global.security.annotation.LoginUser;
-import aegis.server.global.security.oidc.UserDetails;
+import jakarta.validation.Valid;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import lombok.RequiredArgsConstructor;
+
+import aegis.server.domain.member.dto.request.PersonalInfoUpdateRequest;
+import aegis.server.domain.member.dto.response.PersonalInfoResponse;
+import aegis.server.domain.member.service.MemberService;
+import aegis.server.global.security.annotation.LoginUser;
+import aegis.server.global.security.oidc.UserDetails;
 
 @Tag(name = "Member", description = "회원 개인정보 관리 API")
 @RestController

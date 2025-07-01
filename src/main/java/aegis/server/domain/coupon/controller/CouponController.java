@@ -1,21 +1,25 @@
 package aegis.server.domain.coupon.controller;
 
-import aegis.server.domain.coupon.dto.request.CouponCodeUseRequest;
-import aegis.server.domain.coupon.dto.response.IssuedCouponResponse;
-import aegis.server.domain.coupon.service.CouponService;
-import aegis.server.global.security.annotation.LoginUser;
-import aegis.server.global.security.oidc.UserDetails;
+import java.util.List;
+
+import jakarta.validation.Valid;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
+
+import aegis.server.domain.coupon.dto.request.CouponCodeUseRequest;
+import aegis.server.domain.coupon.dto.response.IssuedCouponResponse;
+import aegis.server.domain.coupon.service.CouponService;
+import aegis.server.global.security.annotation.LoginUser;
+import aegis.server.global.security.oidc.UserDetails;
 
 @Tag(name = "Coupon", description = "사용자 쿠폰 관리 API")
 @RestController

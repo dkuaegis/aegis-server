@@ -1,12 +1,14 @@
 package aegis.server.global.security.oidc;
 
-import aegis.server.domain.member.domain.Member;
-import lombok.Getter;
+import java.util.Collections;
+
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
-import java.util.Collections;
+import lombok.Getter;
+
+import aegis.server.domain.member.domain.Member;
 
 @Getter
 public class CustomOidcUser extends DefaultOidcUser {

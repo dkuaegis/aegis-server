@@ -1,5 +1,13 @@
 package aegis.server.domain.coupon.service;
 
+import java.util.List;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+
 import aegis.server.domain.coupon.domain.Coupon;
 import aegis.server.domain.coupon.domain.CouponCode;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
@@ -18,12 +26,6 @@ import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
-import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)

@@ -1,9 +1,10 @@
 package aegis.server.domain.member.dto.request;
 
-import aegis.server.domain.member.domain.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+
+import aegis.server.domain.member.domain.*;
 
 public record PersonalInfoUpdateRequest(
         @NotBlank

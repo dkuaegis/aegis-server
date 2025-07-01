@@ -1,9 +1,9 @@
 package aegis.server.domain.payment.dto.internal;
 
-import aegis.server.domain.payment.domain.Payment;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import aegis.server.domain.payment.domain.Payment;
 
 public record PaymentInfo(
         Long id,

@@ -1,5 +1,21 @@
 package aegis.server.domain.coupon.controller;
 
+import java.util.List;
+
+import jakarta.validation.Valid;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import lombok.RequiredArgsConstructor;
+
 import aegis.server.domain.coupon.dto.request.CouponCodeCreateRequest;
 import aegis.server.domain.coupon.dto.request.CouponCreateRequest;
 import aegis.server.domain.coupon.dto.request.CouponIssueRequest;
@@ -7,18 +23,6 @@ import aegis.server.domain.coupon.dto.response.CouponCodeResponse;
 import aegis.server.domain.coupon.dto.response.CouponResponse;
 import aegis.server.domain.coupon.dto.response.IssuedCouponResponse;
 import aegis.server.domain.coupon.service.CouponService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "Admin Coupon", description = "관리자 쿠폰 관리 API")
 @RestController

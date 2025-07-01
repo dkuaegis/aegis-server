@@ -16,6 +16,19 @@ java {
 
 spotless {
     java {
+        importOrder(
+                'java',
+                'javax',
+                'jakarta',
+                '',
+                'org.springframework',
+                'org',
+                'com',
+                'lombok',
+                '',
+                'aegis',
+                '\\#'
+        )
         endWithNewline()
         trimTrailingWhitespace()
         removeUnusedImports()

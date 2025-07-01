@@ -1,16 +1,19 @@
 package aegis.server.domain.payment.controller;
 
-import aegis.server.domain.payment.service.TransactionService;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import lombok.RequiredArgsConstructor;
+
+import aegis.server.domain.payment.service.TransactionService;
 
 @Tag(name = "Transaction (Internal)", description = "내부 거래 처리 API - 외부 시스템에서만 호출")
 @RestController

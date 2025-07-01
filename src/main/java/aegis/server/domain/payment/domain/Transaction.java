@@ -1,12 +1,14 @@
 package aegis.server.domain.payment.domain;
 
-import aegis.server.domain.common.domain.BaseEntity;
-import aegis.server.domain.common.domain.YearSemester;
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.*;
+
+import lombok.*;
+
+import aegis.server.domain.common.domain.BaseEntity;
+import aegis.server.domain.common.domain.YearSemester;
 
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 

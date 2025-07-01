@@ -1,16 +1,18 @@
 package aegis.server.domain.discord.service;
 
+import java.util.NoSuchElementException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import aegis.server.domain.discord.dto.response.DiscordVerificationCodeResponse;
 import aegis.server.domain.discord.repository.DiscordVerificationRepository;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 

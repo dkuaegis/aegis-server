@@ -1,12 +1,5 @@
 package aegis.server.global.security.oidc;
 
-import aegis.server.domain.member.domain.Member;
-import aegis.server.domain.member.domain.Student;
-import aegis.server.domain.member.repository.MemberRepository;
-import aegis.server.domain.member.repository.StudentRepository;
-import aegis.server.global.exception.CustomException;
-import aegis.server.global.exception.ErrorCode;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
@@ -15,6 +8,15 @@ import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+
+import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.domain.Student;
+import aegis.server.domain.member.repository.MemberRepository;
+import aegis.server.domain.member.repository.StudentRepository;
+import aegis.server.global.exception.CustomException;
+import aegis.server.global.exception.ErrorCode;
 
 @Service
 @RequiredArgsConstructor

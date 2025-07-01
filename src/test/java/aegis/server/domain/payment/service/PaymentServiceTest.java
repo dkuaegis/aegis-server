@@ -1,5 +1,16 @@
 package aegis.server.domain.payment.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Transactional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import aegis.server.domain.coupon.domain.Coupon;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
 import aegis.server.domain.coupon.repository.CouponRepository;
@@ -14,15 +25,6 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 import static aegis.server.global.constant.Constant.CLUB_DUES;
 import static org.junit.jupiter.api.Assertions.assertEquals;

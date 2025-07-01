@@ -1,9 +1,9 @@
 package aegis.server.global.constant;
 
-import aegis.server.domain.common.domain.YearSemester;
-
 import java.math.BigDecimal;
 import java.util.List;
+
+import aegis.server.domain.common.domain.YearSemester;
 
 public class Constant {
 

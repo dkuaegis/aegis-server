@@ -1,5 +1,14 @@
 package aegis.server.domain.payment.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.domain.Student;
 import aegis.server.domain.payment.domain.Payment;
@@ -9,13 +18,6 @@ import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.domain.payment.repository.TransactionRepository;
 import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 import static aegis.server.global.constant.Constant.CLUB_DUES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
