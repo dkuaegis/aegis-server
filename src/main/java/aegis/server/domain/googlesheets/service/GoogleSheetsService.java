@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.googlesheets.dto.ImportData;
 import aegis.server.domain.member.domain.Member;
-import aegis.server.domain.member.domain.Student;
 import aegis.server.domain.payment.dto.internal.PaymentInfo;
 import aegis.server.domain.survey.domain.Survey;
 import aegis.server.domain.survey.repository.SurveyRepository;
@@ -32,27 +31,24 @@ public class GoogleSheetsService {
     @Value("${google.spreadsheets.id}")
     private String spreadsheetId;
 
-    private static final String REGISTRATION_SHEET_RANGE = "database!A2:R";
+    private static final String REGISTRATION_SHEET_RANGE = "database!A2:O";
 
-    public void addMemberRegistration(Member member, Student student, PaymentInfo paymentInfo) throws IOException {
+    public void addMemberRegistration(Member member, PaymentInfo paymentInfo) throws IOException {
         Survey survey = surveyRepository
-                .findByStudent(student)
+                .findByMember(member)
                 .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_NOT_FOUND));
 
         ImportData importData = new ImportData(
                 paymentInfo.updatedAt(),
                 member.getName(),
-                student.getStudentId(),
-                student.getDepartment(),
-                student.getGrade(),
-                student.getSemester(),
-                student.getAcademicStatus(),
+                member.getStudentId(),
+                member.getDepartment(),
+                member.getGrade(),
                 member.getPhoneNumber(),
                 member.getDiscordId(),
                 member.getEmail(),
                 member.getBirthdate(),
                 member.getGender(),
-                student.getFresh(),
                 survey.getInterests(),
                 survey.getAcquisitionType(),
                 survey.getJoinReason(),

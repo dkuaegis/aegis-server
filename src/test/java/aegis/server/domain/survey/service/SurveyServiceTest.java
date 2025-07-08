@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import aegis.server.domain.member.domain.Member;
-import aegis.server.domain.member.domain.Student;
 import aegis.server.domain.survey.domain.AcquisitionType;
 import aegis.server.domain.survey.domain.Interest;
 import aegis.server.domain.survey.domain.Survey;
@@ -47,14 +46,13 @@ class SurveyServiceTest extends IntegrationTest {
         void 새로운_설문조사_저장에_성공한다() {
             // given
             Member member = createMember();
-            Student student = createStudent(member);
             UserDetails userDetails = createUserDetails(member);
 
             // when
             surveyService.createOrUpdateSurvey(userDetails, validSurveyRequest);
 
             // then
-            Survey survey = surveyRepository.findByStudent(student).get();
+            Survey survey = surveyRepository.findByMember(member).get();
 
             assertEquals(validSurveyRequest.interests(), survey.getInterests());
             assertEquals(validSurveyRequest.interestsEtc(), survey.getInterestsEtc());
@@ -66,7 +64,6 @@ class SurveyServiceTest extends IntegrationTest {
         void 설문조사_수정에_성공한다() {
             // given
             Member member = createMember();
-            Student student = createStudent(member);
             UserDetails userDetails = createUserDetails(member);
             surveyService.createOrUpdateSurvey(userDetails, validSurveyRequest);
 
@@ -81,7 +78,7 @@ class SurveyServiceTest extends IntegrationTest {
             surveyService.createOrUpdateSurvey(userDetails, updatedSurveyRequest);
 
             // then
-            Survey survey = surveyRepository.findByStudent(student).get();
+            Survey survey = surveyRepository.findByMember(member).get();
 
             assertEquals(updatedSurveyRequest.interests(), survey.getInterests());
             assertEquals(updatedSurveyRequest.interestsEtc(), survey.getInterestsEtc());
@@ -94,7 +91,6 @@ class SurveyServiceTest extends IntegrationTest {
             // given
             Member member = createMember();
             UserDetails userDetails = createUserDetails(member);
-            createStudent(member);
 
             SurveyCommon invalidSurveyRequest = new SurveyCommon(
                     Set.of(Interest.WEB_BACKEND),
@@ -114,7 +110,6 @@ class SurveyServiceTest extends IntegrationTest {
             // given
             Member member = createMember();
             UserDetails userDetails = createUserDetails(member);
-            createStudent(member);
 
             SurveyCommon invalidSurveyRequest = new SurveyCommon(
                     Set.of(Interest.WEB_BACKEND),

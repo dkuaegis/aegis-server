@@ -5,8 +5,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import aegis.server.domain.member.domain.Student;
-import aegis.server.domain.member.repository.StudentRepository;
+import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.survey.domain.Survey;
 import aegis.server.domain.survey.dto.SurveyCommon;
 import aegis.server.domain.survey.repository.SurveyRepository;
@@ -20,12 +20,12 @@ import aegis.server.global.security.oidc.UserDetails;
 public class SurveyService {
 
     private final SurveyRepository surveyRepository;
-    private final StudentRepository studentRepository;
+    private final MemberRepository memberRepository;
 
     public SurveyCommon getSurvey(UserDetails userDetails) {
-        Student student = findStudentByMemberId(userDetails.getMemberId());
+        Member member = findMemberById(userDetails.getMemberId());
         Survey survey = surveyRepository
-                .findByStudent(student)
+                .findByMember(member)
                 .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_NOT_FOUND));
 
         return SurveyCommon.from(survey);
@@ -33,9 +33,9 @@ public class SurveyService {
 
     @Transactional
     public void createOrUpdateSurvey(UserDetails userDetails, SurveyCommon surveyCommon) {
-        Student student = findStudentByMemberId(userDetails.getMemberId());
+        Member member = findMemberById(userDetails.getMemberId());
         surveyRepository
-                .findByStudent(student)
+                .findByMember(member)
                 .ifPresentOrElse(
                         survey -> survey.update(
                                 surveyCommon.interests(),
@@ -44,7 +44,7 @@ public class SurveyService {
                                 surveyCommon.joinReason(),
                                 surveyCommon.feedback()),
                         () -> surveyRepository.save(Survey.create(
-                                student,
+                                member,
                                 surveyCommon.interests(),
                                 surveyCommon.interestsEtc(),
                                 surveyCommon.acquisitionType(),
@@ -52,9 +52,7 @@ public class SurveyService {
                                 surveyCommon.feedback())));
     }
 
-    private Student findStudentByMemberId(Long memberId) {
-        return studentRepository
-                .findByMemberIdInCurrentYearSemester(memberId)
-                .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
+    private Member findMemberById(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
     }
 }

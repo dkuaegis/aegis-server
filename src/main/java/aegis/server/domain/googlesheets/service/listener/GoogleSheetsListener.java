@@ -14,9 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import aegis.server.domain.googlesheets.service.GoogleSheetsService;
 import aegis.server.domain.member.domain.Member;
-import aegis.server.domain.member.domain.Student;
 import aegis.server.domain.member.repository.MemberRepository;
-import aegis.server.domain.member.repository.StudentRepository;
 import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
 import aegis.server.domain.payment.dto.internal.PaymentInfo;
 import aegis.server.global.exception.CustomException;
@@ -32,7 +30,6 @@ public class GoogleSheetsListener {
 
     private final GoogleSheetsService googleSheetsService;
     private final MemberRepository memberRepository;
-    private final StudentRepository studentRepository;
 
     @Async("googleSheetsTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -49,11 +46,7 @@ public class GoogleSheetsListener {
                     .findById(paymentInfo.memberId())
                     .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-            Student student = studentRepository
-                    .findById(paymentInfo.studentId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
-
-            googleSheetsService.addMemberRegistration(member, student, paymentInfo);
+            googleSheetsService.addMemberRegistration(member, paymentInfo);
 
             log.info(
                     "[GoogleSheetsSyncListener][PaymentCompletedEvent] Google Sheets 회원 등록 정보 추가 완료: paymentId={}, memberId={}, name={}",

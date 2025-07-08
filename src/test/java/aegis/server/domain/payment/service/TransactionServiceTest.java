@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import aegis.server.domain.member.domain.Member;
-import aegis.server.domain.member.domain.Student;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.dto.request.PaymentRequest;
@@ -44,13 +43,11 @@ public class TransactionServiceTest extends IntegrationTest {
             """;
 
     private Member member;
-    private Student student;
     private String expectedDepositorName;
 
     @BeforeEach
     void setUp() {
         member = createMember();
-        student = createStudent(member);
         expectedDepositorName = member.getName();
         UserDetails userDetails = UserDetails.from(member);
         PaymentRequest request = new PaymentRequest(List.of());
@@ -69,9 +66,8 @@ public class TransactionServiceTest extends IntegrationTest {
             transactionService.createTransaction(transactionLog);
 
             // then
-            Payment payment = paymentRepository
-                    .findByStudentInCurrentYearSemester(student)
-                    .get();
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
             assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
         }
     }
@@ -88,9 +84,8 @@ public class TransactionServiceTest extends IntegrationTest {
             transactionService.createTransaction(transactionLog);
 
             // then
-            Payment payment = paymentRepository
-                    .findByStudentInCurrentYearSemester(student)
-                    .get();
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
             assertEquals(
                     BigDecimal.ZERO,
@@ -107,9 +102,8 @@ public class TransactionServiceTest extends IntegrationTest {
             transactionService.createTransaction(transactionLog);
 
             // then
-            Payment payment = paymentRepository
-                    .findByStudentInCurrentYearSemester(student)
-                    .get();
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
             assertEquals(
                     CLUB_DUES.subtract(BigDecimal.ONE),
@@ -126,9 +120,8 @@ public class TransactionServiceTest extends IntegrationTest {
             transactionService.createTransaction(transactionLog);
 
             // then
-            Payment payment = paymentRepository
-                    .findByStudentInCurrentYearSemester(student)
-                    .get();
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
             assertEquals(PaymentStatus.OVERPAID, payment.getStatus());
             assertEquals(
                     CLUB_DUES.add(BigDecimal.ONE),
@@ -151,9 +144,8 @@ public class TransactionServiceTest extends IntegrationTest {
             transactionService.createTransaction(transactionLog2);
 
             // then
-            Payment payment = paymentRepository
-                    .findByStudentInCurrentYearSemester(student)
-                    .get();
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
             assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
         }
 
@@ -169,9 +161,8 @@ public class TransactionServiceTest extends IntegrationTest {
             transactionService.createTransaction(transactionLog2);
 
             // then
-            Payment payment = paymentRepository
-                    .findByStudentInCurrentYearSemester(student)
-                    .get();
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
             assertEquals(PaymentStatus.OVERPAID, payment.getStatus());
             assertEquals(
                     CLUB_DUES.add(BigDecimal.ONE),

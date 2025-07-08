@@ -33,12 +33,20 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
+    private String phoneNumber;
+
+    private String studentId;
+
     @Enumerated(EnumType.STRING)
-    private Gender gender;
+    private Department department;
+
+    @Enumerated(EnumType.STRING)
+    private Grade grade;
 
     private String birthdate;
 
-    private String phoneNumber;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     public static Member create(String oidcId, String email, String name) {
         return Member.builder()
@@ -49,10 +57,14 @@ public class Member extends BaseEntity {
                 .build();
     }
 
-    public void updateMember(Gender gender, String birthdate, String phoneNumber) {
-        this.gender = gender;
-        this.birthdate = birthdate;
+    public void updatePersonalInfo(
+            String phoneNumber, String studentId, Department department, Grade grade, String birthdate, Gender gender) {
         this.phoneNumber = phoneNumber;
+        this.studentId = studentId;
+        this.department = department;
+        this.grade = grade;
+        this.birthdate = birthdate;
+        this.gender = gender;
     }
 
     public void updateName(String name) {

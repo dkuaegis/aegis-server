@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import aegis.server.domain.common.domain.YearSemester;
-import aegis.server.domain.member.domain.Student;
+import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
 
@@ -14,10 +14,10 @@ import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
-    Optional<Payment> findByStudentAndYearSemester(Student student, YearSemester yearSemester);
+    Optional<Payment> findByMemberAndYearSemester(Member member, YearSemester yearSemester);
 
-    default Optional<Payment> findByStudentInCurrentYearSemester(Student student) {
-        return findByStudentAndYearSemester(student, CURRENT_YEAR_SEMESTER);
+    default Optional<Payment> findByMemberInCurrentYearSemester(Member member) {
+        return findByMemberAndYearSemester(member, CURRENT_YEAR_SEMESTER);
     }
 
     Optional<Payment> findByExpectedDepositorNameAndYearSemester(

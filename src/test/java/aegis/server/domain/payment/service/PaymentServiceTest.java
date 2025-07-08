@@ -16,7 +16,6 @@ import aegis.server.domain.coupon.domain.IssuedCoupon;
 import aegis.server.domain.coupon.repository.CouponRepository;
 import aegis.server.domain.coupon.repository.IssuedCouponRepository;
 import aegis.server.domain.member.domain.Member;
-import aegis.server.domain.member.domain.Student;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.dto.request.PaymentRequest;
@@ -45,13 +44,11 @@ public class PaymentServiceTest extends IntegrationTest {
     CouponRepository couponRepository;
 
     private Member member;
-    private Student student;
     private UserDetails userDetails;
 
     @BeforeEach
     void setUp() {
         member = createMember();
-        student = createStudent(member);
         userDetails = createUserDetails(member);
     }
 
@@ -67,10 +64,9 @@ public class PaymentServiceTest extends IntegrationTest {
             paymentService.createOrUpdatePendingPayment(request, userDetails);
 
             // then
-            Payment payment = paymentRepository
-                    .findByStudentInCurrentYearSemester(student)
-                    .get();
-            assertEquals(student.getId(), payment.getStudent().getId());
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            assertEquals(member.getId(), payment.getMember().getId());
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
             assertEquals(CLUB_DUES, payment.getFinalPrice());
         }
@@ -86,9 +82,8 @@ public class PaymentServiceTest extends IntegrationTest {
             paymentService.createOrUpdatePendingPayment(request, userDetails);
 
             // then
-            Payment payment = paymentRepository
-                    .findByStudentInCurrentYearSemester(student)
-                    .get();
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
             BigDecimal discountedPrice = CLUB_DUES.subtract(coupon.getDiscountAmount());
             assertEquals(discountedPrice, payment.getFinalPrice());
         }
@@ -105,9 +100,8 @@ public class PaymentServiceTest extends IntegrationTest {
             paymentService.createOrUpdatePendingPayment(request, userDetails);
 
             // then
-            Payment payment = paymentRepository
-                    .findByStudentInCurrentYearSemester(student)
-                    .get();
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
             System.out.println(payment.getFinalPrice());
             assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
         }
@@ -189,7 +183,7 @@ public class PaymentServiceTest extends IntegrationTest {
             // given
             PaymentRequest request = new PaymentRequest(List.of());
 
-            Payment payment = Payment.of(student);
+            Payment payment = Payment.of(member);
             ReflectionTestUtils.setField(payment, "status", PaymentStatus.COMPLETED);
             paymentRepository.save(payment);
 
@@ -205,7 +199,7 @@ public class PaymentServiceTest extends IntegrationTest {
             // given
             PaymentRequest request = new PaymentRequest(List.of());
 
-            Payment payment = Payment.of(student);
+            Payment payment = Payment.of(member);
             ReflectionTestUtils.setField(payment, "status", PaymentStatus.OVERPAID);
             paymentRepository.save(payment);
 

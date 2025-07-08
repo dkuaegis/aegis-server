@@ -5,11 +5,11 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import aegis.server.domain.member.domain.Student;
+import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.survey.domain.Survey;
 
 public interface SurveyRepository extends JpaRepository<Survey, Long> {
-    Optional<Survey> findByStudent(Student student);
+    Optional<Survey> findByMember(Member member);
 
-    List<Survey> findByStudentIn(List<Student> students);
+    List<Survey> findByMemberIn(List<Member> members);
 }
