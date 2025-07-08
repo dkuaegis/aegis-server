@@ -1,9 +1,7 @@
 package aegis.server.domain.discord.service;
 
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.stereotype.Service;
@@ -31,8 +29,6 @@ public class DiscordService {
     private final DiscordVerificationRepository discordVerificationRepository;
     private final MemberRepository memberRepository;
 
-    private final Map<Long, Object> verificationCodeLocks = new ConcurrentHashMap<>();
-
     public DiscordIdResponse getDiscordId(UserDetails userDetails) {
         Member member = memberRepository
                 .findById(userDetails.getMemberId())
@@ -46,22 +42,20 @@ public class DiscordService {
                 .findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        synchronized (getLock(member.getId())) {
-            Optional<DiscordVerification> optionalVerification =
-                    discordVerificationRepository.findByMemberId(member.getId());
+        Optional<DiscordVerification> optionalVerification =
+                discordVerificationRepository.findByMemberId(member.getId());
 
-            DiscordVerification discordVerification;
-            if (optionalVerification.isPresent()) {
-                discordVerification = optionalVerification.get();
-            } else {
-                String code = generateUniqueCode();
-                discordVerification = DiscordVerification.of(code, member.getId());
-            }
-
-            discordVerificationRepository.save(discordVerification);
-
-            return DiscordVerificationCodeResponse.of(discordVerification.getCode());
+        DiscordVerification discordVerification;
+        if (optionalVerification.isPresent()) {
+            discordVerification = optionalVerification.get();
+        } else {
+            String code = generateUniqueCode();
+            discordVerification = DiscordVerification.of(code, member.getId());
         }
+
+        discordVerificationRepository.save(discordVerification);
+
+        return DiscordVerificationCodeResponse.of(discordVerification.getCode());
     }
 
     // DiscordSlashCommandListener에서 사용
@@ -97,9 +91,5 @@ public class DiscordService {
 
     private String generateRandomCode() {
         return String.format("%06d", ThreadLocalRandom.current().nextInt(1000000));
-    }
-
-    private Object getLock(Long memberId) {
-        return verificationCodeLocks.computeIfAbsent(memberId, key -> new Object());
     }
 }
