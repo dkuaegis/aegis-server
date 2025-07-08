@@ -37,19 +37,9 @@ public class SurveyService {
         surveyRepository
                 .findByMember(member)
                 .ifPresentOrElse(
-                        survey -> survey.update(
-                                surveyCommon.interests(),
-                                surveyCommon.interestsEtc(),
-                                surveyCommon.acquisitionType(),
-                                surveyCommon.joinReason(),
-                                surveyCommon.feedback()),
-                        () -> surveyRepository.save(Survey.create(
-                                member,
-                                surveyCommon.interests(),
-                                surveyCommon.interestsEtc(),
-                                surveyCommon.acquisitionType(),
-                                surveyCommon.joinReason(),
-                                surveyCommon.feedback())));
+                        survey -> survey.update(surveyCommon.acquisitionType(), surveyCommon.joinReason()),
+                        () -> surveyRepository.save(
+                                Survey.create(member, surveyCommon.acquisitionType(), surveyCommon.joinReason())));
     }
 
     private Member findMemberById(Long memberId) {

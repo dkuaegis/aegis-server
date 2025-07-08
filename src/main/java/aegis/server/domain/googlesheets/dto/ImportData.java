@@ -5,12 +5,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.survey.domain.AcquisitionType;
-import aegis.server.domain.survey.domain.Interest;
 
 public record ImportData(
         LocalDateTime joinDateTime,
@@ -23,10 +20,8 @@ public record ImportData(
         String email,
         String birthDate,
         Gender gender,
-        Set<Interest> interests,
         AcquisitionType acquisitionType,
         String joinReason,
-        String feedback,
         BigDecimal finalPrice) {
     public List<Object> toRowData() {
         String formattedDateTime = "";
@@ -47,10 +42,8 @@ public record ImportData(
                 email,
                 birthDate,
                 gender != null ? gender.getValue() : "",
-                interests != null ? interests.stream().map(Interest::toString).collect(Collectors.joining(",")) : "",
                 acquisitionType != null ? acquisitionType.getValue() : "NULL",
                 joinReason,
-                feedback != null && !feedback.isEmpty() ? feedback : "NULL",
                 finalPrice != null ? finalPrice.toString() : "");
     }
 }

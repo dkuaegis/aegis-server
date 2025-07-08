@@ -49,10 +49,8 @@ public class GoogleSheetsService {
                 member.getEmail(),
                 member.getBirthdate(),
                 member.getGender(),
-                survey.getInterests(),
                 survey.getAcquisitionType(),
                 survey.getJoinReason(),
-                survey.getFeedback(),
                 paymentInfo.finalPrice());
 
         ValueRange body = new ValueRange().setValues(List.of(importData.toRowData()));
