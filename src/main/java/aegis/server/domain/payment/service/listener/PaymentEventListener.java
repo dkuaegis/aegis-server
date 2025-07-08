@@ -67,9 +67,9 @@ public class PaymentEventListener {
 
     private void logCompleted(Payment payment) {
         log.info(
-                "[PaymentEventListener][TransactionCreatedEvent] 결제 완료: paymentId={}, studentId={}, depositorName={}",
+                "[PaymentEventListener][TransactionCreatedEvent] 결제 완료: paymentId={}, memberId={}, depositorName={}",
                 payment.getId(),
-                payment.getStudent().getId(),
+                payment.getMember().getId(),
                 payment.getExpectedDepositorName());
     }
 

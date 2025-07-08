@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
-import aegis.server.domain.member.domain.Student;
-import aegis.server.domain.member.repository.StudentRepository;
+import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.repository.PaymentRepository;
@@ -35,7 +35,7 @@ import aegis.server.global.security.oidc.UserDetails;
 public class AuthController {
 
     private final PaymentRepository paymentRepository;
-    private final StudentRepository studentRepository;
+    private final MemberRepository memberRepository;
 
     @Operation(summary = "인증 상태 확인", description = "사용자의 인증 상태와 결제 상태를 확인합니다.")
     @ApiResponses(
@@ -49,10 +49,10 @@ public class AuthController {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        Student student = studentRepository
-                .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
-                .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
-        Optional<Payment> optionalPayment = paymentRepository.findByStudentInCurrentYearSemester(student);
+        Member member = memberRepository
+                .findById(userDetails.getMemberId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        Optional<Payment> optionalPayment = paymentRepository.findByMemberInCurrentYearSemester(member);
 
         if (optionalPayment.isPresent()) {
             Payment payment = optionalPayment.get();

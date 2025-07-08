@@ -13,8 +13,7 @@ import lombok.RequiredArgsConstructor;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
 import aegis.server.domain.coupon.repository.IssuedCouponRepository;
 import aegis.server.domain.member.domain.Member;
-import aegis.server.domain.member.domain.Student;
-import aegis.server.domain.member.repository.StudentRepository;
+import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
@@ -35,16 +34,16 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final TransactionRepository transactionRepository;
     private final IssuedCouponRepository issuedCouponRepository;
-    private final StudentRepository studentRepository;
+    private final MemberRepository memberRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     public PaymentStatusResponse checkPaymentStatus(UserDetails userDetails) {
-        Student student = studentRepository
-                .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
-                .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
+        Member member = memberRepository
+                .findById(userDetails.getMemberId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         Payment payment = paymentRepository
-                .findByStudentInCurrentYearSemester(student)
+                .findByMemberInCurrentYearSemester(member)
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
         BigDecimal currentDepositAmount =
@@ -55,13 +54,12 @@ public class PaymentService {
 
     @Transactional
     public void createOrUpdatePendingPayment(PaymentRequest request, UserDetails userDetails) {
-        Student student = studentRepository
-                .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
-                .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
+        Member member = memberRepository
+                .findById(userDetails.getMemberId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        Payment payment = paymentRepository
-                .findByStudentInCurrentYearSemester(student)
-                .orElseGet(() -> createNewPayment(student));
+        Payment payment =
+                paymentRepository.findByMemberInCurrentYearSemester(member).orElseGet(() -> createNewPayment(member));
 
         validatePaymentStatus(payment);
         applyCouponsIfPresent(payment, request.getIssuedCouponIds());
@@ -72,8 +70,8 @@ public class PaymentService {
         }
     }
 
-    private Payment createNewPayment(Student student) {
-        Payment payment = Payment.of(student);
+    private Payment createNewPayment(Member member) {
+        Payment payment = Payment.of(member);
         return paymentRepository.save(payment);
     }
 
@@ -87,7 +85,7 @@ public class PaymentService {
     }
 
     private void applyCouponsIfPresent(Payment payment, List<Long> issuedCouponIds) {
-        Member member = payment.getStudent().getMember();
+        Member member = payment.getMember();
         List<IssuedCoupon> validIssuedCoupons = issuedCouponIds.stream()
                 .map(issuedCouponId -> issuedCouponRepository
                         .findByIdAndMember(issuedCouponId, member)

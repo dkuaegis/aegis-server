@@ -10,7 +10,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import aegis.server.domain.common.domain.BaseEntity;
-import aegis.server.domain.member.domain.Student;
+import aegis.server.domain.member.domain.Member;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 
@@ -27,8 +27,8 @@ public class Survey extends BaseEntity {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id")
-    private Student student;
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @ElementCollection
     @CollectionTable(name = "interests", joinColumns = @JoinColumn(name = "survey_id"))
@@ -70,7 +70,7 @@ public class Survey extends BaseEntity {
     }
 
     public static Survey create(
-            Student student,
+            Member member,
             Set<Interest> interests,
             Map<Interest, String> interestsEtc,
             AcquisitionType acquisitionType,
@@ -79,7 +79,7 @@ public class Survey extends BaseEntity {
         validateEtcInterests(interests, interestsEtc);
 
         return Survey.builder()
-                .student(student)
+                .member(member)
                 .interests(interests)
                 .interestsEtc(interestsEtc)
                 .acquisitionType(acquisitionType)

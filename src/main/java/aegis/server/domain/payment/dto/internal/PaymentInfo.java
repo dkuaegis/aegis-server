@@ -6,17 +6,11 @@ import java.time.LocalDateTime;
 import aegis.server.domain.payment.domain.Payment;
 
 public record PaymentInfo(
-        Long id,
-        Long studentId,
-        Long memberId,
-        BigDecimal finalPrice,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt) {
+        Long id, Long memberId, BigDecimal finalPrice, LocalDateTime createdAt, LocalDateTime updatedAt) {
     public static PaymentInfo from(Payment payment) {
         return new PaymentInfo(
                 payment.getId(),
-                payment.getStudent().getId(),
-                payment.getStudent().getMember().getId(),
+                payment.getMember().getId(),
                 payment.getFinalPrice(),
                 payment.getCreatedAt(),
                 payment.getUpdatedAt());

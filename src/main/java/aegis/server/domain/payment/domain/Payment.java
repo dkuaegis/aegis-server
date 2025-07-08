@@ -11,7 +11,7 @@ import lombok.*;
 import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
-import aegis.server.domain.member.domain.Student;
+import aegis.server.domain.member.domain.Member;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 
@@ -30,8 +30,8 @@ public class Payment extends BaseEntity {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id")
-    private Student student;
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @OneToMany(mappedBy = "payment")
     @Builder.Default
@@ -51,18 +51,18 @@ public class Payment extends BaseEntity {
 
     private String expectedDepositorName;
 
-    public static String expectedDepositorName(Student student) {
-        return student.getMember().getName();
+    public static String expectedDepositorName(Member member) {
+        return member.getName();
     }
 
-    public static Payment of(Student student) {
+    public static Payment of(Member member) {
         return Payment.builder()
-                .student(student)
+                .member(member)
                 .status(PaymentStatus.PENDING)
                 .yearSemester(CURRENT_YEAR_SEMESTER)
                 .originalPrice(CLUB_DUES)
                 .finalPrice(CLUB_DUES)
-                .expectedDepositorName(expectedDepositorName(student))
+                .expectedDepositorName(expectedDepositorName(member))
                 .build();
     }
 
