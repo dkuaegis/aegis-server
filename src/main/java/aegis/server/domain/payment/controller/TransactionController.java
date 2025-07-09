@@ -2,6 +2,7 @@ package aegis.server.domain.payment.controller;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,8 +29,8 @@ public class TransactionController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "200", description = "거래 생성 성공"),
-                @ApiResponse(responseCode = "400", description = "거래 데이터 형식 오류"),
-                @ApiResponse(responseCode = "500", description = "거래 로그 파싱 실패 또는 데이터베이스 오류")
+                @ApiResponse(responseCode = "400", description = "거래 데이터 형식 오류", content = @Content),
+                @ApiResponse(responseCode = "500", description = "거래 로그 파싱 실패 또는 데이터베이스 오류", content = @Content)
             })
     @PostMapping
     public void createTransaction(@RequestBody String request) {

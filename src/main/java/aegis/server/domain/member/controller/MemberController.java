@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,8 +33,8 @@ public class MemberController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "200", description = "개인정보 조회 성공"),
-                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-                @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음")
+                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
+                @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음", content = @Content)
             })
     @GetMapping
     public ResponseEntity<PersonalInfoResponse> getPersonalInfo(
@@ -45,9 +46,9 @@ public class MemberController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "201", description = "개인정보 수정 성공"),
-                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
-                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-                @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음")
+                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
+                @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음", content = @Content)
             })
     @PostMapping
     public ResponseEntity<Void> updatePersonalInfo(

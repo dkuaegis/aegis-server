@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,7 +34,7 @@ public class CouponController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "200", description = "쿠폰 조회 성공"),
-                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content)
             })
     @GetMapping("/issued/me")
     public ResponseEntity<List<IssuedCouponResponse>> getMyAllValidIssuedCoupon(
@@ -46,10 +47,10 @@ public class CouponController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "200", description = "쿠폰 코드 사용 성공"),
-                @ApiResponse(responseCode = "400", description = "잘못된 쿠폰 코드 형식"),
-                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-                @ApiResponse(responseCode = "404", description = "존재하지 않는 쿠폰 코드"),
-                @ApiResponse(responseCode = "409", description = "이미 사용된 쿠폰 코드 또는 중복 사용")
+                @ApiResponse(responseCode = "400", description = "잘못된 쿠폰 코드 형식", content = @Content),
+                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 쿠폰 코드", content = @Content),
+                @ApiResponse(responseCode = "409", description = "이미 사용된 쿠폰 코드 또는 중복 사용", content = @Content)
             })
     @PostMapping("/code")
     public ResponseEntity<Void> codeCouponIssue(

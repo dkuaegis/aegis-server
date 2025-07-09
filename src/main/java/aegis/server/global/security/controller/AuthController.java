@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -41,8 +42,8 @@ public class AuthController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "200", description = "인증 상태 확인 성공"),
-                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-                @ApiResponse(responseCode = "404", description = "학생 정보를 찾을 수 없음")
+                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
+                @ApiResponse(responseCode = "404", description = "학생 정보를 찾을 수 없음", content = @Content)
             })
     @GetMapping("/auth/check")
     public ResponseEntity<AuthCheckResponse> check(@Parameter(hidden = true) @LoginUser UserDetails userDetails) {

@@ -2,6 +2,7 @@ package aegis.server.domain.discord.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,8 +36,8 @@ public class DiscordController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "200", description = "디스코드 ID 조회 성공"),
-                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-                @ApiResponse(responseCode = "404", description = "디스코드 연동 정보찾을 수 없음")
+                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
+                @ApiResponse(responseCode = "404", description = "디스코드 연동 정보찾을 수 없음", content = @Content)
             })
     @GetMapping("/myid")
     public ResponseEntity<DiscordIdResponse> getDiscordId(
@@ -48,9 +49,9 @@ public class DiscordController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "201", description = "인증 코드 발급 성공"),
-                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-                @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음"),
-                @ApiResponse(responseCode = "500", description = "인증 코드 생성 실패 (100회 시도 후 실패)")
+                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
+                @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음", content = @Content),
+                @ApiResponse(responseCode = "500", description = "인증 코드 생성 실패 (100회 시도 후 실패)", content = @Content)
             })
     @PostMapping("/issue-verification-code")
     public ResponseEntity<DiscordVerificationCodeResponse> getVerificationCode(

@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,8 +45,8 @@ public class AdminCouponController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "201", description = "쿠폰 생성 성공"),
-                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
-                @ApiResponse(responseCode = "409", description = "동일한 이름과 할인금액의 쿠폰이 이미 존재")
+                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+                @ApiResponse(responseCode = "409", description = "동일한 이름과 할인금액의 쿠폰이 이미 존재", content = @Content)
             })
     @PostMapping
     public ResponseEntity<Void> createCoupon(@Valid @RequestBody CouponCreateRequest request) {
@@ -57,8 +58,8 @@ public class AdminCouponController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "204", description = "쿠폰 삭제 성공"),
-                @ApiResponse(responseCode = "404", description = "존재하지 않는 쿠폰"),
-                @ApiResponse(responseCode = "409", description = "발급된 쿠폰이 있어 삭제할 수 없음")
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 쿠폰", content = @Content),
+                @ApiResponse(responseCode = "409", description = "발급된 쿠폰이 있어 삭제할 수 없음", content = @Content)
             })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCoupon(@Parameter(description = "삭제할 쿠폰 ID") @PathVariable Long id) {
@@ -80,8 +81,8 @@ public class AdminCouponController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "201", description = "쿠폰 발급 성공"),
-                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
-                @ApiResponse(responseCode = "404", description = "존재하지 않는 쿠폰 또는 사용자")
+                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 쿠폰 또는 사용자", content = @Content)
             })
     @PostMapping("/issued")
     public ResponseEntity<Void> createIssuedCoupon(@Valid @RequestBody CouponIssueRequest request) {
@@ -93,7 +94,7 @@ public class AdminCouponController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "204", description = "발급된 쿠폰 삭제 성공"),
-                @ApiResponse(responseCode = "404", description = "존재하지 않는 발급된 쿠폰")
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 발급된 쿠폰", content = @Content)
             })
     @DeleteMapping("/issued/{id}")
     public ResponseEntity<Void> deleteIssuedCoupon(@Parameter(description = "삭제할 발급된 쿠폰 ID") @PathVariable Long id) {
@@ -115,9 +116,9 @@ public class AdminCouponController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "201", description = "쿠폰 코드 생성 성공"),
-                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
-                @ApiResponse(responseCode = "404", description = "존재하지 않는 쿠폰"),
-                @ApiResponse(responseCode = "500", description = "고유 쿠폰 코드 생성 실패 (100회 시도 후 실패)")
+                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 쿠폰", content = @Content),
+                @ApiResponse(responseCode = "500", description = "고유 쿠폰 코드 생성 실패 (100회 시도 후 실패)", content = @Content)
             })
     @PostMapping("/code")
     public ResponseEntity<Void> createCodeCoupon(@Valid @RequestBody CouponCodeCreateRequest request) {
@@ -129,7 +130,7 @@ public class AdminCouponController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "204", description = "쿠폰 코드 삭제 성공"),
-                @ApiResponse(responseCode = "404", description = "존재하지 않는 쿠폰 코드")
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 쿠폰 코드", content = @Content)
             })
     @DeleteMapping("/code/{id}")
     public ResponseEntity<Void> deleteCodeCoupon(@Parameter(description = "삭제할 쿠폰 코드 ID") @PathVariable Long id) {

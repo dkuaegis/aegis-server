@@ -2,6 +2,7 @@ package aegis.server.domain.payment.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,10 +31,10 @@ public class PaymentController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "201", description = "결제 요청 생성/수정 성공"),
-                @ApiResponse(responseCode = "400", description = "쿠폰이 해당 사용자에게 발급되지 않음"),
-                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-                @ApiResponse(responseCode = "404", description = "학생 정보 또는 결제 정보를 찾을 수 없음"),
-                @ApiResponse(responseCode = "409", description = "이미 완료된 결제이거나 초과 결제 상태")
+                @ApiResponse(responseCode = "400", description = "쿠폰이 해당 사용자에게 발급되지 않음", content = @Content),
+                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
+                @ApiResponse(responseCode = "404", description = "학생 정보 또는 결제 정보를 찾을 수 없음", content = @Content),
+                @ApiResponse(responseCode = "409", description = "이미 완료된 결제이거나 초과 결제 상태", content = @Content)
             })
     @PostMapping
     public ResponseEntity<Void> createOrUpdatePendingPayment(
@@ -46,8 +47,8 @@ public class PaymentController {
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "200", description = "결제 상태 조회 성공"),
-                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-                @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음")
+                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
+                @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음", content = @Content)
             })
     @GetMapping("/status")
     public ResponseEntity<PaymentStatusResponse> checkPaymentStatus(
