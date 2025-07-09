@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.HttpStatus;
@@ -32,9 +31,10 @@ public class DiscordController {
 
     private final DiscordService discordService;
 
-    @Operation(summary = "내 디스코드 ID 조회", description = "로그인한 사용자의 연동된 디스코드 ID를 조회합니다.")
-    @ApiResponses(
-            value = {
+    @Operation(
+            summary = "내 디스코드 ID 조회",
+            description = "로그인한 사용자의 연동된 디스코드 ID를 조회합니다.",
+            responses = {
                 @ApiResponse(responseCode = "200", description = "디스코드 ID 조회 성공"),
                 @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
                 @ApiResponse(responseCode = "404", description = "디스코드 연동 정보찾을 수 없음", content = @Content)
@@ -45,9 +45,10 @@ public class DiscordController {
         return ResponseEntity.ok(discordService.getDiscordId(userDetails));
     }
 
-    @Operation(summary = "디스코드 인증 코드 발급", description = "디스코드 연동을 위한 인증 코드를 발급합니다.")
-    @ApiResponses(
-            value = {
+    @Operation(
+            summary = "디스코드 인증 코드 발급",
+            description = "디스코드 연동을 위한 인증 코드를 발급합니다.",
+            responses = {
                 @ApiResponse(responseCode = "201", description = "인증 코드 발급 성공"),
                 @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
                 @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음", content = @Content),
