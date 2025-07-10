@@ -46,8 +46,8 @@ public class PaymentService {
                 .findByMemberInCurrentYearSemester(member)
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        BigDecimal currentDepositAmount =
-                transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName());
+        BigDecimal currentDepositAmount = transactionRepository.sumAmountByDepositorName(
+                payment.getMember().getName());
 
         return PaymentStatusResponse.from(payment, currentDepositAmount);
     }

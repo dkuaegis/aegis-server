@@ -49,12 +49,6 @@ public class Payment extends BaseEntity {
     @Column(precision = 10, scale = 0)
     private BigDecimal finalPrice;
 
-    private String expectedDepositorName;
-
-    public static String expectedDepositorName(Member member) {
-        return member.getName();
-    }
-
     public static Payment of(Member member) {
         return Payment.builder()
                 .member(member)
@@ -62,7 +56,6 @@ public class Payment extends BaseEntity {
                 .yearSemester(CURRENT_YEAR_SEMESTER)
                 .originalPrice(CLUB_DUES)
                 .finalPrice(CLUB_DUES)
-                .expectedDepositorName(expectedDepositorName(member))
                 .build();
     }
 
