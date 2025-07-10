@@ -37,15 +37,15 @@ public class PaymentEventListener {
     public void handleTransactionCreatedEvent(TransactionCreatedEvent event) {
         TransactionInfo transactionInfo = event.transactionInfo();
         paymentRepository
-                .findByExpectedDepositorNameInCurrentYearSemester(transactionInfo.depositorName())
+                .findByMemberNameInCurrentYearSemester(transactionInfo.depositorName())
                 .ifPresentOrElse(
                         payment -> processPayment(transactionInfo, payment),
                         () -> handleMissingDepositorName(transactionInfo));
     }
 
     private void processPayment(TransactionInfo transactionInfo, Payment payment) {
-        BigDecimal currentDepositAmount =
-                transactionRepository.sumAmountByDepositorName(transactionInfo.depositorName());
+        BigDecimal currentDepositAmount = transactionRepository.sumAmountByDepositorName(
+                payment.getMember().getName());
 
         if (isCompleted(payment, currentDepositAmount)) {
             payment.confirmPayment(PaymentStatus.COMPLETED);
@@ -70,7 +70,7 @@ public class PaymentEventListener {
                 "[PaymentEventListener][TransactionCreatedEvent] 결제 완료: paymentId={}, memberId={}, depositorName={}",
                 payment.getId(),
                 payment.getMember().getId(),
-                payment.getExpectedDepositorName());
+                payment.getMember().getName());
     }
 
     private void logOverpaid(TransactionInfo transactionInfo, Payment payment, BigDecimal currentDepositAmount) {
@@ -78,7 +78,7 @@ public class PaymentEventListener {
                 "[PaymentEventListener][TransactionCreatedEvent] 초과 입금이 발생했습니다: transactionId={}, paymentId={}, depositorName={}, expectedDepositAmount={}, currentDepositAmount={}",
                 transactionInfo.id(),
                 payment.getId(),
-                payment.getExpectedDepositorName(),
+                payment.getMember().getName(),
                 payment.getFinalPrice(),
                 currentDepositAmount);
     }

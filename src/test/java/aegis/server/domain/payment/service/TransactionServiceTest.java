@@ -43,12 +43,10 @@ public class TransactionServiceTest extends IntegrationTest {
             """;
 
     private Member member;
-    private String expectedDepositorName;
 
     @BeforeEach
     void setUp() {
         member = createMember();
-        expectedDepositorName = member.getName();
         UserDetails userDetails = UserDetails.from(member);
         PaymentRequest request = new PaymentRequest(List.of());
         paymentService.createOrUpdatePendingPayment(request, userDetails);
@@ -60,7 +58,7 @@ public class TransactionServiceTest extends IntegrationTest {
         @Test
         void 결제를_COMPLETED_처리한다() {
             // given
-            String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, expectedDepositorName);
+            String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName());
 
             // when
             transactionService.createTransaction(transactionLog);
@@ -78,7 +76,7 @@ public class TransactionServiceTest extends IntegrationTest {
         @Test
         void 잘못된_입금자명() {
             // given
-            String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, expectedDepositorName + "WRONG");
+            String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName() + "WRONG");
 
             // when
             transactionService.createTransaction(transactionLog);
@@ -89,14 +87,15 @@ public class TransactionServiceTest extends IntegrationTest {
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
             assertEquals(
                     BigDecimal.ZERO,
-                    transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName()));
+                    transactionRepository.sumAmountByDepositorName(
+                            payment.getMember().getName()));
         }
 
         @Test
         void 부족한_입금액() {
             // given
             String transactionLog =
-                    String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES.subtract(BigDecimal.ONE), expectedDepositorName);
+                    String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES.subtract(BigDecimal.ONE), member.getName());
 
             // when
             transactionService.createTransaction(transactionLog);
@@ -107,14 +106,15 @@ public class TransactionServiceTest extends IntegrationTest {
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
             assertEquals(
                     CLUB_DUES.subtract(BigDecimal.ONE),
-                    transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName()));
+                    transactionRepository.sumAmountByDepositorName(
+                            payment.getMember().getName()));
         }
 
         @Test
         void 초과된_입금액() {
             // given
             String transactionLog =
-                    String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES.add(BigDecimal.ONE), expectedDepositorName);
+                    String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES.add(BigDecimal.ONE), member.getName());
 
             // when
             transactionService.createTransaction(transactionLog);
@@ -125,7 +125,8 @@ public class TransactionServiceTest extends IntegrationTest {
             assertEquals(PaymentStatus.OVERPAID, payment.getStatus());
             assertEquals(
                     CLUB_DUES.add(BigDecimal.ONE),
-                    transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName()));
+                    transactionRepository.sumAmountByDepositorName(
+                            payment.getMember().getName()));
         }
     }
 
@@ -136,11 +137,11 @@ public class TransactionServiceTest extends IntegrationTest {
         void 올바른_추가입금() {
             // given
             String transactionLog1 =
-                    String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES.subtract(BigDecimal.ONE), expectedDepositorName);
+                    String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES.subtract(BigDecimal.ONE), member.getName());
             transactionService.createTransaction(transactionLog1);
 
             // when
-            String transactionLog2 = String.format(TRANSACTION_LOG_FORMAT, BigDecimal.ONE, expectedDepositorName);
+            String transactionLog2 = String.format(TRANSACTION_LOG_FORMAT, BigDecimal.ONE, member.getName());
             transactionService.createTransaction(transactionLog2);
 
             // then
@@ -153,11 +154,11 @@ public class TransactionServiceTest extends IntegrationTest {
         void 초과된_추가입금() {
             // given
             String transactionLog1 =
-                    String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES.subtract(BigDecimal.ONE), expectedDepositorName);
+                    String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES.subtract(BigDecimal.ONE), member.getName());
             transactionService.createTransaction(transactionLog1);
 
             // when
-            String transactionLog2 = String.format(TRANSACTION_LOG_FORMAT, BigDecimal.TWO, expectedDepositorName);
+            String transactionLog2 = String.format(TRANSACTION_LOG_FORMAT, BigDecimal.TWO, member.getName());
             transactionService.createTransaction(transactionLog2);
 
             // then
@@ -166,7 +167,8 @@ public class TransactionServiceTest extends IntegrationTest {
             assertEquals(PaymentStatus.OVERPAID, payment.getStatus());
             assertEquals(
                     CLUB_DUES.add(BigDecimal.ONE),
-                    transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName()));
+                    transactionRepository.sumAmountByDepositorName(
+                            payment.getMember().getName()));
         }
     }
 }
