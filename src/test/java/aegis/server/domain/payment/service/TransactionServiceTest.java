@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.domain.Role;
+import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.dto.request.PaymentRequest;
@@ -34,6 +36,9 @@ public class TransactionServiceTest extends IntegrationTest {
 
     @Autowired
     PaymentRepository paymentRepository;
+
+    @Autowired
+    MemberRepository memberRepository;
 
     private final String TRANSACTION_LOG_FORMAT =
             """
@@ -169,6 +174,75 @@ public class TransactionServiceTest extends IntegrationTest {
                     CLUB_DUES.add(BigDecimal.ONE),
                     transactionRepository.sumAmountByDepositorName(
                             payment.getMember().getName()));
+        }
+    }
+
+    @Nested
+    class 입금_후_승격 {
+
+        @Test
+        void GUEST_회원이_입금_완료하면_USER로_승격한다() {
+            // given
+            Member guestMember = createMember();
+            guestMember.demoteToGuest();
+            memberRepository.save(guestMember);
+
+            UserDetails userDetails = UserDetails.from(guestMember);
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createOrUpdatePendingPayment(request, userDetails);
+
+            String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, guestMember.getName());
+
+            // when
+            transactionService.createTransaction(transactionLog);
+
+            // then
+            Member updatedMember =
+                    memberRepository.findById(guestMember.getId()).get();
+            assertEquals(Role.USER, updatedMember.getRole());
+        }
+
+        @Test
+        void USER_회원은_입금_완료해도_역할이_변하지_않는다() {
+            // given
+            Member userMember = createMember();
+            userMember.promoteToUser();
+            memberRepository.save(userMember);
+
+            UserDetails userDetails = UserDetails.from(userMember);
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createOrUpdatePendingPayment(request, userDetails);
+
+            String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, userMember.getName());
+
+            // when
+            transactionService.createTransaction(transactionLog);
+
+            // then
+            Member updatedMember = memberRepository.findById(userMember.getId()).get();
+            assertEquals(Role.USER, updatedMember.getRole());
+        }
+
+        @Test
+        void ADMIN_회원은_입금_완료해도_역할이_변하지_않는다() {
+            // given
+            Member adminMember = createMember();
+            org.springframework.test.util.ReflectionTestUtils.setField(adminMember, "role", Role.ADMIN);
+            memberRepository.save(adminMember);
+
+            UserDetails userDetails = UserDetails.from(adminMember);
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createOrUpdatePendingPayment(request, userDetails);
+
+            String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, adminMember.getName());
+
+            // when
+            transactionService.createTransaction(transactionLog);
+
+            // then
+            Member updatedMember =
+                    memberRepository.findById(adminMember.getId()).get();
+            assertEquals(Role.ADMIN, updatedMember.getRole());
         }
     }
 }

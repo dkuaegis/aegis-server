@@ -78,4 +78,16 @@ public class Member extends BaseEntity {
     public void updateDiscordId(String discordId) {
         this.discordId = discordId;
     }
+
+    public boolean isGuest() {
+        return Role.GUEST.equals(this.role);
+    }
+
+    public void promoteToUser() {
+        this.role = Role.USER;
+    }
+
+    public void demoteToGuest() {
+        this.role = Role.GUEST;
+    }
 }
