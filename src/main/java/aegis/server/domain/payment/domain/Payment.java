@@ -59,6 +59,15 @@ public class Payment extends BaseEntity {
                 .build();
     }
 
+    public void validateMutable() {
+        if (this.status.equals(PaymentStatus.COMPLETED)) {
+            throw new CustomException(ErrorCode.PAYMENT_ALREADY_COMPLETED);
+        }
+        if (this.status.equals(PaymentStatus.OVERPAID)) {
+            throw new CustomException(ErrorCode.PAYMENT_ALREADY_OVERPAID);
+        }
+    }
+
     public void applyCoupons(List<IssuedCoupon> issuedCoupons) {
         this.usedCoupons.clear();
         this.usedCoupons.addAll(issuedCoupons);

@@ -2,7 +2,6 @@ package aegis.server.domain.payment.service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -38,12 +37,8 @@ public class PaymentService {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     public PaymentStatusResponse checkPaymentStatus(UserDetails userDetails) {
-        Member member = memberRepository
-                .findById(userDetails.getMemberId())
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-
         Payment payment = paymentRepository
-                .findByMemberInCurrentYearSemester(member)
+                .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
         BigDecimal currentDepositAmount = transactionRepository.sumAmountByDepositorName(
@@ -53,16 +48,17 @@ public class PaymentService {
     }
 
     @Transactional
-    public void createOrUpdatePendingPayment(PaymentRequest request, UserDetails userDetails) {
+    public void createPayment(PaymentRequest request, UserDetails userDetails) {
+        validateNoPendingPayment(userDetails.getMemberId());
+        validateUsableCoupons(userDetails.getMemberId(), request.getIssuedCouponIds());
+
         Member member = memberRepository
                 .findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        Payment payment =
-                paymentRepository.findByMemberInCurrentYearSemester(member).orElseGet(() -> createNewPayment(member));
-
-        validatePaymentStatus(payment);
-        applyCouponsIfPresent(payment, request.getIssuedCouponIds());
+        Payment payment = Payment.of(member);
+        applyCoupons(payment, request.getIssuedCouponIds());
+        paymentRepository.save(payment);
 
         if (payment.getFinalPrice().equals(BigDecimal.ZERO)) {
             payment.confirmPayment(PaymentStatus.COMPLETED);
@@ -70,27 +66,36 @@ public class PaymentService {
         }
     }
 
-    private Payment createNewPayment(Member member) {
-        Payment payment = Payment.of(member);
-        return paymentRepository.save(payment);
+    @Transactional
+    public void updatePayment(PaymentRequest request, UserDetails userDetails) {
+        Payment payment = paymentRepository
+                .findByMemberIdAndCurrentYearSemesterAndStatusIsPending(userDetails.getMemberId())
+                .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
+
+        payment.validateMutable();
+        validateUsableCoupons(userDetails.getMemberId(), request.getIssuedCouponIds());
+
+        applyCoupons(payment, request.getIssuedCouponIds());
     }
 
-    private void validatePaymentStatus(Payment payment) {
-        if (payment.getStatus().equals(PaymentStatus.COMPLETED)) {
-            throw new CustomException(ErrorCode.PAYMENT_ALREADY_COMPLETED);
-        }
-        if (payment.getStatus().equals(PaymentStatus.OVERPAID)) {
-            throw new CustomException(ErrorCode.PAYMENT_ALREADY_OVER_PAID);
+    private void validateNoPendingPayment(Long memberId) {
+        if (paymentRepository
+                .findByMemberIdAndCurrentYearSemesterAndStatusIsPending(memberId)
+                .isPresent()) {
+            throw new CustomException(ErrorCode.PAYMENT_ALREADY_EXISTS);
         }
     }
 
-    private void applyCouponsIfPresent(Payment payment, List<Long> issuedCouponIds) {
-        Member member = payment.getMember();
-        List<IssuedCoupon> validIssuedCoupons = issuedCouponIds.stream()
-                .map(issuedCouponId -> issuedCouponRepository
-                        .findByIdAndMember(issuedCouponId, member)
-                        .orElseThrow(() -> new CustomException(ErrorCode.ISSUED_COUPON_NOT_FOUND_FOR_MEMBER)))
-                .collect(Collectors.toList());
-        payment.applyCoupons(validIssuedCoupons);
+    private void validateUsableCoupons(Long memberId, List<Long> issuedCouponIds) {
+        long validIssuedCouponCount = issuedCouponRepository.countByIdInAndMemberIdAndValid(issuedCouponIds, memberId);
+        if (validIssuedCouponCount != issuedCouponIds.size()) {
+            throw new CustomException(ErrorCode.INVALID_ISSUED_COUPON);
+        }
+    }
+
+    private void applyCoupons(Payment payment, List<Long> issuedCouponIds) {
+        List<IssuedCoupon> issuedCoupons = issuedCouponRepository.findByIdInAndMemberIdAndValid(
+                issuedCouponIds, payment.getMember().getId());
+        payment.applyCoupons(issuedCoupons);
     }
 }
