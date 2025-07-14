@@ -62,7 +62,10 @@ public class PaymentService {
                 paymentRepository.findByMemberInCurrentYearSemester(member).orElseGet(() -> createNewPayment(member));
 
         payment.validateMutable();
-        applyCouponsIfPresent(payment, request.getIssuedCouponIds());
+        validateUsableCoupons(userDetails.getMemberId(), request.getIssuedCouponIds());
+
+        applyCoupons(payment, request.getIssuedCouponIds());
+        paymentRepository.save(payment);
 
         if (payment.getFinalPrice().equals(BigDecimal.ZERO)) {
             payment.confirmPayment(PaymentStatus.COMPLETED);
@@ -75,13 +78,17 @@ public class PaymentService {
         return paymentRepository.save(payment);
     }
 
-    private void applyCouponsIfPresent(Payment payment, List<Long> issuedCouponIds) {
-        Member member = payment.getMember();
-        List<IssuedCoupon> validIssuedCoupons = issuedCouponIds.stream()
-                .map(issuedCouponId -> issuedCouponRepository
-                        .findByIdAndMember(issuedCouponId, member)
-                        .orElseThrow(() -> new CustomException(ErrorCode.ISSUED_COUPON_NOT_FOUND_FOR_MEMBER)))
-                .collect(Collectors.toList());
-        payment.applyCoupons(validIssuedCoupons);
+    private void validateUsableCoupons(Long memberId, List<Long> issuedCouponIds) {
+        long validIssuedCouponCount = issuedCouponRepository.countByIdInAndMemberIdAndValid(issuedCouponIds, memberId);
+        if (validIssuedCouponCount != issuedCouponIds.size()) {
+            throw new CustomException(ErrorCode.INVALID_ISSUED_COUPON);
+        }
+    }
+
+    private void applyCoupons(Payment payment, List<Long> issuedCouponIds) {
+        List<IssuedCoupon> issuedCoupons = issuedCouponRepository.findByIdInAndMemberIdAndValid(
+                issuedCouponIds, payment.getMember().getId());
+        payment.applyCoupons(issuedCoupons);
+        paymentRepository.save(payment);
     }
 }

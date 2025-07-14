@@ -42,7 +42,7 @@ public enum ErrorCode {
     COUPON_ISSUED_COUPON_EXISTS(HttpStatus.CONFLICT), // 발급된 쿠폰이 존재하는 경우 발급된 쿠폰을 모두 지워야 삭제 가능
 
     ISSUED_COUPON_NOT_FOUND(HttpStatus.NOT_FOUND),
-    ISSUED_COUPON_NOT_FOUND_FOR_MEMBER(HttpStatus.BAD_REQUEST),
+    INVALID_ISSUED_COUPON(HttpStatus.BAD_REQUEST),
 
     COUPON_CODE_NOT_FOUND(HttpStatus.NOT_FOUND),
     COUPON_CODE_ALREADY_USED(HttpStatus.CONFLICT),

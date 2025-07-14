@@ -133,7 +133,7 @@ public class PaymentServiceTest extends IntegrationTest {
             // when-then
             CustomException exception = assertThrows(
                     CustomException.class, () -> paymentService.createOrUpdatePendingPayment(request, userDetails));
-            assertEquals(ErrorCode.ISSUED_COUPON_NOT_FOUND_FOR_MEMBER, exception.getErrorCode());
+            assertEquals(ErrorCode.INVALID_ISSUED_COUPON, exception.getErrorCode());
             IssuedCoupon shouldNotBeUpdatedIssuedCoupon =
                     issuedCouponRepository.findById(issuedCoupon.getId()).get();
             assertEquals(true, shouldNotBeUpdatedIssuedCoupon.getIsValid());
