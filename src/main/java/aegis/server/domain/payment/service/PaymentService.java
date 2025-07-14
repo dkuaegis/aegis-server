@@ -61,7 +61,7 @@ public class PaymentService {
         Payment payment =
                 paymentRepository.findByMemberInCurrentYearSemester(member).orElseGet(() -> createNewPayment(member));
 
-        validatePaymentStatus(payment);
+        payment.validateMutable();
         applyCouponsIfPresent(payment, request.getIssuedCouponIds());
 
         if (payment.getFinalPrice().equals(BigDecimal.ZERO)) {
@@ -73,15 +73,6 @@ public class PaymentService {
     private Payment createNewPayment(Member member) {
         Payment payment = Payment.of(member);
         return paymentRepository.save(payment);
-    }
-
-    private void validatePaymentStatus(Payment payment) {
-        if (payment.getStatus().equals(PaymentStatus.COMPLETED)) {
-            throw new CustomException(ErrorCode.PAYMENT_ALREADY_COMPLETED);
-        }
-        if (payment.getStatus().equals(PaymentStatus.OVERPAID)) {
-            throw new CustomException(ErrorCode.PAYMENT_ALREADY_OVER_PAID);
-        }
     }
 
     private void applyCouponsIfPresent(Payment payment, List<Long> issuedCouponIds) {

@@ -206,7 +206,7 @@ public class PaymentServiceTest extends IntegrationTest {
             // when-then
             CustomException exception = assertThrows(
                     CustomException.class, () -> paymentService.createOrUpdatePendingPayment(request, userDetails));
-            assertEquals(ErrorCode.PAYMENT_ALREADY_OVER_PAID, exception.getErrorCode());
+            assertEquals(ErrorCode.PAYMENT_ALREADY_OVERPAID, exception.getErrorCode());
         }
     }
 }
