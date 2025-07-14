@@ -54,7 +54,7 @@ public class TransactionServiceTest extends IntegrationTest {
         member = createMember();
         UserDetails userDetails = UserDetails.from(member);
         PaymentRequest request = new PaymentRequest(List.of());
-        paymentService.createOrUpdatePendingPayment(request, userDetails);
+        paymentService.createPayment(request, userDetails);
     }
 
     @Nested
@@ -76,7 +76,7 @@ public class TransactionServiceTest extends IntegrationTest {
     }
 
     @Nested
-    class 잘못된_입금 {
+    class 틀린_입금 {
 
         @Test
         void 잘못된_입금자명() {
@@ -189,7 +189,7 @@ public class TransactionServiceTest extends IntegrationTest {
 
             UserDetails userDetails = UserDetails.from(guestMember);
             PaymentRequest request = new PaymentRequest(List.of());
-            paymentService.createOrUpdatePendingPayment(request, userDetails);
+            paymentService.createPayment(request, userDetails);
 
             String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, guestMember.getName());
 
@@ -211,7 +211,7 @@ public class TransactionServiceTest extends IntegrationTest {
 
             UserDetails userDetails = UserDetails.from(userMember);
             PaymentRequest request = new PaymentRequest(List.of());
-            paymentService.createOrUpdatePendingPayment(request, userDetails);
+            paymentService.createPayment(request, userDetails);
 
             String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, userMember.getName());
 
@@ -232,7 +232,7 @@ public class TransactionServiceTest extends IntegrationTest {
 
             UserDetails userDetails = UserDetails.from(adminMember);
             PaymentRequest request = new PaymentRequest(List.of());
-            paymentService.createOrUpdatePendingPayment(request, userDetails);
+            paymentService.createPayment(request, userDetails);
 
             String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, adminMember.getName());
 

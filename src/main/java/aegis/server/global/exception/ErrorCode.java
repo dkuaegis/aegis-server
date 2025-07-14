@@ -53,6 +53,7 @@ public enum ErrorCode {
     PAYMENT_ALREADY_COMPLETED(HttpStatus.CONFLICT),
     PAYMENT_ALREADY_OVERPAID(HttpStatus.CONFLICT),
     PAYMENT_CANNOT_BE_CONFIRMED(HttpStatus.INTERNAL_SERVER_ERROR),
+    PAYMENT_ALREADY_EXISTS(HttpStatus.CONFLICT),
     ;
     private final HttpStatus httpStatus;
 }

@@ -61,7 +61,7 @@ public class PaymentServiceTest extends IntegrationTest {
             PaymentRequest request = new PaymentRequest(List.of());
 
             // when
-            paymentService.createOrUpdatePendingPayment(request, userDetails);
+            paymentService.createPayment(request, userDetails);
 
             // then
             Payment payment =
@@ -79,7 +79,7 @@ public class PaymentServiceTest extends IntegrationTest {
             PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
 
             // when
-            paymentService.createOrUpdatePendingPayment(request, userDetails);
+            paymentService.createPayment(request, userDetails);
 
             // then
             Payment payment =
@@ -97,7 +97,7 @@ public class PaymentServiceTest extends IntegrationTest {
             PaymentRequest request = new PaymentRequest(List.of(1L));
 
             // when
-            paymentService.createOrUpdatePendingPayment(request, userDetails);
+            paymentService.createPayment(request, userDetails);
 
             // then
             Payment payment =
@@ -115,7 +115,7 @@ public class PaymentServiceTest extends IntegrationTest {
             PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
 
             // when
-            paymentService.createOrUpdatePendingPayment(request, userDetails);
+            paymentService.createPayment(request, userDetails);
 
             // then
             Payment payment = paymentRepository.findById(1L).get();
@@ -131,8 +131,8 @@ public class PaymentServiceTest extends IntegrationTest {
             PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
 
             // when-then
-            CustomException exception = assertThrows(
-                    CustomException.class, () -> paymentService.createOrUpdatePendingPayment(request, userDetails));
+            CustomException exception =
+                    assertThrows(CustomException.class, () -> paymentService.createPayment(request, userDetails));
             assertEquals(ErrorCode.INVALID_ISSUED_COUPON, exception.getErrorCode());
             IssuedCoupon shouldNotBeUpdatedIssuedCoupon =
                     issuedCouponRepository.findById(issuedCoupon.getId()).get();
@@ -140,41 +140,70 @@ public class PaymentServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 중복된_결제정보_생성_시_기존_정보를_덮어씌운다_1() {
+        void 이미_PENDING_상태의_결제가_존재하면_실패한다() {
             // given
-            PaymentRequest oldRequest = new PaymentRequest(List.of());
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createPayment(request, userDetails);
 
-            paymentService.createOrUpdatePendingPayment(oldRequest, userDetails);
+            // when-then
+            CustomException exception =
+                    assertThrows(CustomException.class, () -> paymentService.createPayment(request, userDetails));
+            assertEquals(ErrorCode.PAYMENT_ALREADY_EXISTS, exception.getErrorCode());
+        }
+    }
 
-            // when
+    @Nested
+    class 결제정보_수정 {
+
+        @Test
+        void 성공한다() {
+            // given
+            PaymentRequest createRequest = new PaymentRequest(List.of());
+            paymentService.createPayment(createRequest, userDetails);
+
             Coupon coupon = create5000DiscountCoupon();
             createIssuedCoupon(member, coupon);
-            PaymentRequest newRequest = new PaymentRequest(List.of(1L));
-            paymentService.createOrUpdatePendingPayment(newRequest, userDetails);
-            Payment secondPayment = paymentRepository.findById(1L).get();
+            PaymentRequest updateRequest = new PaymentRequest(List.of(1L));
+
+            // when
+            paymentService.updatePayment(updateRequest, userDetails);
 
             // then
-            assertEquals(PaymentStatus.PENDING, secondPayment.getStatus());
-            assertEquals(CLUB_DUES.subtract(coupon.getDiscountAmount()), secondPayment.getFinalPrice());
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            assertEquals(PaymentStatus.PENDING, payment.getStatus());
+            assertEquals(CLUB_DUES.subtract(coupon.getDiscountAmount()), payment.getFinalPrice());
         }
 
         @Test
-        void 중복된_결제정보_생성_시_기존_정보를_덮어씌운다_2() {
+        void 쿠폰을_제거하면_할인이_취소된다() {
             // given
             Coupon coupon = create5000DiscountCoupon();
             createIssuedCoupon(member, coupon);
-            PaymentRequest oldRequest = new PaymentRequest(List.of(1L));
+            PaymentRequest createRequest = new PaymentRequest(List.of(1L));
+            paymentService.createPayment(createRequest, userDetails);
 
-            paymentService.createOrUpdatePendingPayment(oldRequest, userDetails);
+            PaymentRequest updateRequest = new PaymentRequest(List.of());
 
             // when
-            PaymentRequest newRequest = new PaymentRequest(List.of());
-            paymentService.createOrUpdatePendingPayment(newRequest, userDetails);
-            Payment secondPayment = paymentRepository.findById(1L).get();
+            paymentService.updatePayment(updateRequest, userDetails);
 
             // then
-            assertEquals(PaymentStatus.PENDING, secondPayment.getStatus());
-            assertEquals(CLUB_DUES, secondPayment.getFinalPrice());
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            assertEquals(PaymentStatus.PENDING, payment.getStatus());
+            assertEquals(CLUB_DUES, payment.getFinalPrice());
+        }
+
+        @Test
+        void PENDING_상태의_결제가_없으면_실패한다() {
+            // given
+            PaymentRequest request = new PaymentRequest(List.of());
+
+            // when-then
+            CustomException exception =
+                    assertThrows(CustomException.class, () -> paymentService.updatePayment(request, userDetails));
+            assertEquals(ErrorCode.PAYMENT_NOT_FOUND, exception.getErrorCode());
         }
 
         @Test
@@ -188,9 +217,9 @@ public class PaymentServiceTest extends IntegrationTest {
             paymentRepository.save(payment);
 
             // when-then
-            CustomException exception = assertThrows(
-                    CustomException.class, () -> paymentService.createOrUpdatePendingPayment(request, userDetails));
-            assertEquals(ErrorCode.PAYMENT_ALREADY_COMPLETED, exception.getErrorCode());
+            CustomException exception =
+                    assertThrows(CustomException.class, () -> paymentService.updatePayment(request, userDetails));
+            assertEquals(ErrorCode.PAYMENT_NOT_FOUND, exception.getErrorCode());
         }
 
         @Test
@@ -204,9 +233,9 @@ public class PaymentServiceTest extends IntegrationTest {
             paymentRepository.save(payment);
 
             // when-then
-            CustomException exception = assertThrows(
-                    CustomException.class, () -> paymentService.createOrUpdatePendingPayment(request, userDetails));
-            assertEquals(ErrorCode.PAYMENT_ALREADY_OVERPAID, exception.getErrorCode());
+            CustomException exception =
+                    assertThrows(CustomException.class, () -> paymentService.updatePayment(request, userDetails));
+            assertEquals(ErrorCode.PAYMENT_NOT_FOUND, exception.getErrorCode());
         }
     }
 }

@@ -27,20 +27,37 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @Operation(
-            summary = "결제 요청 생성/수정",
-            description = "쿠폰을 사용하여 결제 요청을 생성하거나 수정합니다.",
+            summary = "결제 요청 생성",
+            description = "쿠폰을 사용하여 결제 요청을 생성합니다.",
             responses = {
-                @ApiResponse(responseCode = "201", description = "결제 요청 생성/수정 성공"),
+                @ApiResponse(responseCode = "201", description = "결제 요청 생성 성공"),
                 @ApiResponse(responseCode = "400", description = "쿠폰이 해당 사용자에게 발급되지 않음", content = @Content),
                 @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
-                @ApiResponse(responseCode = "404", description = "학생 정보 또는 결제 정보를 찾을 수 없음", content = @Content),
-                @ApiResponse(responseCode = "409", description = "이미 완료된 결제이거나 초과 결제 상태", content = @Content)
+                @ApiResponse(responseCode = "404", description = "학생 정보를 찾을 수 없음", content = @Content),
+                @ApiResponse(responseCode = "409", description = "이미 PENDING 상태의 결제가 존재함", content = @Content)
             })
     @PostMapping
-    public ResponseEntity<Void> createOrUpdatePendingPayment(
+    public ResponseEntity<Void> createPayment(
             @RequestBody PaymentRequest request, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
-        paymentService.createOrUpdatePendingPayment(request, userDetails);
+        paymentService.createPayment(request, userDetails);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @Operation(
+            summary = "결제 요청 수정",
+            description = "기존 PENDING 상태의 결제 요청을 수정합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "결제 요청 수정 성공"),
+                @ApiResponse(responseCode = "400", description = "쿠폰이 해당 사용자에게 발급되지 않음", content = @Content),
+                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
+                @ApiResponse(responseCode = "404", description = "PENDING 상태의 결제 정보를 찾을 수 없음", content = @Content),
+                @ApiResponse(responseCode = "409", description = "이미 완료된 결제이거나 초과 결제 상태", content = @Content)
+            })
+    @PutMapping
+    public ResponseEntity<Void> updatePayment(
+            @RequestBody PaymentRequest request, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
+        paymentService.updatePayment(request, userDetails);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(
