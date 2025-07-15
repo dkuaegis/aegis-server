@@ -103,7 +103,6 @@ public class PaymentServiceTest extends IntegrationTest {
             // then
             Payment payment =
                     paymentRepository.findByMemberInCurrentYearSemester(member).get();
-            System.out.println(payment.getFinalPrice());
             assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
         }
 
