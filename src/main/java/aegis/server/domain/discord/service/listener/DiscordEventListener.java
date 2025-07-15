@@ -17,8 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
-import aegis.server.domain.payment.domain.event.MissingDepositorNameEvent;
-import aegis.server.domain.payment.domain.event.OverpaidEvent;
+import aegis.server.domain.payment.domain.event.MismatchEvent;
 import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
@@ -71,20 +70,13 @@ public class DiscordEventListener {
     }
 
     @EventListener
-    public void handleMissingDepositorNameEvent(MissingDepositorNameEvent event) {
+    public void handleMismatchEvent(MismatchEvent event) {
         alarmChannel()
                 .sendMessage(String.format(
-                        "[MISSING_DEPOSITOR_NAME]\nTX ID: %s 입금자명: %s",
-                        event.transactionInfo().id(), event.transactionInfo().depositorName()))
-                .queue();
-    }
-
-    @EventListener
-    public void handleOverpaidEvent(OverpaidEvent event) {
-        alarmChannel()
-                .sendMessage(String.format(
-                        "[OVERPAID]\nTX ID: %s 입금자명: %s",
-                        event.transactionInfo().id(), event.transactionInfo().depositorName()))
+                        "[MISMATCH]\nTX ID: %s 입금자명: %s 입금 금액: %s",
+                        event.transactionInfo().id(),
+                        event.transactionInfo().depositorName(),
+                        event.transactionInfo().amount()))
                 .queue();
     }
 
