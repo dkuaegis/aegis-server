@@ -69,7 +69,7 @@ public class MemberController {
                 @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
                 @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음", content = @Content)
             })
-    @PostMapping("/profile-icon")
+    @PutMapping("/profile-icon")
     public ResponseEntity<Void> updateProfileIcon(
             @Parameter(hidden = true) @LoginUser UserDetails userDetails,
             @Valid @RequestBody ProfileIconUpdateRequest request) {
