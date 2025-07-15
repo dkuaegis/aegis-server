@@ -11,7 +11,6 @@ import aegis.server.domain.member.dto.request.PersonalInfoUpdateRequest;
 import aegis.server.domain.member.dto.response.MemberDemoteResponse;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.Payment;
-import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
@@ -118,7 +117,7 @@ class MemberServiceTest extends IntegrationTest {
             memberRepository.save(userMember);
 
             Payment payment = Payment.of(userMember);
-            payment.confirmPayment(PaymentStatus.COMPLETED);
+            payment.completePayment();
             paymentRepository.save(payment);
 
             // when

@@ -55,8 +55,7 @@ public class IntegrationTest {
         redisCleaner.clean();
 
         doNothing().when(discordEventListener).handlePaymentCompletedEvent(any());
-        doNothing().when(discordEventListener).handleOverpaidEvent(any());
-        doNothing().when(discordEventListener).handleMissingDepositorNameEvent(any());
+        doNothing().when(discordEventListener).handleMismatchEvent(any());
     }
 
     protected Member createInitialMember() {

@@ -1,7 +1,5 @@
 package aegis.server.domain.payment.service.listener;
 
-import java.math.BigDecimal;
-
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -13,15 +11,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import aegis.server.domain.payment.domain.Payment;
-import aegis.server.domain.payment.domain.PaymentStatus;
-import aegis.server.domain.payment.domain.event.MissingDepositorNameEvent;
-import aegis.server.domain.payment.domain.event.OverpaidEvent;
+import aegis.server.domain.payment.domain.event.MismatchEvent;
 import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
 import aegis.server.domain.payment.domain.event.TransactionCreatedEvent;
 import aegis.server.domain.payment.dto.internal.PaymentInfo;
 import aegis.server.domain.payment.dto.internal.TransactionInfo;
 import aegis.server.domain.payment.repository.PaymentRepository;
-import aegis.server.domain.payment.repository.TransactionRepository;
 
 @Slf4j
 @Component
@@ -29,40 +24,27 @@ import aegis.server.domain.payment.repository.TransactionRepository;
 public class PaymentEventListener {
 
     private final PaymentRepository paymentRepository;
-    private final TransactionRepository transactionRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleTransactionCreatedEvent(TransactionCreatedEvent event) {
-        TransactionInfo transactionInfo = event.transactionInfo();
         paymentRepository
-                .findByMemberNameInCurrentYearSemester(transactionInfo.depositorName())
-                .ifPresentOrElse(
-                        payment -> processPayment(transactionInfo, payment),
-                        () -> handleMissingDepositorName(transactionInfo));
+                .findPendingPaymentForCurrentSemester(
+                        event.transactionInfo().depositorName(),
+                        event.transactionInfo().amount())
+                .ifPresentOrElse(this::processPayment, () -> handleMismatch(event.transactionInfo()));
     }
 
-    private void processPayment(TransactionInfo transactionInfo, Payment payment) {
-        BigDecimal currentDepositAmount = transactionRepository.sumAmountByDepositorName(
-                payment.getMember().getName());
-
-        if (isCompleted(payment, currentDepositAmount)) {
-            payment.confirmPayment(PaymentStatus.COMPLETED);
-            logCompleted(payment);
-            applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
-        } else if (isOverpaid(payment, currentDepositAmount)) {
-            payment.confirmPayment(PaymentStatus.OVERPAID);
-            logOverpaid(transactionInfo, payment, currentDepositAmount);
-            applicationEventPublisher.publishEvent(new OverpaidEvent(transactionInfo));
-        }
-
-        paymentRepository.save(payment);
+    private void processPayment(Payment payment) {
+        logCompleted(payment);
+        payment.completePayment();
+        applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
     }
 
-    private void handleMissingDepositorName(TransactionInfo transactionInfo) {
-        logMissingDepositorName(transactionInfo);
-        applicationEventPublisher.publishEvent(new MissingDepositorNameEvent(transactionInfo));
+    private void handleMismatch(TransactionInfo transactionInfo) {
+        logMismatch(transactionInfo);
+        applicationEventPublisher.publishEvent(new MismatchEvent(transactionInfo));
     }
 
     private void logCompleted(Payment payment) {
@@ -73,29 +55,11 @@ public class PaymentEventListener {
                 payment.getMember().getName());
     }
 
-    private void logOverpaid(TransactionInfo transactionInfo, Payment payment, BigDecimal currentDepositAmount) {
+    private void logMismatch(TransactionInfo transactionInfo) {
         log.warn(
-                "[PaymentEventListener][TransactionCreatedEvent] 초과 입금이 발생했습니다: transactionId={}, paymentId={}, depositorName={}, expectedDepositAmount={}, currentDepositAmount={}",
-                transactionInfo.id(),
-                payment.getId(),
-                payment.getMember().getName(),
-                payment.getFinalPrice(),
-                currentDepositAmount);
-    }
-
-    private void logMissingDepositorName(TransactionInfo transactionInfo) {
-        log.warn(
-                "[PaymentEventListener][TransactionCreatedEvent] 입금자명과 일치하는 결제 정보가 없습니다: transactionId={}, depositorName={}, amount={}",
+                "[PaymentEventListener][TransactionCreatedEvent] 매칭되는 주문 없음: transactionId={}, depositorName={}, amount={}",
                 transactionInfo.id(),
                 transactionInfo.depositorName(),
                 transactionInfo.amount());
-    }
-
-    private boolean isCompleted(Payment payment, BigDecimal currentDepositAmount) {
-        return currentDepositAmount.compareTo(payment.getFinalPrice()) == 0;
-    }
-
-    private boolean isOverpaid(Payment payment, BigDecimal currentDepositAmount) {
-        return currentDepositAmount.compareTo(payment.getFinalPrice()) > 0;
     }
 }

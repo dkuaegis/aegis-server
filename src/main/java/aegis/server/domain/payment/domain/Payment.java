@@ -12,8 +12,6 @@ import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
 import aegis.server.domain.member.domain.Member;
-import aegis.server.global.exception.CustomException;
-import aegis.server.global.exception.ErrorCode;
 
 import static aegis.server.global.constant.Constant.CLUB_DUES;
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
@@ -59,15 +57,6 @@ public class Payment extends BaseEntity {
                 .build();
     }
 
-    public void validateMutable() {
-        if (this.status.equals(PaymentStatus.COMPLETED)) {
-            throw new CustomException(ErrorCode.PAYMENT_ALREADY_COMPLETED);
-        }
-        if (this.status.equals(PaymentStatus.OVERPAID)) {
-            throw new CustomException(ErrorCode.PAYMENT_ALREADY_OVERPAID);
-        }
-    }
-
     public void applyCoupons(List<IssuedCoupon> issuedCoupons) {
         this.usedCoupons.clear();
         this.usedCoupons.addAll(issuedCoupons);
@@ -87,11 +76,8 @@ public class Payment extends BaseEntity {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public void confirmPayment(PaymentStatus status) {
-        if (status.equals(PaymentStatus.PENDING)) {
-            throw new CustomException(ErrorCode.PAYMENT_CANNOT_BE_CONFIRMED);
-        }
-        this.status = status;
+    public void completePayment() {
+        this.status = PaymentStatus.COMPLETED;
         this.usedCoupons.forEach(issuedCoupon -> issuedCoupon.use(this));
     }
 }

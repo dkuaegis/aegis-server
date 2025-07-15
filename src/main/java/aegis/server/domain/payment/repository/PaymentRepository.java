@@ -1,5 +1,6 @@
 package aegis.server.domain.payment.repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,11 +39,14 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
         return findByMemberIdAndYearSemesterAndStatus(memberId, CURRENT_YEAR_SEMESTER, PaymentStatus.PENDING);
     }
 
-    @Query("SELECT p FROM Payment p WHERE p.member.name = :memberName AND p.yearSemester = :yearSemester")
-    Optional<Payment> findByMemberNameAndYearSemester(String memberName, YearSemester yearSemester);
+    @Query(
+            "SELECT p FROM Payment p WHERE p.member.name = :memberName AND p.finalPrice = :finalPrice AND p.yearSemester = :yearSemester AND p.status = :status")
+    Optional<Payment> findByMemberNameAndFinalPriceAndYearSemesterAndStatus(
+            String memberName, BigDecimal finalPrice, YearSemester yearSemester, PaymentStatus status);
 
-    default Optional<Payment> findByMemberNameInCurrentYearSemester(String memberName) {
-        return findByMemberNameAndYearSemester(memberName, CURRENT_YEAR_SEMESTER);
+    default Optional<Payment> findPendingPaymentForCurrentSemester(String memberName, BigDecimal finalPrice) {
+        return findByMemberNameAndFinalPriceAndYearSemesterAndStatus(
+                memberName, finalPrice, CURRENT_YEAR_SEMESTER, PaymentStatus.PENDING);
     }
 
     List<Payment> findAllByStatusAndYearSemester(PaymentStatus paymentStatus, YearSemester currentYearSemester);

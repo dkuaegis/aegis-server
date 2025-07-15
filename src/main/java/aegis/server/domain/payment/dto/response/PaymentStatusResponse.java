@@ -17,15 +17,12 @@ public class PaymentStatusResponse {
 
     private final PaymentStatus status;
 
-    private final BigDecimal expectedDepositAmount;
+    private final BigDecimal finalPrice;
 
-    private final BigDecimal currentDepositAmount;
-
-    public static PaymentStatusResponse from(Payment payment, BigDecimal currentDepositAmount) {
+    public static PaymentStatusResponse from(Payment payment) {
         return PaymentStatusResponse.builder()
                 .status(payment.getStatus())
-                .expectedDepositAmount(payment.getFinalPrice())
-                .currentDepositAmount(currentDepositAmount)
+                .finalPrice(payment.getFinalPrice())
                 .build();
     }
 }

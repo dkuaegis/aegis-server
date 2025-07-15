@@ -40,9 +40,16 @@ public class TransactionServiceTest extends IntegrationTest {
     @Autowired
     MemberRepository memberRepository;
 
-    private final String TRANSACTION_LOG_FORMAT =
+    private final String DEPOSIT_TRANSACTION_LOG_FORMAT =
             """
             [입금] %s원 %s
+            982-******-01-017
+            01/09 12:25 / 잔액 1000000원
+            """;
+
+    private final String WITHDRAWAL_TRANSACTION_LOG_FORMAT =
+            """
+            [출금] %s원 %s
             982-******-01-017
             01/09 12:25 / 잔액 1000000원
             """;
@@ -63,7 +70,7 @@ public class TransactionServiceTest extends IntegrationTest {
         @Test
         void 결제를_COMPLETED_처리한다() {
             // given
-            String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName());
+            String transactionLog = String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName());
 
             // when
             transactionService.createTransaction(transactionLog);
@@ -81,7 +88,8 @@ public class TransactionServiceTest extends IntegrationTest {
         @Test
         void 잘못된_입금자명() {
             // given
-            String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName() + "WRONG");
+            String transactionLog =
+                    String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName() + "WRONG");
 
             // when
             transactionService.createTransaction(transactionLog);
@@ -90,17 +98,13 @@ public class TransactionServiceTest extends IntegrationTest {
             Payment payment =
                     paymentRepository.findByMemberInCurrentYearSemester(member).get();
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
-            assertEquals(
-                    BigDecimal.ZERO,
-                    transactionRepository.sumAmountByDepositorName(
-                            payment.getMember().getName()));
         }
 
         @Test
-        void 부족한_입금액() {
+        void 틀린_입금액() {
             // given
             String transactionLog =
-                    String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES.subtract(BigDecimal.ONE), member.getName());
+                    String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES.subtract(BigDecimal.ONE), member.getName());
 
             // when
             transactionService.createTransaction(transactionLog);
@@ -109,71 +113,6 @@ public class TransactionServiceTest extends IntegrationTest {
             Payment payment =
                     paymentRepository.findByMemberInCurrentYearSemester(member).get();
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
-            assertEquals(
-                    CLUB_DUES.subtract(BigDecimal.ONE),
-                    transactionRepository.sumAmountByDepositorName(
-                            payment.getMember().getName()));
-        }
-
-        @Test
-        void 초과된_입금액() {
-            // given
-            String transactionLog =
-                    String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES.add(BigDecimal.ONE), member.getName());
-
-            // when
-            transactionService.createTransaction(transactionLog);
-
-            // then
-            Payment payment =
-                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
-            assertEquals(PaymentStatus.OVERPAID, payment.getStatus());
-            assertEquals(
-                    CLUB_DUES.add(BigDecimal.ONE),
-                    transactionRepository.sumAmountByDepositorName(
-                            payment.getMember().getName()));
-        }
-    }
-
-    @Nested
-    class 다중입금 {
-
-        @Test
-        void 올바른_추가입금() {
-            // given
-            String transactionLog1 =
-                    String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES.subtract(BigDecimal.ONE), member.getName());
-            transactionService.createTransaction(transactionLog1);
-
-            // when
-            String transactionLog2 = String.format(TRANSACTION_LOG_FORMAT, BigDecimal.ONE, member.getName());
-            transactionService.createTransaction(transactionLog2);
-
-            // then
-            Payment payment =
-                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
-            assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
-        }
-
-        @Test
-        void 초과된_추가입금() {
-            // given
-            String transactionLog1 =
-                    String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES.subtract(BigDecimal.ONE), member.getName());
-            transactionService.createTransaction(transactionLog1);
-
-            // when
-            String transactionLog2 = String.format(TRANSACTION_LOG_FORMAT, BigDecimal.TWO, member.getName());
-            transactionService.createTransaction(transactionLog2);
-
-            // then
-            Payment payment =
-                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
-            assertEquals(PaymentStatus.OVERPAID, payment.getStatus());
-            assertEquals(
-                    CLUB_DUES.add(BigDecimal.ONE),
-                    transactionRepository.sumAmountByDepositorName(
-                            payment.getMember().getName()));
         }
     }
 
@@ -191,7 +130,7 @@ public class TransactionServiceTest extends IntegrationTest {
             PaymentRequest request = new PaymentRequest(List.of());
             paymentService.createPayment(request, userDetails);
 
-            String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, guestMember.getName());
+            String transactionLog = String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, guestMember.getName());
 
             // when
             transactionService.createTransaction(transactionLog);
@@ -213,7 +152,7 @@ public class TransactionServiceTest extends IntegrationTest {
             PaymentRequest request = new PaymentRequest(List.of());
             paymentService.createPayment(request, userDetails);
 
-            String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, userMember.getName());
+            String transactionLog = String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, userMember.getName());
 
             // when
             transactionService.createTransaction(transactionLog);
@@ -234,7 +173,7 @@ public class TransactionServiceTest extends IntegrationTest {
             PaymentRequest request = new PaymentRequest(List.of());
             paymentService.createPayment(request, userDetails);
 
-            String transactionLog = String.format(TRANSACTION_LOG_FORMAT, CLUB_DUES, adminMember.getName());
+            String transactionLog = String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, adminMember.getName());
 
             // when
             transactionService.createTransaction(transactionLog);
@@ -243,6 +182,24 @@ public class TransactionServiceTest extends IntegrationTest {
             Member updatedMember =
                     memberRepository.findById(adminMember.getId()).get();
             assertEquals(Role.ADMIN, updatedMember.getRole());
+        }
+    }
+
+    @Nested
+    class 출금_거래 {
+
+        @Test
+        void 출금_거래는_거래_정보만_저장된다() {
+            // given
+            String transactionLog = String.format(WITHDRAWAL_TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName());
+            int initialTransactionCount = transactionRepository.findAll().size();
+
+            // when
+            transactionService.createTransaction(transactionLog);
+
+            // then
+            int finalTransactionCount = transactionRepository.findAll().size();
+            assertEquals(initialTransactionCount + 1, finalTransactionCount);
         }
     }
 }
