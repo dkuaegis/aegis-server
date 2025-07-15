@@ -9,7 +9,8 @@ public record PersonalInfoResponse(
         Department department,
         Grade grade,
         String birthDate,
-        Gender gender) {
+        Gender gender,
+        ProfileIcon profileIcon) {
     public static PersonalInfoResponse from(Member member) {
         return new PersonalInfoResponse(
                 member.getName(),
@@ -18,6 +19,7 @@ public record PersonalInfoResponse(
                 member.getDepartment(),
                 member.getGrade(),
                 member.getBirthdate(),
-                member.getGender());
+                member.getGender(),
+                member.getProfileIcon());
     }
 }

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.domain.Role;
 import aegis.server.domain.member.dto.request.PersonalInfoUpdateRequest;
+import aegis.server.domain.member.dto.request.ProfileIconUpdateRequest;
 import aegis.server.domain.member.dto.response.MemberDemoteResponse;
 import aegis.server.domain.member.dto.response.PersonalInfoResponse;
 import aegis.server.domain.member.repository.MemberRepository;
@@ -51,6 +52,15 @@ public class MemberService {
                 request.grade(),
                 request.birthDate(),
                 request.gender());
+    }
+
+    @Transactional
+    public void updateProfileIcon(UserDetails userDetails, ProfileIconUpdateRequest request) {
+        Member member = memberRepository
+                .findById(userDetails.getMemberId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        member.updateProfileIcon(request.profileIcon());
     }
 
     @Transactional

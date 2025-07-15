@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.member.dto.request.PersonalInfoUpdateRequest;
+import aegis.server.domain.member.dto.request.ProfileIconUpdateRequest;
 import aegis.server.domain.member.dto.response.PersonalInfoResponse;
 import aegis.server.domain.member.service.MemberService;
 import aegis.server.global.security.annotation.LoginUser;
@@ -56,6 +57,23 @@ public class MemberController {
             @Parameter(hidden = true) @LoginUser UserDetails userDetails,
             @Valid @RequestBody PersonalInfoUpdateRequest request) {
         memberService.updatePersonalInfo(userDetails, request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @Operation(
+            summary = "프로필 아이콘 수정",
+            description = "로그인한 사용자의 프로필 아이콘을 수정합니다.",
+            responses = {
+                @ApiResponse(responseCode = "201", description = "프로필 아이콘 수정 성공"),
+                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
+                @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음", content = @Content)
+            })
+    @PostMapping("/profile-icon")
+    public ResponseEntity<Void> updateProfileIcon(
+            @Parameter(hidden = true) @LoginUser UserDetails userDetails,
+            @Valid @RequestBody ProfileIconUpdateRequest request) {
+        memberService.updateProfileIcon(userDetails, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }
