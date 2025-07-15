@@ -8,7 +8,9 @@ import org.junit.jupiter.api.Test;
 
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.dto.request.PersonalInfoUpdateRequest;
+import aegis.server.domain.member.dto.request.ProfileIconUpdateRequest;
 import aegis.server.domain.member.dto.response.MemberDemoteResponse;
+import aegis.server.domain.member.dto.response.PersonalInfoResponse;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.repository.PaymentRepository;
@@ -34,6 +36,44 @@ class MemberServiceTest extends IntegrationTest {
 
     private final PersonalInfoUpdateRequest personalInfoUpdateRequest = new PersonalInfoUpdateRequest(
             "010-1234-5678", "32000000", Department.SW융합대학_컴퓨터공학과, Grade.THREE, "010101", Gender.MALE);
+    private final ProfileIconUpdateRequest profileIconUpdateRequest = new ProfileIconUpdateRequest(ProfileIcon.JAVA);
+
+    @Nested
+    class 개인정보_조회 {
+
+        @Test
+        void 성공한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+
+            // when
+            PersonalInfoResponse response = memberService.getPersonalInfo(userDetails);
+
+            // then
+            assertEquals(member.getName(), response.name());
+            assertEquals(member.getPhoneNumber(), response.phoneNumber());
+            assertEquals(member.getStudentId(), response.studentId());
+            assertEquals(member.getDepartment(), response.department());
+            assertEquals(member.getGrade(), response.grade());
+            assertEquals(member.getBirthdate(), response.birthDate());
+            assertEquals(member.getGender(), response.gender());
+            assertEquals(member.getProfileIcon(), response.profileIcon());
+        }
+
+        @Test
+        void member를_찾을_수_없다면_실패한다() {
+            // given
+            Member member = createInitialMember();
+            UserDetails userDetails = createUserDetails(member);
+            ReflectionTestUtils.setField(userDetails, "memberId", member.getId() + 1L);
+
+            // when-then
+            CustomException exception =
+                    assertThrows(CustomException.class, () -> memberService.getPersonalInfo(userDetails));
+            assertEquals(ErrorCode.MEMBER_NOT_FOUND, exception.getErrorCode());
+        }
+    }
 
     @Nested
     class 개인정보_수정 {
@@ -69,6 +109,38 @@ class MemberServiceTest extends IntegrationTest {
             CustomException exception = assertThrows(
                     CustomException.class,
                     () -> memberService.updatePersonalInfo(userDetails, personalInfoUpdateRequest));
+            assertEquals(ErrorCode.MEMBER_NOT_FOUND, exception.getErrorCode());
+        }
+    }
+
+    @Nested
+    class 프로필_아이콘_수정 {
+
+        @Test
+        void 성공한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+
+            // when
+            memberService.updateProfileIcon(userDetails, profileIconUpdateRequest);
+
+            // then
+            Member updatedMember = memberRepository.findById(member.getId()).get();
+            assertEquals(profileIconUpdateRequest.profileIcon(), updatedMember.getProfileIcon());
+        }
+
+        @Test
+        void member를_찾을_수_없다면_실패한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            ReflectionTestUtils.setField(userDetails, "memberId", member.getId() + 1L);
+
+            // when-then
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> memberService.updateProfileIcon(userDetails, profileIconUpdateRequest));
             assertEquals(ErrorCode.MEMBER_NOT_FOUND, exception.getErrorCode());
         }
     }

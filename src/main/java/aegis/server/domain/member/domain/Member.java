@@ -48,6 +48,9 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
+    @Enumerated(EnumType.STRING)
+    private ProfileIcon profileIcon;
+
     public static Member create(String oidcId, String email, String name) {
         return Member.builder()
                 .role(Role.USER)
@@ -77,6 +80,10 @@ public class Member extends BaseEntity {
 
     public void updateDiscordId(String discordId) {
         this.discordId = discordId;
+    }
+
+    public void updateProfileIcon(ProfileIcon profileIcon) {
+        this.profileIcon = profileIcon;
     }
 
     public boolean isGuest() {
