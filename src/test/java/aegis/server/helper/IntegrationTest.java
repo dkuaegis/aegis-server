@@ -12,6 +12,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import org.junit.jupiter.api.BeforeEach;
 
+import aegis.server.domain.activity.domain.Activity;
+import aegis.server.domain.activity.repository.ActivityRepository;
 import aegis.server.domain.coupon.domain.Coupon;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
 import aegis.server.domain.coupon.repository.CouponRepository;
@@ -42,6 +44,9 @@ public class IntegrationTest {
 
     @Autowired
     IssuedCouponRepository issuedCouponRepository;
+
+    @Autowired
+    ActivityRepository activityRepository;
 
     @MockitoBean
     JDA jda;
@@ -92,5 +97,13 @@ public class IntegrationTest {
 
     protected IssuedCoupon createIssuedCoupon(Member member, Coupon coupon) {
         return issuedCouponRepository.save(IssuedCoupon.of(coupon, member));
+    }
+
+    protected Activity createActivity(String name) {
+        Activity activity = Activity.create(name);
+        activityRepository.save(activity);
+        ReflectionTestUtils.setField(activity, "name", name + activity.getId());
+
+        return activityRepository.save(activity);
     }
 }
