@@ -55,7 +55,7 @@ class ActivityServiceTest extends IntegrationTest {
             // when & then
             CustomException exception =
                     assertThrows(CustomException.class, () -> activityService.createActivity(activityCreateRequest));
-            assertEquals(ErrorCode.ACTIVITY_ALREADY_EXISTS, exception.getErrorCode());
+            assertEquals(ErrorCode.ACTIVITY_NAME_ALREADY_EXISTS, exception.getErrorCode());
         }
     }
 
@@ -203,7 +203,7 @@ class ActivityServiceTest extends IntegrationTest {
             // when & then
             CustomException exception = assertThrows(
                     CustomException.class, () -> activityService.updateActivity(activity2.getId(), request));
-            assertEquals(ErrorCode.ACTIVITY_ALREADY_EXISTS, exception.getErrorCode());
+            assertEquals(ErrorCode.ACTIVITY_NAME_ALREADY_EXISTS, exception.getErrorCode());
         }
 
         @Test

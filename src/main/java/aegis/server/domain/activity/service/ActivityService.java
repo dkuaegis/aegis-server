@@ -30,7 +30,7 @@ public class ActivityService {
     public void createActivity(ActivityCreateUpdateRequest request) {
         Activity activity = Activity.create(request.name());
         if (activityRepository.existsByNameAndYearSemester(activity.getName(), activity.getYearSemester())) {
-            throw new CustomException(ErrorCode.ACTIVITY_ALREADY_EXISTS);
+            throw new CustomException(ErrorCode.ACTIVITY_NAME_ALREADY_EXISTS);
         }
 
         activityRepository.save(activity);
@@ -70,7 +70,7 @@ public class ActivityService {
 
         if (activityRepository.existsByNameAndYearSemester(request.name(), activity.getYearSemester())
                 && !activity.getName().equals(request.name())) {
-            throw new CustomException(ErrorCode.ACTIVITY_ALREADY_EXISTS);
+            throw new CustomException(ErrorCode.ACTIVITY_NAME_ALREADY_EXISTS);
         }
 
         activity.updateName(request.name());
