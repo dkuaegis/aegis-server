@@ -3,8 +3,6 @@ package aegis.server.domain.common.domain;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.time.Year;
-
 @Getter
 @RequiredArgsConstructor
 public enum YearSemester {

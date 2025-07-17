@@ -51,6 +51,13 @@ public enum ErrorCode {
     // Payment
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND),
     PAYMENT_ALREADY_EXISTS(HttpStatus.CONFLICT),
+
+    // Activity
+    ACTIVITY_NOT_FOUND(HttpStatus.NOT_FOUND),
+    ACTIVITY_ALREADY_EXISTS(HttpStatus.CONFLICT),
+    ACTIVITY_ALREADY_ACTIVE(HttpStatus.CONFLICT),
+    ACTIVITY_ALREADY_INACTIVE(HttpStatus.CONFLICT),
+    ACTIVITY_HAS_ASSOCIATED_ENTITIES(HttpStatus.CONFLICT),
     ;
     private final HttpStatus httpStatus;
 }

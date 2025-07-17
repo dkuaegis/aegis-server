@@ -1,10 +1,8 @@
 package aegis.server.domain.payment.service;
 
 import java.math.BigDecimal;
-import java.time.Year;
 import java.util.List;
 
-import aegis.server.domain.common.domain.YearSemester;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.coupon.domain.Coupon;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
 import aegis.server.domain.coupon.repository.CouponRepository;
@@ -29,7 +28,6 @@ import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
 
 import static aegis.server.global.constant.Constant.CLUB_DUES;
-import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -184,13 +182,14 @@ public class PaymentServiceTest extends IntegrationTest {
             paymentService.createPayment(request1, userDetails);
 
             // 완료된 결제 상태로 변경
-            Payment payment = paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
             ReflectionTestUtils.setField(payment, "status", PaymentStatus.COMPLETED);
             paymentRepository.save(payment);
 
             // 새로운 학기 결제 요청
             Payment oldPayment = paymentRepository.findById(1L).get();
-            ReflectionTestUtils.setField(oldPayment, "yearSemester",  YearSemester.YEAR_SEMESTER_2025_1);
+            ReflectionTestUtils.setField(oldPayment, "yearSemester", YearSemester.YEAR_SEMESTER_2025_1);
             paymentRepository.save(oldPayment);
             PaymentRequest request2 = new PaymentRequest(List.of());
 
@@ -198,7 +197,8 @@ public class PaymentServiceTest extends IntegrationTest {
             paymentService.createPayment(request2, userDetails);
 
             // then
-            Payment newPayment = paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            Payment newPayment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
             assertEquals(YearSemester.YEAR_SEMESTER_2025_2, newPayment.getYearSemester());
             assertEquals(PaymentStatus.PENDING, newPayment.getStatus());
         }
@@ -211,7 +211,7 @@ public class PaymentServiceTest extends IntegrationTest {
 
             // 새로운 학기 결제 요청
             Payment oldPayment = paymentRepository.findById(1L).get();
-            ReflectionTestUtils.setField(oldPayment, "yearSemester",  YearSemester.YEAR_SEMESTER_2025_1);
+            ReflectionTestUtils.setField(oldPayment, "yearSemester", YearSemester.YEAR_SEMESTER_2025_1);
             paymentRepository.save(oldPayment);
             PaymentRequest request2 = new PaymentRequest(List.of());
 
@@ -219,7 +219,8 @@ public class PaymentServiceTest extends IntegrationTest {
             paymentService.createPayment(request2, userDetails);
 
             // then
-            Payment newPayment = paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            Payment newPayment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
             assertEquals(YearSemester.YEAR_SEMESTER_2025_2, newPayment.getYearSemester());
             assertEquals(PaymentStatus.PENDING, newPayment.getStatus());
         }
