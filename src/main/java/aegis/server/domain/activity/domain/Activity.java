@@ -2,10 +2,7 @@ package aegis.server.domain.activity.domain;
 
 import jakarta.persistence.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.common.domain.YearSemester;
@@ -16,8 +13,8 @@ import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"name", "year_semester"}))
 @Getter
 @Builder(access = lombok.AccessLevel.PRIVATE)
-@AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
-@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Activity extends BaseEntity {
 
     @Id

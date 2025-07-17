@@ -58,6 +58,11 @@ public enum ErrorCode {
     ACTIVITY_ALREADY_ACTIVE(HttpStatus.CONFLICT),
     ACTIVITY_ALREADY_INACTIVE(HttpStatus.CONFLICT),
     ACTIVITY_HAS_ASSOCIATED_ENTITIES(HttpStatus.CONFLICT),
-    ;
+
+    // Point
+    POINT_ACCOUNT_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR), // 소셜로그인 과정에서 일반적으로는 생성되어야함
+    POINT_INSUFFICIENT_BALANCE(HttpStatus.BAD_REQUEST),
+    POINT_ACTION_AMOUNT_NOT_POSITIVE(HttpStatus.BAD_REQUEST);
+
     private final HttpStatus httpStatus;
 }

@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
+import aegis.server.domain.point.domain.PointAccount;
+import aegis.server.domain.point.repository.PointAccountRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 
@@ -21,6 +23,7 @@ import aegis.server.global.exception.ErrorCode;
 public class CustomOidcUserService extends OidcUserService {
 
     private final MemberRepository memberRepository;
+    private final PointAccountRepository pointAccountRepository;
 
     @Value("${email-restriction.enabled}")
     private boolean emailRestrictionEnabled;
@@ -31,6 +34,7 @@ public class CustomOidcUserService extends OidcUserService {
         OidcUser oidcUser = super.loadUser(userRequest);
 
         Member member = findOrCreateMember(oidcUser);
+        createPointAccountIfNotExists(member);
 
         return new CustomOidcUser(oidcUser, member);
     }
@@ -59,5 +63,11 @@ public class CustomOidcUserService extends OidcUserService {
         }
 
         return member;
+    }
+
+    private void createPointAccountIfNotExists(Member member) {
+        if (!pointAccountRepository.existsByMember(member)) {
+            pointAccountRepository.save(PointAccount.create(member));
+        }
     }
 }
