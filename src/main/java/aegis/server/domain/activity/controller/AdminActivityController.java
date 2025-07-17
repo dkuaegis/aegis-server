@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 
-import aegis.server.domain.activity.dto.request.ActivityCreateRequest;
+import aegis.server.domain.activity.dto.request.ActivityCreateUpdateRequest;
 import aegis.server.domain.activity.dto.response.ActivityResponse;
 import aegis.server.domain.activity.service.ActivityService;
 
@@ -47,9 +47,26 @@ public class AdminActivityController {
                 @ApiResponse(responseCode = "409", description = "동일한 이름의 활동이 이미 존재", content = @Content)
             })
     @PostMapping
-    public ResponseEntity<Void> createActivity(@Valid @RequestBody ActivityCreateRequest request) {
+    public ResponseEntity<Void> createActivity(@Valid @RequestBody ActivityCreateUpdateRequest request) {
         activityService.createActivity(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @Operation(
+            summary = "활동 수정",
+            description = "지정된 ID의 활동을 수정합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "활동 수정 성공"),
+                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 활동", content = @Content),
+                @ApiResponse(responseCode = "409", description = "동일한 이름의 활동이 이미 존재", content = @Content)
+            })
+    @PutMapping("/{activityId}")
+    public ResponseEntity<Void> updateActivity(
+            @Parameter(description = "수정할 활동 ID") @PathVariable Long activityId,
+            @Valid @RequestBody ActivityCreateUpdateRequest request) {
+        activityService.updateActivity(activityId, request);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(

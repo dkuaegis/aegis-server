@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.activity.domain.Activity;
-import aegis.server.domain.activity.dto.request.ActivityCreateRequest;
+import aegis.server.domain.activity.dto.request.ActivityCreateUpdateRequest;
 import aegis.server.domain.activity.dto.response.ActivityResponse;
 import aegis.server.domain.activity.repository.ActivityRepository;
 import aegis.server.global.exception.CustomException;
@@ -27,7 +27,7 @@ public class ActivityService {
     }
 
     @Transactional
-    public void createActivity(ActivityCreateRequest request) {
+    public void createActivity(ActivityCreateUpdateRequest request) {
         Activity activity = Activity.create(request.name());
         if (activityRepository.existsByNameAndYearSemester(activity.getName(), activity.getYearSemester())) {
             throw new CustomException(ErrorCode.ACTIVITY_ALREADY_EXISTS);
@@ -60,6 +60,20 @@ public class ActivityService {
         }
 
         activity.deactivate();
+    }
+
+    @Transactional
+    public void updateActivity(Long activityId, ActivityCreateUpdateRequest request) {
+        Activity activity = activityRepository
+                .findById(activityId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ACTIVITY_NOT_FOUND));
+
+        if (activityRepository.existsByNameAndYearSemester(request.name(), activity.getYearSemester())
+                && !activity.getName().equals(request.name())) {
+            throw new CustomException(ErrorCode.ACTIVITY_ALREADY_EXISTS);
+        }
+
+        activity.updateName(request.name());
     }
 
     @Transactional
