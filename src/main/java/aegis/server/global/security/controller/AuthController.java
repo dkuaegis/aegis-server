@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
-import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.repository.PaymentRepository;
@@ -32,7 +31,6 @@ import aegis.server.global.security.oidc.UserDetails;
 public class AuthController {
 
     private final PaymentRepository paymentRepository;
-    private final MemberRepository memberRepository;
 
     @Operation(
             summary = "인증 상태 확인",

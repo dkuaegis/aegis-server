@@ -20,6 +20,7 @@ public class Constant {
 
     public static final String LOCAL_VITE_BUILD_CLIENT_URL = "http://localhost:4173";
     public static final String LOCAL_VITE_CLIENT_URL = "http://localhost:5173";
+    public static final String LOCAL_SERVER_URL = "http://localhost:8080";
 
     // TODO: Aegis Cloudflare 계정으로 변경
     public static final String CF_TUNNEL_4173_URL = "https://4173.seongmin.dev";
@@ -33,6 +34,7 @@ public class Constant {
             DEV_3_CLIENT_JOIN_URL,
             LOCAL_VITE_BUILD_CLIENT_URL,
             LOCAL_VITE_CLIENT_URL,
+            LOCAL_SERVER_URL,
             CF_TUNNEL_4173_URL,
             CF_TUNNEL_5173_URL);
 }
