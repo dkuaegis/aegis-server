@@ -70,6 +70,9 @@ dependencies {
     implementation 'com.google.apis:google-api-services-sheets:v4-rev20250616-2.0.0'
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
+    
+    implementation 'com.google.zxing:core:3.5.3'
+    implementation 'com.google.zxing:javase:3.5.3'
 
     testImplementation 'com.github.fppt:jedis-mock:1.1.11'
     testImplementation 'org.springframework.security:spring-security-test'
