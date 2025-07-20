@@ -11,6 +11,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import aegis.server.domain.activity.domain.Activity;
 import aegis.server.domain.activity.repository.ActivityRepository;
@@ -21,6 +22,11 @@ import aegis.server.domain.coupon.repository.IssuedCouponRepository;
 import aegis.server.domain.discord.service.listener.DiscordEventListener;
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.repository.MemberRepository;
+import aegis.server.domain.point.domain.PointAccount;
+import aegis.server.domain.point.domain.PointTransaction;
+import aegis.server.domain.point.domain.PointTransactionType;
+import aegis.server.domain.point.repository.PointAccountRepository;
+import aegis.server.domain.point.repository.PointTransactionRepository;
 import aegis.server.global.security.oidc.UserDetails;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -28,6 +34,7 @@ import static org.mockito.Mockito.doNothing;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Testcontainers
 public class IntegrationTest {
 
     @Autowired
@@ -47,6 +54,12 @@ public class IntegrationTest {
 
     @Autowired
     ActivityRepository activityRepository;
+
+    @Autowired
+    PointAccountRepository pointAccountRepository;
+
+    @Autowired
+    PointTransactionRepository pointTransactionRepository;
 
     @MockitoBean
     JDA jda;
@@ -105,5 +118,22 @@ public class IntegrationTest {
         ReflectionTestUtils.setField(activity, "name", name + activity.getId());
 
         return activityRepository.save(activity);
+    }
+
+    protected PointAccount createPointAccount(Member member) {
+        return pointAccountRepository.save(PointAccount.create(member));
+    }
+
+    protected void createPointTransaction(
+            PointAccount account, PointTransactionType type, BigDecimal amount, String reason) {
+        pointTransactionRepository.save(PointTransaction.create(account, type, amount, reason));
+    }
+
+    protected void createEarnTransaction(PointAccount account, BigDecimal amount, String reason) {
+        createPointTransaction(account, PointTransactionType.EARN, amount, reason);
+    }
+
+    protected void createSpendTransaction(PointAccount account, BigDecimal amount, String reason) {
+        createPointTransaction(account, PointTransactionType.SPEND, amount, reason);
     }
 }
