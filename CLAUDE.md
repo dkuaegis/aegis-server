@@ -37,6 +37,8 @@
   - 테스트를 통해 문제가 발생하는지 확인하고, 필요한 경우에만 사용하세요.
 - 가능한 경우 반드시 쿼리 단에서 필터링을 실행하세요.
 - `@Param` 어노테이션을 사용하지 마세요.
+- 테스트코드, 로컬, 프로덕션 환경 모두 Postgres 를 사용하므로, 필요한 경우 Postgres 전용 기능을 사용하세요.
+- JPQL 로 처리하기 힘든 복잡한 쿼리는 Native Query 를 사용하세요.
 
 # Entity
 
@@ -82,3 +84,7 @@
 
 - 현재 시점은 방학이며, 다음 학기에 사용할 시스템을 구축하고 있습니다.
 - 따라서 현재 시스템과의 하위 호환성은 고려하지 않습니다.
+
+# 추가 설치된 CLI 도구
+- ast-grep: ast-grep(sg) is a fast and polyglot tool for code structural search, lint, rewriting at large scale
+  코드를 검색할 때 필요한 경우 활용하세요.

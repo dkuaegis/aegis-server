@@ -16,29 +16,36 @@ import aegis.server.global.exception.ErrorCode;
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(indexes = @Index(name = "idx_point_account_total_earned_desc", columnList = "total_earned DESC"))
 public class PointAccount extends BaseEntity {
 
     @Id
     @Column(name = "point_id")
-    private Long id;
+    private Long id; // memberId와 동일
 
     @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
     private Member member;
 
     @Column(precision = 10, scale = 0)
     private BigDecimal balance;
+
+    @Column(precision = 10, scale = 0)
+    private BigDecimal totalEarned;
 
     public static PointAccount create(Member member) {
         return PointAccount.builder()
                 .id(member.getId())
                 .member(member)
                 .balance(BigDecimal.ZERO)
+                .totalEarned(BigDecimal.ZERO)
                 .build();
     }
 
     public void add(BigDecimal amount) {
         assertPositiveAmount(amount);
         this.balance = this.balance.add(amount);
+        this.totalEarned = this.totalEarned.add(amount);
     }
 
     public void deduct(BigDecimal amount) {
