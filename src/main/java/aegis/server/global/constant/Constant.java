@@ -14,10 +14,12 @@ public class Constant {
     public static final String PROD_SERVER_URL = "https://api.dkuaegis.org";
     public static final String PROD_JOIN_URL = "https://join.dkuaegis.org";
     public static final String PROD_STUDY_URL = "https://study.dkuaegis.org";
+    public static final String PROD_MYPAGE_URL = "https://mypage.dkuaegis.org";
 
     public static final String DEV_SERVER_URL = "https://dev-api.dkuaegis.org";
     public static final String DEV_JOIN_URL = "https://dev-join.dkuaegis.org";
     public static final String DEV_STUDY_URL = "https://dev-study.dkuaegis.org";
+    public static final String DEV_MYPAGE_URL = "https://dev-mypage.dkuaegis.org";
 
     public static final String LOCAL_VITE_BUILD_CLIENT_URL = "http://localhost:4173";
     public static final String LOCAL_VITE_CLIENT_URL = "http://localhost:5173";
@@ -27,9 +29,11 @@ public class Constant {
             PROD_SERVER_URL,
             PROD_JOIN_URL,
             PROD_STUDY_URL,
+            PROD_MYPAGE_URL,
             DEV_SERVER_URL,
             DEV_JOIN_URL,
             DEV_STUDY_URL,
+            DEV_MYPAGE_URL,
             LOCAL_VITE_BUILD_CLIENT_URL,
             LOCAL_VITE_CLIENT_URL,
             LOCAL_SERVER_URL);
