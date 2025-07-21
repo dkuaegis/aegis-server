@@ -13,7 +13,7 @@ import aegis.server.domain.point.domain.PointAccount;
 public interface PointAccountRepository extends JpaRepository<PointAccount, Long> {
     boolean existsByMember(Member member);
 
-    @Query("SELECT pa FROM PointAccount pa WHERE pa.member.id = :memberId")
+    @Query("SELECT pa FROM PointAccount pa JOIN FETCH pa.member WHERE pa.member.id = :memberId")
     Optional<PointAccount> findByMemberId(Long memberId);
 
     @Query("SELECT pa FROM PointAccount pa JOIN FETCH pa.member ORDER BY pa.totalEarned DESC LIMIT 10")
