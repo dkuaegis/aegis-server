@@ -16,11 +16,12 @@ import aegis.server.global.exception.ErrorCode;
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(indexes = @Index(name = "idx_point_account_total_earned_desc", columnList = "total_earned DESC"))
 public class PointAccount extends BaseEntity {
 
     @Id
     @Column(name = "point_id")
-    private Long id;
+    private Long id; // memberId와 동일
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
