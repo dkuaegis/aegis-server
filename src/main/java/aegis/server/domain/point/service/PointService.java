@@ -1,6 +1,7 @@
 package aegis.server.domain.point.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -44,8 +45,7 @@ public class PointService {
 
         // 상위 10명 조회
         List<PointAccount> top10Accounts = pointAccountRepository.findTop10ByTotalEarned();
-        List<PointRankingResponse> top10Rankings =
-                top10Accounts.stream().map(this::convertToRankingResponse).toList();
+        List<PointRankingResponse> top10Rankings = convertToRankingResponses(top10Accounts);
 
         // 현재 사용자 랭킹 계산
         PointRankingResponse currentUserRanking = getCurrentUserRanking(userDetails.getMemberId());
@@ -68,14 +68,33 @@ public class PointService {
                 currentUserAccount.getMember().getProfileIcon());
     }
 
-    private PointRankingResponse convertToRankingResponse(PointAccount account) {
-        BigDecimal totalEarned = account.getTotalEarned();
-        Long rank = pointAccountRepository.countByTotalEarnedGreaterThan(totalEarned) + 1;
+    private List<PointRankingResponse> convertToRankingResponses(List<PointAccount> accounts) {
+        if (accounts.isEmpty()) {
+            return List.of();
+        }
 
-        return PointRankingResponse.of(
-                rank,
-                account.getMember().getName(),
-                totalEarned,
-                account.getMember().getProfileIcon());
+        List<PointRankingResponse> responses = new ArrayList<>();
+        long rank = 1;
+        BigDecimal previousTotalEarned = null;
+
+        for (int i = 0; i < accounts.size(); i++) {
+            PointAccount account = accounts.get(i);
+            BigDecimal totalEarned = account.getTotalEarned();
+
+            // 동점자 처리: 이전 점수와 다르면 현재 인덱스 + 1을 등수로 설정
+            if (previousTotalEarned != null && totalEarned.compareTo(previousTotalEarned) < 0) {
+                rank = i + 1;
+            }
+
+            responses.add(PointRankingResponse.of(
+                    rank,
+                    account.getMember().getName(),
+                    totalEarned,
+                    account.getMember().getProfileIcon()));
+
+            previousTotalEarned = totalEarned;
+        }
+
+        return responses;
     }
 }
