@@ -24,6 +24,7 @@ public class PointTransaction extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "point_account_id")
     private PointAccount pointAccount;
 
     @Enumerated(EnumType.STRING)

@@ -130,10 +130,14 @@ public class IntegrationTest {
     }
 
     protected void createEarnTransaction(PointAccount account, BigDecimal amount, String reason) {
+        account.add(amount);
+        pointAccountRepository.save(account);
         createPointTransaction(account, PointTransactionType.EARN, amount, reason);
     }
 
     protected void createSpendTransaction(PointAccount account, BigDecimal amount, String reason) {
+        account.deduct(amount);
+        pointAccountRepository.save(account);
         createPointTransaction(account, PointTransactionType.SPEND, amount, reason);
     }
 }
