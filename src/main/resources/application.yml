@@ -16,8 +16,11 @@ spring:
               - openid
   session:
     redis:
-      namespace: aegis:session
+      namespace: aegis
+      flush-mode: on_save
+      save-mode: always
     timeout: ${SESSION_TIMEOUT}
+
 
 springdoc:
   swagger-ui:
