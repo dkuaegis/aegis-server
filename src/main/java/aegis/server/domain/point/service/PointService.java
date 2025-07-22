@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.domain.point.domain.PointAccount;
 import aegis.server.domain.point.domain.PointTransaction;
 import aegis.server.domain.point.dto.response.PointRankingListResponse;
@@ -27,6 +28,7 @@ public class PointService {
 
     private final PointAccountRepository pointAccountRepository;
     private final PointTransactionRepository pointTransactionRepository;
+    private final PaymentRepository paymentRepository;
 
     public PointSummaryResponse getPointSummary(UserDetails userDetails) {
         PointAccount pointAccount = pointAccountRepository
@@ -40,8 +42,8 @@ public class PointService {
     }
 
     public PointRankingListResponse getPointRanking(UserDetails userDetails) {
-        // 전체 회원 수 조회
-        long memberCount = pointAccountRepository.count();
+        // 현재 학기 회원 수 조회
+        long memberCount = paymentRepository.countCompletedPaymentsInCurrentYearSemester();
 
         // 상위 10명 조회
         List<PointAccount> top10Accounts = pointAccountRepository.findTop10ByTotalEarned();
