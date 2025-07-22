@@ -1,6 +1,7 @@
 package aegis.server.domain.member.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -27,7 +28,7 @@ public class MypageController {
     @Operation(summary = "마이페이지 조회", description = "사용자의 기본 정보(이름, 프로필 아이콘, 포인트 잔액)를 조회합니다.")
     @ApiResponse(responseCode = "200", description = "마이페이지 정보 조회 성공")
     @GetMapping
-    public ResponseEntity<MypageResponse> getMypage(@LoginUser UserDetails userDetails) {
+    public ResponseEntity<MypageResponse> getMypage(@Parameter(hidden = true) @LoginUser UserDetails userDetails) {
         MypageResponse response = mypageService.getMypageSummary(userDetails);
         return ResponseEntity.ok(response);
     }
