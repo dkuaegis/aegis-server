@@ -49,5 +49,12 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
                 memberName, finalPrice, CURRENT_YEAR_SEMESTER, PaymentStatus.PENDING);
     }
 
+    @Query("SELECT COUNT(p) FROM Payment p WHERE p.yearSemester = :yearSemester AND p.status = :status")
+    long countByYearSemesterAndStatus(YearSemester yearSemester, PaymentStatus status);
+
+    default long countCompletedPaymentsInCurrentYearSemester() {
+        return countByYearSemesterAndStatus(CURRENT_YEAR_SEMESTER, PaymentStatus.COMPLETED);
+    }
+
     List<Payment> findAllByStatusAndYearSemester(PaymentStatus paymentStatus, YearSemester currentYearSemester);
 }

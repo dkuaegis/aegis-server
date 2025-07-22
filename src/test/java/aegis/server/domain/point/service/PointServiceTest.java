@@ -113,6 +113,7 @@ class PointServiceTest extends IntegrationTest {
 
             for (int i = 0; i < 13; i++) {
                 members[i] = createMember();
+                createCompletedPaymentForCurrentSemester(members[i]);
                 accounts[i] = createPointAccount(members[i]);
                 // 점수: 1300, 1200, 1100, ..., 200, 100 (13명)
                 createEarnTransaction(accounts[i], BigDecimal.valueOf(1300 - (i * 100)), "적립");
@@ -150,6 +151,7 @@ class PointServiceTest extends IntegrationTest {
 
             for (int i = 0; i < 13; i++) {
                 members[i] = createMember();
+                createCompletedPaymentForCurrentSemester(members[i]);
                 accounts[i] = createPointAccount(members[i]);
             }
 
@@ -202,6 +204,7 @@ class PointServiceTest extends IntegrationTest {
 
             for (int i = 0; i < 13; i++) {
                 members[i] = createMember();
+                createCompletedPaymentForCurrentSemester(members[i]);
                 accounts[i] = createPointAccount(members[i]);
                 createEarnTransaction(accounts[i], BigDecimal.valueOf(1300 - (i * 100)), "적립");
             }
@@ -234,6 +237,7 @@ class PointServiceTest extends IntegrationTest {
 
             for (int i = 0; i < 13; i++) {
                 members[i] = createMember();
+                createCompletedPaymentForCurrentSemester(members[i]);
                 accounts[i] = createPointAccount(members[i]);
                 createEarnTransaction(accounts[i], BigDecimal.valueOf(1300 - (i * 100)), "적립");
             }
@@ -266,6 +270,7 @@ class PointServiceTest extends IntegrationTest {
 
             for (int i = 0; i < 13; i++) {
                 members[i] = createMember();
+                createCompletedPaymentForCurrentSemester(members[i]);
                 accounts[i] = createPointAccount(members[i]);
 
                 // 처음 12명만 포인트 적립, 마지막 1명은 포인트 없음

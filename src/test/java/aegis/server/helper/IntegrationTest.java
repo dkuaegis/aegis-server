@@ -22,6 +22,8 @@ import aegis.server.domain.coupon.repository.IssuedCouponRepository;
 import aegis.server.domain.discord.service.listener.DiscordEventListener;
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.repository.MemberRepository;
+import aegis.server.domain.payment.domain.Payment;
+import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.domain.point.domain.PointAccount;
 import aegis.server.domain.point.domain.PointTransaction;
 import aegis.server.domain.point.domain.PointTransactionType;
@@ -60,6 +62,9 @@ public class IntegrationTest {
 
     @Autowired
     PointTransactionRepository pointTransactionRepository;
+
+    @Autowired
+    PaymentRepository paymentRepository;
 
     @MockitoBean
     JDA jda;
@@ -139,5 +144,11 @@ public class IntegrationTest {
         account.deduct(amount);
         pointAccountRepository.save(account);
         createPointTransaction(account, PointTransactionType.SPEND, amount, reason);
+    }
+
+    protected Payment createCompletedPaymentForCurrentSemester(Member member) {
+        Payment payment = Payment.of(member);
+        payment.completePayment();
+        return paymentRepository.save(payment);
     }
 }
