@@ -126,7 +126,7 @@ class StudyServiceTest extends IntegrationTest {
             CustomException exception = assertThrows(
                     CustomException.class,
                     () -> studyService.updateStudy(study.getId(), studyCreateRequest, invalidUserDetails));
-            assertEquals(ErrorCode.MEMBER_NOT_FOUND, exception.getErrorCode());
+            assertEquals(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR, exception.getErrorCode());
         }
 
         @Test
@@ -138,7 +138,7 @@ class StudyServiceTest extends IntegrationTest {
             // when & then
             CustomException exception = assertThrows(
                     CustomException.class, () -> studyService.updateStudy(9999L, studyCreateRequest, userDetails));
-            assertEquals(ErrorCode.STUDY_NOT_FOUND, exception.getErrorCode());
+            assertEquals(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR, exception.getErrorCode());
         }
 
         @Test
@@ -156,7 +156,7 @@ class StudyServiceTest extends IntegrationTest {
             CustomException exception = assertThrows(
                     CustomException.class,
                     () -> studyService.updateStudy(study.getId(), studyCreateRequest, otherUserDetails));
-            assertEquals(ErrorCode.STUDY_MEMBER_NOT_FOUND, exception.getErrorCode());
+            assertEquals(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR, exception.getErrorCode());
         }
     }
 }

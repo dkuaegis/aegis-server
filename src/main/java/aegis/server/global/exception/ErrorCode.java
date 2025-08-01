@@ -70,7 +70,8 @@ public enum ErrorCode {
     // Study
     STUDY_NOT_FOUND(HttpStatus.NOT_FOUND),
     STUDY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND),
-    STUDY_MEMBER_NOT_INSTRUCTOR(HttpStatus.FORBIDDEN);
+    STUDY_MEMBER_NOT_INSTRUCTOR(HttpStatus.FORBIDDEN),
+    STUDY_MEMBER_NOT_PARTICIPANT(HttpStatus.FORBIDDEN);
 
     private final HttpStatus httpStatus;
 }
