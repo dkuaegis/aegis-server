@@ -65,7 +65,12 @@ public enum ErrorCode {
     POINT_ACTION_AMOUNT_NOT_POSITIVE(HttpStatus.BAD_REQUEST),
 
     // QR Code
-    QR_CODE_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR);
+    QR_CODE_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR),
+
+    // Study
+    STUDY_NOT_FOUND(HttpStatus.NOT_FOUND),
+    STUDY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND),
+    STUDY_MEMBER_NOT_INSTRUCTOR(HttpStatus.FORBIDDEN);
 
     private final HttpStatus httpStatus;
 }
