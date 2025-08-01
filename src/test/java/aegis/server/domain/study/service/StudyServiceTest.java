@@ -138,7 +138,7 @@ class StudyServiceTest extends IntegrationTest {
             // when & then
             CustomException exception = assertThrows(
                     CustomException.class, () -> studyService.updateStudy(9999L, studyCreateRequest, userDetails));
-            assertEquals(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR, exception.getErrorCode());
+            assertEquals(ErrorCode.STUDY_NOT_FOUND, exception.getErrorCode());
         }
 
         @Test
