@@ -35,10 +35,4 @@ public class StudyMember extends BaseEntity {
     public static StudyMember create(Study study, Member member, StudyRole role) {
         return StudyMember.builder().study(study).member(member).role(role).build();
     }
-
-    public void validateMemberIsInstructor() {
-        if (!this.role.equals(StudyRole.INSTRUCTOR)) {
-            throw new CustomException(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR);
-        }
-    }
 }

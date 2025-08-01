@@ -25,6 +25,7 @@ public class StudyService {
     private final MemberRepository memberRepository;
     private final StudyRepository studyRepository;
     private final StudyMemberRepository studyMemberRepository;
+    private final StudyPermissionChecker studyPermissionChecker;
 
     @Transactional
     public void createStudy(StudyCreateUpdateRequest request, UserDetails userDetails) {
@@ -49,18 +50,10 @@ public class StudyService {
 
     @Transactional
     public void updateStudy(Long studyId, StudyCreateUpdateRequest request, UserDetails userDetails) {
-        Member member = memberRepository
-                .findById(userDetails.getMemberId())
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-
         Study study =
                 studyRepository.findById(studyId).orElseThrow(() -> new CustomException(ErrorCode.STUDY_NOT_FOUND));
 
-        StudyMember studyMember = studyMemberRepository
-                .findByStudyAndMember(study, member)
-                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_MEMBER_NOT_FOUND));
-
-        studyMember.validateMemberIsInstructor();
+        studyPermissionChecker.validateIsInstructor(studyId, userDetails);
 
         study.update(
                 request.title(),
