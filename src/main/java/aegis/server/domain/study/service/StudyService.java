@@ -50,10 +50,10 @@ public class StudyService {
 
     @Transactional
     public void updateStudy(Long studyId, StudyCreateUpdateRequest request, UserDetails userDetails) {
-        studyPermissionChecker.validateIsInstructor(studyId, userDetails);
-
         Study study =
                 studyRepository.findById(studyId).orElseThrow(() -> new CustomException(ErrorCode.STUDY_NOT_FOUND));
+
+        studyPermissionChecker.validateIsInstructor(studyId, userDetails);
 
         study.update(
                 request.title(),
