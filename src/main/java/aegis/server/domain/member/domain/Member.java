@@ -53,7 +53,7 @@ public class Member extends BaseEntity {
 
     public static Member create(String oidcId, String email, String name) {
         return Member.builder()
-                .role(Role.USER)
+                .role(Role.GUEST)
                 .oidcId(oidcId)
                 .email(email)
                 .name(name)

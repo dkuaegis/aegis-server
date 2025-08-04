@@ -97,7 +97,8 @@ public class IntegrationTest {
         Member member = createInitialMember();
         member.updatePersonalInfo(
                 "010-1234-5678", "32000001", Department.SW융합대학_컴퓨터공학과, Grade.THREE, "010101", Gender.MALE);
-
+        member.promoteToUser();
+        
         return memberRepository.save(member);
     }
 
