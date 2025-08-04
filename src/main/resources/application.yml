@@ -21,7 +21,6 @@ spring:
       save-mode: always
     timeout: ${SESSION_TIMEOUT}
 
-
 springdoc:
   swagger-ui:
     path: /docs/swagger-ui.html
