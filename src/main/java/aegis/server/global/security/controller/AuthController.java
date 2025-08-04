@@ -50,8 +50,7 @@ public class AuthController {
                 paymentRepository.findByMemberIdInCurrentYearSemester(userDetails.getMemberId());
 
         if (optionalPayment.isPresent()) {
-            Payment payment = optionalPayment.get();
-            return ResponseEntity.status(HttpStatus.OK).body(new AuthCheckResponse(payment.getStatus()));
+            return ResponseEntity.status(HttpStatus.OK).body(new AuthCheckResponse(PaymentStatus.COMPLETED));
         } else {
             return ResponseEntity.status(HttpStatus.OK).body(new AuthCheckResponse(PaymentStatus.PENDING));
         }
