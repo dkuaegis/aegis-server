@@ -1,7 +1,6 @@
 package aegis.server.domain.survey.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,6 @@ import aegis.server.helper.IntegrationTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Transactional
 class SurveyServiceTest extends IntegrationTest {
 
     @Autowired

@@ -97,6 +97,7 @@ public class IntegrationTest {
         Member member = createInitialMember();
         member.updatePersonalInfo(
                 "010-1234-5678", "32000001", Department.SW융합대학_컴퓨터공학과, Grade.THREE, "010101", Gender.MALE);
+        member.promoteToUser();
 
         return memberRepository.save(member);
     }
@@ -146,9 +147,9 @@ public class IntegrationTest {
         createPointTransaction(account, PointTransactionType.SPEND, amount, reason);
     }
 
-    protected Payment createCompletedPaymentForCurrentSemester(Member member) {
+    protected void createCompletedPaymentForCurrentSemester(Member member) {
         Payment payment = Payment.of(member);
         payment.completePayment();
-        return paymentRepository.save(payment);
+        paymentRepository.save(payment);
     }
 }
