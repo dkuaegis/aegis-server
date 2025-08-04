@@ -27,4 +27,4 @@ ENV OTEL_SERVICE_NAME=aegis-server
 ENV OTEL_SERVICE_NAMESPACE=aegis-web
 ENV OTEL_DEPLOYMENT_ENVIRONMENT=prod
 
-ENTRYPOINT ["sh", "-c", "export OTEL_RESOURCE_ATTRIBUTES=\"deployment.environment=${OTEL_DEPLOYMENT_ENVIRONMENT},service.namespace=${OTEL_SERVICE_NAMESPACE},service.version=$(cat /app/version.txt)\" && java -javaagent:/app/grafana-opentelemetry-java.jar -jar /app/app.jar"]
+ENTRYPOINT ["sh", "-c", "export OTEL_RESOURCE_ATTRIBUTES=\"deployment.environment=${OTEL_DEPLOYMENT_ENVIRONMENT},service.namespace=${OTEL_SERVICE_NAMESPACE},service.version=$(cat /app/version.txt)\" && exec java -javaagent:/app/grafana-opentelemetry-java.jar -jar /app/app.jar"]
