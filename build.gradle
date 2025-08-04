@@ -91,3 +91,11 @@ test {
     jvmArgs += '-javaagent:' +
             configurations.testRuntimeClasspath.find { it.name.contains("byte-buddy-agent") }.absolutePath
 }
+
+tasks.register('writeVersionFile') {
+    doLast {
+        new File(layout.buildDirectory.get().asFile, 'version.txt').text = project.version
+    }
+}
+
+jar.dependsOn writeVersionFile
