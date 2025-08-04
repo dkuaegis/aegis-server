@@ -20,7 +20,7 @@ import aegis.server.global.exception.ErrorCode;
 public class PointAccount extends BaseEntity {
 
     @Id
-    @Column(name = "point_id")
+    @Column(name = "point_account_id")
     private Long id; // memberId와 동일
 
     @OneToOne(fetch = FetchType.LAZY)
