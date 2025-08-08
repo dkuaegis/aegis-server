@@ -10,7 +10,7 @@ public record StudyCreateUpdateRequest(
         StudyLevel level,
         String description,
         StudyRecruitmentMethod recruitmentMethod,
-        String maxParticipants,
+        int maxParticipants,
         String schedule,
         String curricula,
         String qualifications) {}

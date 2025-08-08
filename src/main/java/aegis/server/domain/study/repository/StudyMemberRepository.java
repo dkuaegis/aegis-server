@@ -17,4 +17,10 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
     @Query(
             "SELECT COUNT(sm) > 0 FROM StudyMember sm WHERE sm.study.id = :studyId AND sm.member.id = :memberId AND sm.role = :role")
     boolean existsByStudyIdAndMemberIdAndRole(Long studyId, Long memberId, StudyRole role);
+
+    @Query("SELECT sm FROM StudyMember sm JOIN FETCH sm.member WHERE sm.study.id = :studyId AND sm.role = 'INSTRUCTOR'")
+    Optional<StudyMember> findInstructorByStudyId(Long studyId);
+
+    @Query("SELECT COUNT(sm) FROM StudyMember sm WHERE sm.study.id = :studyId AND sm.role = 'PARTICIPANT'")
+    int countParticipantsByStudyId(Long studyId);
 }

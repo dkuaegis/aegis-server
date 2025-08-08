@@ -1,5 +1,7 @@
 package aegis.server.domain.study.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +13,8 @@ import aegis.server.domain.study.domain.Study;
 import aegis.server.domain.study.domain.StudyMember;
 import aegis.server.domain.study.domain.StudyRole;
 import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
+import aegis.server.domain.study.dto.response.StudyDetailResponse;
+import aegis.server.domain.study.dto.response.StudySummaryResponse;
 import aegis.server.domain.study.repository.StudyMemberRepository;
 import aegis.server.domain.study.repository.StudyRepository;
 import aegis.server.global.exception.CustomException;
@@ -26,6 +30,55 @@ public class StudyService {
     private final StudyRepository studyRepository;
     private final StudyMemberRepository studyMemberRepository;
     private final StudyPermissionChecker studyPermissionChecker;
+
+    public StudyDetailResponse getStudyDetail(Long studyId) {
+        Study study =
+                studyRepository.findById(studyId).orElseThrow(() -> new CustomException(ErrorCode.STUDY_NOT_FOUND));
+
+        StudyMember instructor = studyMemberRepository
+                .findInstructorByStudyId(studyId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_INSTRUCTOR_NOT_FOUND));
+
+        int participantCount = studyMemberRepository.countParticipantsByStudyId(studyId);
+
+        return StudyDetailResponse.from(
+                study.getId(),
+                study.getTitle(),
+                study.getCategory(),
+                study.getLevel(),
+                study.getDescription(),
+                study.getRecruitmentMethod(),
+                participantCount,
+                study.getMaxParticipants(),
+                study.getSchedule(),
+                study.getCurricula(),
+                study.getQualifications(),
+                instructor.getMember().getName());
+    }
+
+    public List<StudySummaryResponse> getStudyList() {
+        List<Study> studies = studyRepository.findByCurrentYearSemester();
+
+        return studies.stream()
+                .map(study -> {
+                    StudyMember instructor = studyMemberRepository
+                            .findInstructorByStudyId(study.getId())
+                            .orElseThrow(() -> new CustomException(ErrorCode.STUDY_INSTRUCTOR_NOT_FOUND));
+
+                    int participantCount = studyMemberRepository.countParticipantsByStudyId(study.getId());
+
+                    return StudySummaryResponse.from(
+                            study.getId(),
+                            study.getTitle(),
+                            study.getCategory(),
+                            study.getLevel(),
+                            participantCount,
+                            study.getMaxParticipants(),
+                            study.getSchedule(),
+                            instructor.getMember().getName());
+                })
+                .toList();
+    }
 
     @Transactional
     public void createStudy(StudyCreateUpdateRequest request, UserDetails userDetails) {

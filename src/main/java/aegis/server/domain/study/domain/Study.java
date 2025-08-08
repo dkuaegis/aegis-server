@@ -1,8 +1,5 @@
 package aegis.server.domain.study.domain;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.persistence.*;
 
 import lombok.*;
@@ -40,19 +37,16 @@ public class Study extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private StudyRecruitmentMethod recruitmentMethod;
 
-    private String maxParticipants;
+    private int maxParticipants;
 
+    @Lob
     private String schedule;
 
     @Lob
     private String curricula;
 
-    @Column(length = 1024)
+    @Lob
     private String qualifications;
-
-    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Builder.Default
-    private final List<StudyMember> members = new ArrayList<>();
 
     public static Study create(
             String title,
@@ -60,7 +54,7 @@ public class Study extends BaseEntity {
             StudyLevel level,
             String description,
             StudyRecruitmentMethod recruitmentMethod,
-            String maxParticipants,
+            int maxParticipants,
             String schedule,
             String curricula,
             String qualifications) {
@@ -84,7 +78,7 @@ public class Study extends BaseEntity {
             StudyLevel level,
             String description,
             StudyRecruitmentMethod recruitmentMethod,
-            String maxParticipants,
+            int maxParticipants,
             String schedule,
             String curricula,
             String qualifications) {
