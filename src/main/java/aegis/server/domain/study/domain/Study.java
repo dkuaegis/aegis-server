@@ -31,7 +31,7 @@ public class Study extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private StudyLevel level;
 
-    @Lob
+    @Column(columnDefinition = "text")
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -39,13 +39,12 @@ public class Study extends BaseEntity {
 
     private int maxParticipants;
 
-    @Lob
     private String schedule;
 
-    @Lob
+    @Column(columnDefinition = "text")
     private String curricula;
 
-    @Lob
+    @Column(columnDefinition = "text")
     private String qualifications;
 
     public static Study create(
@@ -91,5 +90,9 @@ public class Study extends BaseEntity {
         this.schedule = schedule;
         this.curricula = curricula;
         this.qualifications = qualifications;
+    }
+
+    public boolean hasAvailableSlots() {
+        return true;
     }
 }
