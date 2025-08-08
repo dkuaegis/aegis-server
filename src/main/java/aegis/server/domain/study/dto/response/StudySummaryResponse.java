@@ -8,8 +8,8 @@ public record StudySummaryResponse(
         String title,
         StudyCategory category,
         StudyLevel level,
-        Integer participantCount,
-        Integer maxParticipants,
+        long participantCount,
+        int maxParticipants,
         String schedule,
         String instructor) {
 
@@ -18,8 +18,8 @@ public record StudySummaryResponse(
             String title,
             StudyCategory category,
             StudyLevel level,
-            Integer participantCount,
-            Integer maxParticipants,
+            long participantCount,
+            int maxParticipants,
             String schedule,
             String instructor) {
         return new StudySummaryResponse(

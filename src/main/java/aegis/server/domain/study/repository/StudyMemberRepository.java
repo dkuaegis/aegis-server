@@ -22,5 +22,5 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
     Optional<StudyMember> findInstructorByStudyId(Long studyId);
 
     @Query("SELECT COUNT(sm) FROM StudyMember sm WHERE sm.study.id = :studyId AND sm.role = 'PARTICIPANT'")
-    int countParticipantsByStudyId(Long studyId);
+    long countParticipantsByStudyId(Long studyId);
 }

@@ -39,7 +39,7 @@ public class StudyService {
                 .findInstructorByStudyId(studyId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STUDY_INSTRUCTOR_NOT_FOUND));
 
-        int participantCount = studyMemberRepository.countParticipantsByStudyId(studyId);
+        long participantCount = studyMemberRepository.countParticipantsByStudyId(studyId);
 
         return StudyDetailResponse.from(
                 study.getId(),
@@ -65,7 +65,7 @@ public class StudyService {
                             .findInstructorByStudyId(study.getId())
                             .orElseThrow(() -> new CustomException(ErrorCode.STUDY_INSTRUCTOR_NOT_FOUND));
 
-                    int participantCount = studyMemberRepository.countParticipantsByStudyId(study.getId());
+                    long participantCount = studyMemberRepository.countParticipantsByStudyId(study.getId());
 
                     return StudySummaryResponse.from(
                             study.getId(),
