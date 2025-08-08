@@ -21,6 +21,7 @@ public class Study extends BaseEntity {
     @Column(name = "study_id")
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     private YearSemester yearSemester;
 
     private String title;
