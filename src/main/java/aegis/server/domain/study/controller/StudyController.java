@@ -35,8 +35,8 @@ public class StudyController {
             summary = "스터디 상세 조회",
             description = "스터디의 상세 정보를 조회합니다.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "스터디 상세 조회 성공"),
-                    @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
+                @ApiResponse(responseCode = "200", description = "스터디 상세 조회 성공"),
+                @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
             })
     @GetMapping("/{studyId}")
     public ResponseEntity<StudyDetailResponse> getStudyDetail(@PathVariable Long studyId) {
