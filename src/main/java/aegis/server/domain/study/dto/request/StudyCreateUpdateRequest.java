@@ -1,16 +1,20 @@
 package aegis.server.domain.study.dto.request;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
+
 import aegis.server.domain.study.domain.StudyCategory;
 import aegis.server.domain.study.domain.StudyLevel;
 import aegis.server.domain.study.domain.StudyRecruitmentMethod;
 
 public record StudyCreateUpdateRequest(
-        String title,
+        @Size(max = 30) String title,
         StudyCategory category,
         StudyLevel level,
-        String description,
+        @Size(max = 1000) String description,
         StudyRecruitmentMethod recruitmentMethod,
-        String maxParticipants,
-        String schedule,
-        String curricula,
-        String qualifications) {}
+        @Min(0) @Max(1) int maxParticipants,
+        @Size(max = 100) String schedule,
+        @Size(max = 1000) String curricula,
+        @Size(max = 1000) String qualifications) {}

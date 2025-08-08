@@ -6,8 +6,6 @@ import lombok.*;
 
 import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.member.domain.Member;
-import aegis.server.global.exception.CustomException;
-import aegis.server.global.exception.ErrorCode;
 
 @Entity
 @Getter

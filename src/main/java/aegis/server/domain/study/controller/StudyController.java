@@ -1,5 +1,7 @@
 package aegis.server.domain.study.controller;
 
+import java.util.List;
+
 import jakarta.validation.Valid;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
+import aegis.server.domain.study.dto.response.StudyDetailResponse;
+import aegis.server.domain.study.dto.response.StudySummaryResponse;
 import aegis.server.domain.study.service.StudyService;
 import aegis.server.global.security.annotation.LoginUser;
 import aegis.server.global.security.oidc.UserDetails;
@@ -26,6 +30,29 @@ import aegis.server.global.security.oidc.UserDetails;
 public class StudyController {
 
     private final StudyService studyService;
+
+    @Operation(
+            summary = "스터디 상세 조회",
+            description = "스터디의 상세 정보를 조회합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "스터디 상세 조회 성공"),
+                @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
+            })
+    @GetMapping("/{studyId}")
+    public ResponseEntity<StudyDetailResponse> getStudyDetail(@PathVariable Long studyId) {
+        StudyDetailResponse response = studyService.getStudyDetail(studyId);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "스터디 목록 조회",
+            description = "모든 스터디의 목록을 조회합니다.",
+            responses = {@ApiResponse(responseCode = "200", description = "스터디 목록 조회 성공")})
+    @GetMapping
+    public ResponseEntity<List<StudySummaryResponse>> getStudyList() {
+        List<StudySummaryResponse> response = studyService.getStudyList();
+        return ResponseEntity.ok(response);
+    }
 
     @Operation(
             summary = "스터디 생성",

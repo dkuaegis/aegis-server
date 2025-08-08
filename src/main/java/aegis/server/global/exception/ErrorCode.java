@@ -71,7 +71,9 @@ public enum ErrorCode {
     STUDY_NOT_FOUND(HttpStatus.NOT_FOUND),
     STUDY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND),
     STUDY_MEMBER_NOT_INSTRUCTOR(HttpStatus.FORBIDDEN),
-    STUDY_MEMBER_NOT_PARTICIPANT(HttpStatus.FORBIDDEN);
+    STUDY_MEMBER_NOT_PARTICIPANT(HttpStatus.FORBIDDEN),
+    STUDY_INSTRUCTOR_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR), // 스터디에는 반드시 스터디장이 있어야 함
+    ;
 
     private final HttpStatus httpStatus;
 }
