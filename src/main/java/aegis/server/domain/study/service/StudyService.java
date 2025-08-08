@@ -32,52 +32,13 @@ public class StudyService {
     private final StudyPermissionChecker studyPermissionChecker;
 
     public StudyDetailResponse getStudyDetail(Long studyId) {
-        Study study =
-                studyRepository.findById(studyId).orElseThrow(() -> new CustomException(ErrorCode.STUDY_NOT_FOUND));
-
-        StudyMember instructor = studyMemberRepository
-                .findInstructorByStudyId(studyId)
-                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_INSTRUCTOR_NOT_FOUND));
-
-        long participantCount = studyMemberRepository.countParticipantsByStudyId(studyId);
-
-        return StudyDetailResponse.from(
-                study.getId(),
-                study.getTitle(),
-                study.getCategory(),
-                study.getLevel(),
-                study.getDescription(),
-                study.getRecruitmentMethod(),
-                participantCount,
-                study.getMaxParticipants(),
-                study.getSchedule(),
-                study.getCurricula(),
-                study.getQualifications(),
-                instructor.getMember().getName());
+        return studyRepository
+                .findStudyDetailById(studyId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_NOT_FOUND));
     }
 
     public List<StudySummaryResponse> getStudyList() {
-        List<Study> studies = studyRepository.findByCurrentYearSemester();
-
-        return studies.stream()
-                .map(study -> {
-                    StudyMember instructor = studyMemberRepository
-                            .findInstructorByStudyId(study.getId())
-                            .orElseThrow(() -> new CustomException(ErrorCode.STUDY_INSTRUCTOR_NOT_FOUND));
-
-                    long participantCount = studyMemberRepository.countParticipantsByStudyId(study.getId());
-
-                    return StudySummaryResponse.from(
-                            study.getId(),
-                            study.getTitle(),
-                            study.getCategory(),
-                            study.getLevel(),
-                            participantCount,
-                            study.getMaxParticipants(),
-                            study.getSchedule(),
-                            instructor.getMember().getName());
-                })
-                .toList();
+        return studyRepository.findStudySummariesByCurrentYearSemester();
     }
 
     @Transactional
