@@ -37,9 +37,11 @@ public class DatabaseCleaner implements InitializingBean {
 
     private void doClean(Connection connection) throws SQLException {
         try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate("SET REFERENTIAL_INTEGRITY FALSE");
             for (String tableName : tableNames) {
-                statement.executeUpdate("TRUNCATE TABLE " + tableName + " RESTART IDENTITY CASCADE");
+                statement.executeUpdate("TRUNCATE TABLE " + tableName + " RESTART IDENTITY");
             }
+            statement.executeUpdate("SET REFERENTIAL_INTEGRITY TRUE");
         }
     }
 }

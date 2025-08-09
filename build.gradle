@@ -77,8 +77,6 @@ dependencies {
     testImplementation 'com.github.fppt:jedis-mock:1.1.11'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.testcontainers:junit-jupiter'
-    testImplementation 'org.testcontainers:postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     compileOnly 'org.projectlombok:lombok'
