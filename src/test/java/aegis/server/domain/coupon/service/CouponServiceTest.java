@@ -46,6 +46,146 @@ class CouponServiceTest extends IntegrationTest {
     private static final String COUPON_NAME = "쿠폰명";
 
     @Nested
+    class 쿠폰_조회 {
+        @Test
+        void 성공한다() {
+            // given
+            Coupon coupon1 = createCoupon("쿠폰명1");
+            Coupon coupon2 = createCoupon("쿠폰명2");
+
+            // when
+            List<CouponResponse> responses = couponService.findAllCoupons();
+
+            // then
+            assertEquals(2, responses.size());
+            assertTrue(
+                    responses.stream().anyMatch(response -> response.couponId().equals(coupon1.getId())));
+            assertTrue(
+                    responses.stream().anyMatch(response -> response.couponId().equals(coupon2.getId())));
+        }
+
+        @Test
+        void 쿠폰이_없는_경우_빈_리스트를_반환한다() {
+            // when
+            List<CouponResponse> responses = couponService.findAllCoupons();
+
+            // then
+            assertEquals(0, responses.size());
+        }
+    }
+
+    @Nested
+    class 발급된_쿠폰_조회 {
+        @Test
+        void 성공한다() {
+            // given
+            Member member1 = createMember();
+            Member member2 = createMember();
+            Coupon coupon = createCoupon();
+            createIssuedCoupon(coupon, member1);
+            createIssuedCoupon(coupon, member2);
+
+            // when
+            List<IssuedCouponResponse> responses = couponService.findAllIssuedCoupons();
+
+            // then
+            assertEquals(2, responses.size());
+        }
+
+        @Test
+        void 발급된_쿠폰이_없는_경우_빈_리스트를_반환한다() {
+            // when
+            List<IssuedCouponResponse> responses = couponService.findAllIssuedCoupons();
+
+            // then
+            assertEquals(0, responses.size());
+        }
+    }
+
+    @Nested
+    class 자신에게_발급된_쿠폰_조회 {
+        @Test
+        void 성공한다() {
+            // given
+            Member member1 = createMember();
+            Member member2 = createMember();
+            UserDetails userDetails1 = createUserDetails(member1);
+            Coupon coupon = createCoupon();
+            createIssuedCoupon(coupon, member1);
+            createIssuedCoupon(coupon, member2);
+
+            // when
+            List<IssuedCouponResponse> responses = couponService.findMyAllIssuedCoupons(userDetails1);
+
+            // then
+            assertEquals(1, responses.size());
+            assertEquals(member1.getId(), responses.getFirst().memberId());
+        }
+
+        @Test
+        void 발급된_쿠폰이_없는_경우_빈_리스트를_반환한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+
+            // when
+            List<IssuedCouponResponse> responses = couponService.findMyAllIssuedCoupons(userDetails);
+
+            // then
+            assertEquals(0, responses.size());
+        }
+    }
+
+    @Nested
+    class 쿠폰코드_조회 {
+        @Test
+        void 성공한다() {
+            // given
+            Coupon coupon = createCoupon();
+            createCouponCode(coupon);
+            createCouponCode(coupon);
+
+            // when
+            List<CouponCodeResponse> responses = couponService.findAllCouponCode();
+
+            // then
+            assertEquals(2, responses.size());
+        }
+
+        @Test
+        void 쿠폰코드가_없는_경우_빈_리스트를_반환한다() {
+            // when
+            List<CouponCodeResponse> responses = couponService.findAllCouponCode();
+
+            // then
+            assertEquals(0, responses.size());
+        }
+    }
+
+    @Nested
+    class 쿠폰코드_삭제 {
+        @Test
+        void 쿠폰코드_삭제_성공한다() {
+            // given
+            Coupon coupon = createCoupon();
+            CouponCode couponCode = createCouponCode(coupon);
+
+            // when
+            couponService.deleteCodeCoupon(couponCode.getId());
+
+            // then
+            assertTrue(couponCodeRepository.findById(couponCode.getId()).isEmpty());
+        }
+
+        @Test
+        void 존재하지_않는_쿠폰코드_삭제는_실패한다() {
+            // when-then
+            CustomException exception = assertThrows(CustomException.class, () -> couponService.deleteCodeCoupon(999L));
+            assertEquals(ErrorCode.COUPON_CODE_NOT_FOUND, exception.getErrorCode());
+        }
+    }
+
+    @Nested
     class 쿠폰생성 {
         @Test
         void 성공한다() {
@@ -327,5 +467,21 @@ class CouponServiceTest extends IntegrationTest {
     private Coupon createCoupon() {
         Coupon coupon = Coupon.create("테스트쿠폰", BigDecimal.valueOf(5000L));
         return couponRepository.save(coupon);
+    }
+
+    private Coupon createCoupon(String name) {
+        Coupon coupon = Coupon.create(name, BigDecimal.valueOf(5000L));
+        return couponRepository.save(coupon);
+    }
+
+    private IssuedCoupon createIssuedCoupon(Coupon coupon, Member member) {
+        IssuedCoupon issuedCoupon = IssuedCoupon.of(coupon, member);
+        return issuedCouponRepository.save(issuedCoupon);
+    }
+
+    private CouponCode createCouponCode(Coupon coupon) {
+        String code = CodeGenerator.generateCouponCode(8);
+        CouponCode couponCode = CouponCode.of(coupon, code);
+        return couponCodeRepository.save(couponCode);
     }
 }
