@@ -55,7 +55,7 @@ public class PaymentService {
         applyCoupons(payment, request.issuedCouponIds());
         paymentRepository.save(payment);
 
-        if (payment.getFinalPrice().equals(BigDecimal.ZERO)) {
+        if (payment.getFinalPrice().compareTo(BigDecimal.ZERO) == 0) {
             payment.completePayment();
             applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
         }
@@ -72,7 +72,7 @@ public class PaymentService {
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
         applyCoupons(payment, request.issuedCouponIds());
 
-        if (payment.getFinalPrice().equals(BigDecimal.ZERO)) {
+        if (payment.getFinalPrice().compareTo(BigDecimal.ZERO) == 0) {
             payment.completePayment();
             applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
         }
