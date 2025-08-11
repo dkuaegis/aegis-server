@@ -87,7 +87,7 @@ class SurveyServiceTest extends IntegrationTest {
             SurveyCommon validSurveyRequest = new SurveyCommon(AcquisitionType.EVERYTIME, "가입 이유");
             surveyService.createOrUpdateSurvey(userDetails, validSurveyRequest);
 
-            SurveyCommon updatedSurveyRequest = new SurveyCommon(AcquisitionType.KAKAOTALK, "업데이트된 사유");
+            SurveyCommon updatedSurveyRequest = new SurveyCommon(AcquisitionType.FRIEND, "업데이트된 사유");
 
             // when
             surveyService.createOrUpdateSurvey(userDetails, updatedSurveyRequest);
