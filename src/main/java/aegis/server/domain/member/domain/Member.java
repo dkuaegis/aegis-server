@@ -57,6 +57,7 @@ public class Member extends BaseEntity {
                 .oidcId(oidcId)
                 .email(email)
                 .name(name)
+                .profileIcon(ProfileIcon.NONE)
                 .build();
     }
 
