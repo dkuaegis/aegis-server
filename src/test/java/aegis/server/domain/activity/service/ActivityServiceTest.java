@@ -25,32 +25,38 @@ class ActivityServiceTest extends IntegrationTest {
     @Autowired
     ActivityRepository activityRepository;
 
-    private static final String ACTIVITY_NAME = "활동명";
+    private static final String ACTIVITY_NAME_1 = "활동1";
+    private static final String ACTIVITY_NAME_2 = "활동2";
 
     @Nested
     class 활동생성 {
         @Test
         void 성공한다() {
             // given
-            ActivityCreateUpdateRequest activityCreateRequest = new ActivityCreateUpdateRequest(ACTIVITY_NAME);
+            ActivityCreateUpdateRequest activityCreateRequest = new ActivityCreateUpdateRequest(ACTIVITY_NAME_1);
 
             // when
-            activityService.createActivity(activityCreateRequest);
+            ActivityResponse response = activityService.createActivity(activityCreateRequest);
 
             // then
-            List<Activity> activities = activityRepository.findAll();
-            assertEquals(1, activities.size());
-            Activity activity = activities.get(0);
-            assertEquals(ACTIVITY_NAME, activity.getName());
+            // 반환값 검증
+            assertNotNull(response.activityId());
+            assertEquals(ACTIVITY_NAME_1, response.name());
+            assertFalse(response.isActive());
+
+            // DB 상태 검증
+            Activity activity =
+                    activityRepository.findById(response.activityId()).get();
+            assertEquals(ACTIVITY_NAME_1, activity.getName());
             assertFalse(activity.getIsActive());
         }
 
         @Test
         void 같은_학기에_동일한_이름의_활동이_존재하면_실패한다() {
             // given
-            activityService.createActivity(new ActivityCreateUpdateRequest(ACTIVITY_NAME));
+            activityService.createActivity(new ActivityCreateUpdateRequest(ACTIVITY_NAME_1));
 
-            ActivityCreateUpdateRequest activityCreateRequest = new ActivityCreateUpdateRequest(ACTIVITY_NAME);
+            ActivityCreateUpdateRequest activityCreateRequest = new ActivityCreateUpdateRequest(ACTIVITY_NAME_1);
 
             // when & then
             CustomException exception =
@@ -64,16 +70,16 @@ class ActivityServiceTest extends IntegrationTest {
         @Test
         void 성공한다() {
             // given
-            activityService.createActivity(new ActivityCreateUpdateRequest("활동1"));
-            activityService.createActivity(new ActivityCreateUpdateRequest("활동2"));
+            createActivity(ACTIVITY_NAME_1);
+            createActivity(ACTIVITY_NAME_2);
 
             // when
             List<ActivityResponse> responses = activityService.findAllActivities();
 
             // then
             assertEquals(2, responses.size());
-            assertTrue(responses.stream().anyMatch(r -> r.name().equals("활동1")));
-            assertTrue(responses.stream().anyMatch(r -> r.name().equals("활동2")));
+            assertTrue(responses.stream().anyMatch(r -> r.name().equals(ACTIVITY_NAME_1)));
+            assertTrue(responses.stream().anyMatch(r -> r.name().equals(ACTIVITY_NAME_2)));
         }
     }
 
@@ -82,15 +88,19 @@ class ActivityServiceTest extends IntegrationTest {
         @Test
         void 성공한다() {
             // given
-            Activity activity = createActivity(ACTIVITY_NAME);
-            activityRepository.save(activity);
+            Activity activity = createActivity(ACTIVITY_NAME_1);
 
             // when
-            activityService.activateActivity(activity.getId());
+            ActivityResponse response = activityService.activateActivity(activity.getId());
 
             // then
+            // 반환값 검증
+            assertEquals(activity.getId(), response.activityId());
+            assertTrue(response.isActive());
+
+            // DB 상태 검증
             Activity updatedActivity =
-                    activityRepository.findById(activity.getId()).orElseThrow();
+                    activityRepository.findById(response.activityId()).get();
             assertTrue(updatedActivity.getIsActive());
         }
 
@@ -108,9 +118,8 @@ class ActivityServiceTest extends IntegrationTest {
         @Test
         void 이미_활성화된_활동이면_실패한다() {
             // given
-            Activity activeActivity = createActivity(ACTIVITY_NAME);
+            Activity activeActivity = createActivity(ACTIVITY_NAME_1);
             activeActivity.activate();
-            activityRepository.save(activeActivity);
 
             // when & then
             CustomException exception =
@@ -124,16 +133,20 @@ class ActivityServiceTest extends IntegrationTest {
         @Test
         void 성공한다() {
             // given
-            Activity activity = createActivity(ACTIVITY_NAME);
+            Activity activity = createActivity(ACTIVITY_NAME_1);
             activity.activate();
-            activityRepository.save(activity);
 
             // when
-            activityService.deactivateActivity(activity.getId());
+            ActivityResponse response = activityService.deactivateActivity(activity.getId());
 
             // then
+            // 반환값 검증
+            assertEquals(activity.getId(), response.activityId());
+            assertFalse(response.isActive());
+
+            // DB 상태 검증
             Activity updatedActivity =
-                    activityRepository.findById(activity.getId()).orElseThrow();
+                    activityRepository.findById(response.activityId()).get();
             assertFalse(updatedActivity.getIsActive());
         }
 
@@ -151,8 +164,7 @@ class ActivityServiceTest extends IntegrationTest {
         @Test
         void 이미_비활성화된_활동이면_실패한다() {
             // given
-            Activity inactiveActivity = createActivity(ACTIVITY_NAME);
-            activityRepository.save(inactiveActivity);
+            Activity inactiveActivity = createActivity(ACTIVITY_NAME_1);
 
             // when & then
             CustomException exception = assertThrows(
@@ -166,25 +178,28 @@ class ActivityServiceTest extends IntegrationTest {
         @Test
         void 성공한다() {
             // given
-            Activity activity = createActivity(ACTIVITY_NAME);
-            activityRepository.save(activity);
-            String newName = "새로운 활동명";
-            ActivityCreateUpdateRequest request = new ActivityCreateUpdateRequest(newName);
+            Activity activity = createActivity(ACTIVITY_NAME_1);
+            ActivityCreateUpdateRequest request = new ActivityCreateUpdateRequest(ACTIVITY_NAME_2);
 
             // when
-            activityService.updateActivity(activity.getId(), request);
+            ActivityResponse response = activityService.updateActivity(activity.getId(), request);
 
             // then
+            // 반환값 검증
+            assertEquals(activity.getId(), response.activityId());
+            assertEquals(ACTIVITY_NAME_2, response.name());
+
+            // DB 상태 검증
             Activity updatedActivity =
-                    activityRepository.findById(activity.getId()).orElseThrow();
-            assertEquals(newName, updatedActivity.getName());
+                    activityRepository.findById(response.activityId()).get();
+            assertEquals(ACTIVITY_NAME_2, updatedActivity.getName());
         }
 
         @Test
         void 존재하지_않는_활동이면_실패한다() {
             // given
             Long nonExistentId = 999L;
-            ActivityCreateUpdateRequest request = new ActivityCreateUpdateRequest("새로운 활동명");
+            ActivityCreateUpdateRequest request = new ActivityCreateUpdateRequest(ACTIVITY_NAME_2);
 
             // when & then
             CustomException exception =
@@ -195,10 +210,10 @@ class ActivityServiceTest extends IntegrationTest {
         @Test
         void 같은_학기에_동일한_이름의_활동이_존재하면_실패한다() {
             // given
-            activityService.createActivity(new ActivityCreateUpdateRequest("활동1"));
-            Activity activity2 = createActivity("활동2");
+            Activity activity1 = createActivity(ACTIVITY_NAME_1);
+            Activity activity2 = createActivity(ACTIVITY_NAME_2);
 
-            ActivityCreateUpdateRequest request = new ActivityCreateUpdateRequest("활동1");
+            ActivityCreateUpdateRequest request = new ActivityCreateUpdateRequest(ACTIVITY_NAME_1);
 
             // when & then
             CustomException exception = assertThrows(
@@ -209,17 +224,21 @@ class ActivityServiceTest extends IntegrationTest {
         @Test
         void 동일한_이름으로_수정하면_성공한다() {
             // given
-            Activity activity = createActivity(ACTIVITY_NAME);
-            activityRepository.save(activity);
-            ActivityCreateUpdateRequest request = new ActivityCreateUpdateRequest(ACTIVITY_NAME);
+            Activity activity = createActivity(ACTIVITY_NAME_1);
+            ActivityCreateUpdateRequest request = new ActivityCreateUpdateRequest(ACTIVITY_NAME_1);
 
             // when
-            activityService.updateActivity(activity.getId(), request);
+            ActivityResponse response = activityService.updateActivity(activity.getId(), request);
 
             // then
+            // 반환값 검증
+            assertEquals(activity.getId(), response.activityId());
+            assertEquals(ACTIVITY_NAME_1, response.name());
+
+            // DB 상태 검증
             Activity updatedActivity =
-                    activityRepository.findById(activity.getId()).orElseThrow();
-            assertEquals(ACTIVITY_NAME, updatedActivity.getName());
+                    activityRepository.findById(response.activityId()).get();
+            assertEquals(ACTIVITY_NAME_1, updatedActivity.getName());
         }
     }
 
@@ -228,8 +247,7 @@ class ActivityServiceTest extends IntegrationTest {
         @Test
         void 성공한다() {
             // given
-            Activity activity = createActivity(ACTIVITY_NAME);
-            activityRepository.save(activity);
+            Activity activity = createActivity(ACTIVITY_NAME_1);
 
             // when
             activityService.deleteActivity(activity.getId());
@@ -248,5 +266,10 @@ class ActivityServiceTest extends IntegrationTest {
                     assertThrows(CustomException.class, () -> activityService.deleteActivity(nonExistentId));
             assertEquals(ErrorCode.ACTIVITY_NOT_FOUND, exception.getErrorCode());
         }
+    }
+
+    private Activity createActivity(String name) {
+        Activity activity = Activity.create(name);
+        return activityRepository.save(activity);
     }
 }

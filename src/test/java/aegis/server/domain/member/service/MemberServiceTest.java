@@ -34,10 +34,6 @@ class MemberServiceTest extends IntegrationTest {
     @Autowired
     PaymentRepository paymentRepository;
 
-    private final PersonalInfoUpdateRequest personalInfoUpdateRequest = new PersonalInfoUpdateRequest(
-            "010-1234-5678", "32000000", Department.SW융합대학_컴퓨터공학과, Grade.THREE, "010101", Gender.MALE);
-    private final ProfileIconUpdateRequest profileIconUpdateRequest = new ProfileIconUpdateRequest(ProfileIcon.JAVA);
-
     @Nested
     class 개인정보_조회 {
 
@@ -52,19 +48,16 @@ class MemberServiceTest extends IntegrationTest {
 
             // then
             assertEquals(member.getName(), response.name());
-            assertEquals(member.getPhoneNumber(), response.phoneNumber());
             assertEquals(member.getStudentId(), response.studentId());
             assertEquals(member.getDepartment(), response.department());
             assertEquals(member.getGrade(), response.grade());
-            assertEquals(member.getBirthdate(), response.birthDate());
-            assertEquals(member.getGender(), response.gender());
             assertEquals(member.getProfileIcon(), response.profileIcon());
         }
 
         @Test
         void member를_찾을_수_없다면_실패한다() {
             // given
-            Member member = createInitialMember();
+            Member member = createMember();
             UserDetails userDetails = createUserDetails(member);
             ReflectionTestUtils.setField(userDetails, "memberId", member.getId() + 1L);
 
@@ -81,31 +74,44 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 성공한다() {
             // given
-            Member member = createInitialMember();
+            Member member = createMember();
             UserDetails userDetails = createUserDetails(member);
 
             // when
-            memberService.updatePersonalInfo(userDetails, personalInfoUpdateRequest);
+            PersonalInfoUpdateRequest personalInfoUpdateRequest = new PersonalInfoUpdateRequest(
+                    "010-8765-4321", "32000002", Department.퇴계혁신칼리지_SW융합계열광역, Grade.ONE, "020202", Gender.FEMALE);
+            PersonalInfoResponse response = memberService.updatePersonalInfo(userDetails, personalInfoUpdateRequest);
 
             // then
-            Member updatedMember = memberRepository.findById(member.getId()).get();
+            // 반환값 검증
+            assertEquals(member.getName(), response.name());
+            assertEquals(personalInfoUpdateRequest.phoneNumber(), response.phoneNumber());
+            assertEquals(personalInfoUpdateRequest.studentId(), response.studentId());
+            assertEquals(personalInfoUpdateRequest.department(), response.department());
+            assertEquals(personalInfoUpdateRequest.grade(), response.grade());
+            assertEquals(personalInfoUpdateRequest.birthDate(), response.birthDate());
+            assertEquals(personalInfoUpdateRequest.gender(), response.gender());
 
-            assertEquals(personalInfoUpdateRequest.birthDate(), updatedMember.getBirthdate());
-            assertEquals(personalInfoUpdateRequest.gender(), updatedMember.getGender());
+            // DB 상태 검증
+            Member updatedMember = memberRepository.findById(member.getId()).get();
             assertEquals(personalInfoUpdateRequest.phoneNumber(), updatedMember.getPhoneNumber());
             assertEquals(personalInfoUpdateRequest.studentId(), updatedMember.getStudentId());
             assertEquals(personalInfoUpdateRequest.department(), updatedMember.getDepartment());
             assertEquals(personalInfoUpdateRequest.grade(), updatedMember.getGrade());
+            assertEquals(personalInfoUpdateRequest.birthDate(), updatedMember.getBirthdate());
+            assertEquals(personalInfoUpdateRequest.gender(), updatedMember.getGender());
         }
 
         @Test
         void member를_찾을_수_없다면_실패한다() {
             // given
-            Member member = createInitialMember();
+            Member member = createMember();
             UserDetails userDetails = createUserDetails(member);
             ReflectionTestUtils.setField(userDetails, "memberId", member.getId() + 1L);
 
             // when-then
+            PersonalInfoUpdateRequest personalInfoUpdateRequest = new PersonalInfoUpdateRequest(
+                    "010-8765-4321", "32000002", Department.퇴계혁신칼리지_SW융합계열광역, Grade.ONE, "020202", Gender.FEMALE);
             CustomException exception = assertThrows(
                     CustomException.class,
                     () -> memberService.updatePersonalInfo(userDetails, personalInfoUpdateRequest));
@@ -123,9 +129,17 @@ class MemberServiceTest extends IntegrationTest {
             UserDetails userDetails = createUserDetails(member);
 
             // when
-            memberService.updateProfileIcon(userDetails, profileIconUpdateRequest);
+            ProfileIconUpdateRequest profileIconUpdateRequest = new ProfileIconUpdateRequest(ProfileIcon.JAVA);
+            PersonalInfoResponse response = memberService.updateProfileIcon(userDetails, profileIconUpdateRequest);
 
             // then
+            // 반환값 검증
+            assertEquals(member.getName(), response.name());
+            assertEquals(member.getStudentId(), response.studentId());
+            assertEquals(member.getDepartment(), response.department());
+            assertEquals(profileIconUpdateRequest.profileIcon(), response.profileIcon());
+
+            // DB 상태 검증
             Member updatedMember = memberRepository.findById(member.getId()).get();
             assertEquals(profileIconUpdateRequest.profileIcon(), updatedMember.getProfileIcon());
         }
@@ -138,6 +152,7 @@ class MemberServiceTest extends IntegrationTest {
             ReflectionTestUtils.setField(userDetails, "memberId", member.getId() + 1L);
 
             // when-then
+            ProfileIconUpdateRequest profileIconUpdateRequest = new ProfileIconUpdateRequest(ProfileIcon.JAVA);
             CustomException exception = assertThrows(
                     CustomException.class,
                     () -> memberService.updateProfileIcon(userDetails, profileIconUpdateRequest));

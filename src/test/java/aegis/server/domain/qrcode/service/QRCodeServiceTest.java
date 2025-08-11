@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.domain.*;
 import aegis.server.domain.qrcode.domain.QRCode;
 import aegis.server.domain.qrcode.repository.QRCodeRepository;
 import aegis.server.global.security.oidc.UserDetails;

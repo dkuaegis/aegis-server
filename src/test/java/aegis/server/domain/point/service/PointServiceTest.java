@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.domain.*;
+import aegis.server.domain.payment.domain.Payment;
+import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.domain.point.domain.PointAccount;
 import aegis.server.domain.point.domain.PointTransactionType;
 import aegis.server.domain.point.dto.response.PointRankingListResponse;
@@ -28,6 +30,15 @@ class PointServiceTest extends IntegrationTest {
     @Autowired
     PointAccountRepository pointAccountRepository;
 
+    @Autowired
+    PaymentRepository paymentRepository;
+
+    private void createCompletedPaymentForCurrentSemester(Member member) {
+        Payment payment = Payment.of(member);
+        payment.completePayment();
+        paymentRepository.save(payment);
+    }
+
     @Nested
     class 포인트_요약_조회 {
 
@@ -40,8 +51,8 @@ class PointServiceTest extends IntegrationTest {
             PointAccount pointAccount = PointAccount.create(member);
             pointAccount = pointAccountRepository.save(pointAccount);
 
-            createEarnTransaction(pointAccount, BigDecimal.valueOf(500), "테스트 적립");
-            createSpendTransaction(pointAccount, BigDecimal.valueOf(200), "테스트 사용");
+            createEarnPointTransaction(pointAccount, BigDecimal.valueOf(500), "테스트 적립");
+            createSpendPointTransaction(pointAccount, BigDecimal.valueOf(200), "테스트 사용");
 
             // when
             PointSummaryResponse response = pointService.getPointSummary(userDetails);
@@ -84,9 +95,9 @@ class PointServiceTest extends IntegrationTest {
             PointAccount pointAccount = PointAccount.create(member);
             pointAccount = pointAccountRepository.save(pointAccount);
 
-            createEarnTransaction(pointAccount, BigDecimal.valueOf(1000), "첫 번째 적립");
-            createEarnTransaction(pointAccount, BigDecimal.valueOf(1500), "두 번째 적립");
-            createSpendTransaction(pointAccount, BigDecimal.valueOf(500), "첫 번째 사용");
+            createEarnPointTransaction(pointAccount, BigDecimal.valueOf(1000), "첫 번째 적립");
+            createEarnPointTransaction(pointAccount, BigDecimal.valueOf(1500), "두 번째 적립");
+            createSpendPointTransaction(pointAccount, BigDecimal.valueOf(500), "첫 번째 사용");
 
             // when
             PointSummaryResponse response = pointService.getPointSummary(userDetails);
@@ -103,7 +114,7 @@ class PointServiceTest extends IntegrationTest {
     }
 
     @Nested
-    class PointRankingTest {
+    class 포인트_랭킹_조회 {
 
         @Test
         void 기본_랭킹_테스트_13명_환경() {
@@ -116,7 +127,7 @@ class PointServiceTest extends IntegrationTest {
                 createCompletedPaymentForCurrentSemester(members[i]);
                 accounts[i] = createPointAccount(members[i]);
                 // 점수: 1300, 1200, 1100, ..., 200, 100 (13명)
-                createEarnTransaction(accounts[i], BigDecimal.valueOf(1300 - (i * 100)), "적립");
+                createEarnPointTransaction(accounts[i], BigDecimal.valueOf(1300 - (i * 100)), "적립");
             }
 
             Member currentUser = members[12]; // 13번째 (100포인트)
@@ -156,15 +167,15 @@ class PointServiceTest extends IntegrationTest {
             }
 
             // 점수 설정: 1000(1명), 900(3명 동점), 800(1명), ..., 100(1명)
-            createEarnTransaction(accounts[0], BigDecimal.valueOf(1000), "1위");
-            createEarnTransaction(accounts[1], BigDecimal.valueOf(900), "동점자1");
-            createEarnTransaction(accounts[2], BigDecimal.valueOf(900), "동점자2");
-            createEarnTransaction(accounts[3], BigDecimal.valueOf(900), "동점자3");
+            createEarnPointTransaction(accounts[0], BigDecimal.valueOf(1000), "1위");
+            createEarnPointTransaction(accounts[1], BigDecimal.valueOf(900), "동점자1");
+            createEarnPointTransaction(accounts[2], BigDecimal.valueOf(900), "동점자2");
+            createEarnPointTransaction(accounts[3], BigDecimal.valueOf(900), "동점자3");
 
             for (int i = 4; i < 13; i++) {
                 // 800, 700, 600, 500, 400, 300, 200, 100, 100 (마지막은 100으로 고정)
                 int points = Math.max(800 - ((i - 4) * 100), 100);
-                createEarnTransaction(accounts[i], BigDecimal.valueOf(points), "적립");
+                createEarnPointTransaction(accounts[i], BigDecimal.valueOf(points), "적립");
             }
 
             Member currentUser = members[12]; // 마지막 (100포인트)
@@ -206,7 +217,7 @@ class PointServiceTest extends IntegrationTest {
                 members[i] = createMember();
                 createCompletedPaymentForCurrentSemester(members[i]);
                 accounts[i] = createPointAccount(members[i]);
-                createEarnTransaction(accounts[i], BigDecimal.valueOf(1300 - (i * 100)), "적립");
+                createEarnPointTransaction(accounts[i], BigDecimal.valueOf(1300 - (i * 100)), "적립");
             }
 
             Member currentUser = members[4]; // 5번째 (900포인트) - 상위 10명 내
@@ -239,7 +250,7 @@ class PointServiceTest extends IntegrationTest {
                 members[i] = createMember();
                 createCompletedPaymentForCurrentSemester(members[i]);
                 accounts[i] = createPointAccount(members[i]);
-                createEarnTransaction(accounts[i], BigDecimal.valueOf(1300 - (i * 100)), "적립");
+                createEarnPointTransaction(accounts[i], BigDecimal.valueOf(1300 - (i * 100)), "적립");
             }
 
             Member currentUser = members[11]; // 12번째 (200포인트) - 상위 10명 밖
@@ -275,7 +286,7 @@ class PointServiceTest extends IntegrationTest {
 
                 // 처음 12명만 포인트 적립, 마지막 1명은 포인트 없음
                 if (i < 12) {
-                    createEarnTransaction(accounts[i], BigDecimal.valueOf(1200 - (i * 100)), "적립");
+                    createEarnPointTransaction(accounts[i], BigDecimal.valueOf(1200 - (i * 100)), "적립");
                 }
             }
 

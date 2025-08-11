@@ -8,7 +8,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.domain.*;
 import aegis.server.domain.study.domain.*;
 import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
 import aegis.server.domain.study.dto.response.StudyDetailResponse;
@@ -154,17 +154,25 @@ class StudyServiceTest extends IntegrationTest {
             UserDetails userDetails = createUserDetails(member);
 
             // when
-            studyService.createStudy(studyCreateRequest, userDetails);
+            StudyDetailResponse response = studyService.createStudy(studyCreateRequest, userDetails);
 
             // then
-            Study study = studyRepository.findAll().getFirst();
+            // 반환값 검증
+            assertNotNull(response.id());
+            assertEquals("테스트 스터디", response.title());
+            assertEquals(StudyCategory.COMPUTER_SCIENCE, response.category());
+            assertEquals(StudyLevel.BASIC, response.level());
+            assertEquals(member.getName(), response.instructor());
+            assertEquals(10, response.maxParticipants());
+
+            // DB 상태 검증
+            Study study = studyRepository.findById(response.id()).get();
             assertEquals("테스트 스터디", study.getTitle());
             assertEquals(StudyCategory.COMPUTER_SCIENCE, study.getCategory());
             assertEquals(StudyLevel.BASIC, study.getLevel());
 
             StudyMember studyMember =
-                    studyMemberRepository.findByStudyAndMember(study, member).orElse(null);
-            assertNotNull(studyMember);
+                    studyMemberRepository.findByStudyAndMember(study, member).get();
             assertEquals(StudyRole.INSTRUCTOR, studyMember.getRole());
         }
 
@@ -190,17 +198,24 @@ class StudyServiceTest extends IntegrationTest {
             // given
             Member member = createMember();
             UserDetails userDetails = createUserDetails(member);
-            studyService.createStudy(studyCreateRequest, userDetails);
-            Study study = studyRepository.findAll().getFirst();
+            StudyDetailResponse createdStudy = studyService.createStudy(studyCreateRequest, userDetails);
 
             StudyCreateUpdateRequest updateRequest = createUpdateRequest();
 
             // when
-            studyService.updateStudy(study.getId(), updateRequest, userDetails);
+            StudyDetailResponse response = studyService.updateStudy(createdStudy.id(), updateRequest, userDetails);
 
             // then
-            Study updatedStudy = studyRepository.findById(study.getId()).orElse(null);
-            assertNotNull(updatedStudy);
+            // 반환값 검증
+            assertEquals(createdStudy.id(), response.id());
+            assertEquals("수정된 스터디", response.title());
+            assertEquals(StudyCategory.WEB, response.category());
+            assertEquals(StudyLevel.INTERMEDIATE, response.level());
+            assertEquals(member.getName(), response.instructor());
+            assertEquals(5, response.maxParticipants());
+
+            // DB 상태 검증
+            Study updatedStudy = studyRepository.findById(response.id()).get();
             assertEquals("수정된 스터디", updatedStudy.getTitle());
             assertEquals(StudyCategory.WEB, updatedStudy.getCategory());
             assertEquals(StudyLevel.INTERMEDIATE, updatedStudy.getLevel());
@@ -211,8 +226,7 @@ class StudyServiceTest extends IntegrationTest {
             // given
             Member member = createMember();
             UserDetails userDetails = createUserDetails(member);
-            studyService.createStudy(studyCreateRequest, userDetails);
-            Study study = studyRepository.findAll().getFirst();
+            StudyDetailResponse createdStudy = studyService.createStudy(studyCreateRequest, userDetails);
 
             UserDetails invalidUserDetails = createUserDetails(member);
             ReflectionTestUtils.setField(invalidUserDetails, "memberId", member.getId() + 1L);
@@ -220,7 +234,7 @@ class StudyServiceTest extends IntegrationTest {
             // when & then
             CustomException exception = assertThrows(
                     CustomException.class,
-                    () -> studyService.updateStudy(study.getId(), studyCreateRequest, invalidUserDetails));
+                    () -> studyService.updateStudy(createdStudy.id(), studyCreateRequest, invalidUserDetails));
             assertEquals(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR, exception.getErrorCode());
         }
 
@@ -244,13 +258,12 @@ class StudyServiceTest extends IntegrationTest {
             UserDetails instructorDetails = createUserDetails(instructor);
             UserDetails otherUserDetails = createUserDetails(otherMember);
 
-            studyService.createStudy(studyCreateRequest, instructorDetails);
-            Study study = studyRepository.findAll().getFirst();
+            StudyDetailResponse createdStudy = studyService.createStudy(studyCreateRequest, instructorDetails);
 
             // when & then
             CustomException exception = assertThrows(
                     CustomException.class,
-                    () -> studyService.updateStudy(study.getId(), studyCreateRequest, otherUserDetails));
+                    () -> studyService.updateStudy(createdStudy.id(), studyCreateRequest, otherUserDetails));
             assertEquals(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR, exception.getErrorCode());
         }
     }

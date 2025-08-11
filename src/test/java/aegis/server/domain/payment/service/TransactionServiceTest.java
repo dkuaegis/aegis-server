@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -65,7 +64,7 @@ public class TransactionServiceTest extends IntegrationTestWithoutTransactional 
             UserDetails userDetails = UserDetails.from(member);
             PaymentRequest request = new PaymentRequest(List.of());
             paymentService.createPayment(request, userDetails);
-            
+
             String transactionLog = String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName());
 
             // when
@@ -88,7 +87,7 @@ public class TransactionServiceTest extends IntegrationTestWithoutTransactional 
             UserDetails userDetails = UserDetails.from(member);
             PaymentRequest request = new PaymentRequest(List.of());
             paymentService.createPayment(request, userDetails);
-            
+
             String transactionLog =
                     String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName() + "WRONG");
 
@@ -108,7 +107,7 @@ public class TransactionServiceTest extends IntegrationTestWithoutTransactional 
             UserDetails userDetails = UserDetails.from(member);
             PaymentRequest request = new PaymentRequest(List.of());
             paymentService.createPayment(request, userDetails);
-            
+
             String transactionLog =
                     String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES.subtract(BigDecimal.ONE), member.getName());
 
