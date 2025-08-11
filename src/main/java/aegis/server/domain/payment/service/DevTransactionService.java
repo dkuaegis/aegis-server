@@ -1,6 +1,7 @@
 package aegis.server.domain.payment.service;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,34 +12,38 @@ import aegis.server.domain.payment.domain.Transaction;
 import aegis.server.domain.payment.domain.TransactionType;
 import aegis.server.domain.payment.domain.event.TransactionCreatedEvent;
 import aegis.server.domain.payment.dto.internal.TransactionInfo;
+import aegis.server.domain.payment.dto.request.DevTransactionCreateRequest;
+import aegis.server.domain.payment.dto.response.DevTransactionResponse;
 import aegis.server.domain.payment.repository.TransactionRepository;
-import aegis.server.domain.payment.service.parser.TransactionParser;
 
 @Slf4j
 @Service
+@Profile({"dev", "local", "test"})
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class TransactionService {
+public class DevTransactionService {
 
-    private final TransactionParser transactionParser;
     private final TransactionRepository transactionRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
-    public void createTransaction(String transactionLog) {
-        Transaction transaction = transactionParser.parse(transactionLog);
-        transactionRepository.save(transaction);
+    public DevTransactionResponse createTransaction(DevTransactionCreateRequest request) {
+        Transaction transaction = Transaction.createForDev(
+                request.depositorName(), request.transactionType(), request.amount(), request.balance());
 
+        transactionRepository.save(transaction);
         logTransactionInfo(transaction);
 
         if (isDeposit(transaction)) {
             applicationEventPublisher.publishEvent(new TransactionCreatedEvent(TransactionInfo.from(transaction)));
         }
+
+        return DevTransactionResponse.from(transaction);
     }
 
     private void logTransactionInfo(Transaction transaction) {
         log.info(
-                "[TransactionService] 거래 정보 저장 완료: transactionId={}, type={}, name={}, amount={}",
+                "[DevTransactionService] 개발용 거래 정보 저장 완료: transactionId={}, type={}, name={}, amount={}",
                 transaction.getId(),
                 transaction.getTransactionType(),
                 transaction.getDepositorName(),
@@ -46,6 +51,6 @@ public class TransactionService {
     }
 
     private boolean isDeposit(Transaction transaction) {
-        return transaction.getTransactionType() == TransactionType.DEPOSIT;
+        return transaction.getTransactionType().equals(TransactionType.DEPOSIT);
     }
 }
