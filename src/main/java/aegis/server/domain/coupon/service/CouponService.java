@@ -3,6 +3,7 @@ package aegis.server.domain.coupon.service;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +43,7 @@ public class CouponService {
     }
 
     @Transactional
-    public void createCoupon(CouponCreateRequest request) {
+    public CouponResponse createCoupon(CouponCreateRequest request) {
         Coupon coupon = Coupon.create(request.couponName(), request.discountAmount());
 
         if (couponRepository.existsByCouponNameAndDiscountAmount(coupon.getCouponName(), coupon.getDiscountAmount())) {
@@ -50,6 +51,7 @@ public class CouponService {
         }
 
         couponRepository.save(coupon);
+        return CouponResponse.from(coupon);
     }
 
     @Transactional
@@ -65,7 +67,7 @@ public class CouponService {
                             () -> {
                                 throw new CustomException(ErrorCode.COUPON_NOT_FOUND);
                             });
-        } catch (DataIntegrityViolationException e) {
+        } catch (DataIntegrityViolationException | InvalidDataAccessApiUsageException e) {
             throw new CustomException(ErrorCode.COUPON_ISSUED_COUPON_EXISTS);
         }
     }
@@ -90,7 +92,7 @@ public class CouponService {
     }
 
     @Transactional
-    public void createIssuedCoupon(CouponIssueRequest request) {
+    public List<IssuedCouponResponse> createIssuedCoupon(CouponIssueRequest request) {
         Coupon coupon = couponRepository
                 .findById(request.couponId())
                 .orElseThrow(() -> new CustomException(ErrorCode.COUPON_NOT_FOUND));
@@ -101,6 +103,7 @@ public class CouponService {
                 members.stream().map(member -> IssuedCoupon.of(coupon, member)).toList();
 
         issuedCouponRepository.saveAll(issuedCoupons);
+        return issuedCoupons.stream().map(IssuedCouponResponse::from).toList();
     }
 
     @Transactional
@@ -119,7 +122,7 @@ public class CouponService {
     }
 
     @Transactional
-    public void createCouponCode(CouponCodeCreateRequest request) {
+    public CouponCodeResponse createCouponCode(CouponCodeCreateRequest request) {
         Coupon coupon = couponRepository
                 .findById(request.couponId())
                 .orElseThrow(() -> new CustomException(ErrorCode.COUPON_NOT_FOUND));
@@ -128,10 +131,11 @@ public class CouponService {
         CouponCode couponCode = CouponCode.of(coupon, code);
 
         couponCodeRepository.save(couponCode);
+        return CouponCodeResponse.from(couponCode);
     }
 
     @Transactional
-    public void useCouponCode(UserDetails userDetails, CouponCodeUseRequest request) {
+    public CouponCodeResponse useCouponCode(UserDetails userDetails, CouponCodeUseRequest request) {
         Member member = memberRepository
                 .findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
@@ -144,6 +148,8 @@ public class CouponService {
         issuedCouponRepository.save(issuedCoupon);
 
         couponCode.use(issuedCoupon);
+
+        return CouponCodeResponse.from(couponCode);
     }
 
     @Transactional

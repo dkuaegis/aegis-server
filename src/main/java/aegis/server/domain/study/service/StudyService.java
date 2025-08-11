@@ -42,7 +42,7 @@ public class StudyService {
     }
 
     @Transactional
-    public void createStudy(StudyCreateUpdateRequest request, UserDetails userDetails) {
+    public StudyDetailResponse createStudy(StudyCreateUpdateRequest request, UserDetails userDetails) {
         Member member = memberRepository
                 .findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
@@ -60,10 +60,12 @@ public class StudyService {
 
         // 스터디 생성한 사람을 스터디장으로 등록
         studyMemberRepository.save(StudyMember.create(study, member, StudyRole.INSTRUCTOR));
+
+        return getStudyDetail(study.getId());
     }
 
     @Transactional
-    public void updateStudy(Long studyId, StudyCreateUpdateRequest request, UserDetails userDetails) {
+    public StudyDetailResponse updateStudy(Long studyId, StudyCreateUpdateRequest request, UserDetails userDetails) {
         Study study =
                 studyRepository.findById(studyId).orElseThrow(() -> new CustomException(ErrorCode.STUDY_NOT_FOUND));
 
@@ -79,5 +81,7 @@ public class StudyService {
                 request.schedule(),
                 request.curricula(),
                 request.qualifications());
+
+        return getStudyDetail(studyId);
     }
 }

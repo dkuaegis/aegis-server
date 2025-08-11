@@ -14,7 +14,7 @@ public record StudyCreateUpdateRequest(
         StudyLevel level,
         @Size(max = 1000) String description,
         StudyRecruitmentMethod recruitmentMethod,
-        @Min(0) @Max(1) int maxParticipants,
+        @Min(0) @Max(100) int maxParticipants,
         @Size(max = 100) String schedule,
         @Size(max = 1000) String curricula,
         @Size(max = 1000) String qualifications) {}

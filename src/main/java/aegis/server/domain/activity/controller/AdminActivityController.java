@@ -47,9 +47,9 @@ public class AdminActivityController {
                 @ApiResponse(responseCode = "409", description = "동일한 이름의 활동이 이미 존재", content = @Content)
             })
     @PostMapping
-    public ResponseEntity<Void> createActivity(@Valid @RequestBody ActivityCreateUpdateRequest request) {
-        activityService.createActivity(request);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<ActivityResponse> createActivity(@Valid @RequestBody ActivityCreateUpdateRequest request) {
+        ActivityResponse response = activityService.createActivity(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(
@@ -62,11 +62,11 @@ public class AdminActivityController {
                 @ApiResponse(responseCode = "409", description = "동일한 이름의 활동이 이미 존재", content = @Content)
             })
     @PutMapping("/{activityId}")
-    public ResponseEntity<Void> updateActivity(
+    public ResponseEntity<ActivityResponse> updateActivity(
             @Parameter(description = "수정할 활동 ID") @PathVariable Long activityId,
             @Valid @RequestBody ActivityCreateUpdateRequest request) {
-        activityService.updateActivity(activityId, request);
-        return ResponseEntity.ok().build();
+        ActivityResponse response = activityService.updateActivity(activityId, request);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(
@@ -78,9 +78,10 @@ public class AdminActivityController {
                 @ApiResponse(responseCode = "409", description = "이미 활성화된 활동", content = @Content)
             })
     @PutMapping("/{activityId}/activate")
-    public ResponseEntity<Void> activateActivity(@Parameter(description = "활성화할 활동 ID") @PathVariable Long activityId) {
-        activityService.activateActivity(activityId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ActivityResponse> activateActivity(
+            @Parameter(description = "활성화할 활동 ID") @PathVariable Long activityId) {
+        ActivityResponse response = activityService.activateActivity(activityId);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(
@@ -92,10 +93,10 @@ public class AdminActivityController {
                 @ApiResponse(responseCode = "409", description = "이미 비활성화된 활동", content = @Content)
             })
     @PutMapping("/{activityId}/deactivate")
-    public ResponseEntity<Void> deactivateActivity(
+    public ResponseEntity<ActivityResponse> deactivateActivity(
             @Parameter(description = "비활성화할 활동 ID") @PathVariable Long activityId) {
-        activityService.deactivateActivity(activityId);
-        return ResponseEntity.ok().build();
+        ActivityResponse response = activityService.deactivateActivity(activityId);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(

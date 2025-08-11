@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.payment.dto.request.PaymentRequest;
+import aegis.server.domain.payment.dto.response.PaymentResponse;
 import aegis.server.domain.payment.dto.response.PaymentStatusResponse;
 import aegis.server.domain.payment.service.PaymentService;
 import aegis.server.global.security.annotation.LoginUser;
@@ -37,10 +38,10 @@ public class PaymentController {
                 @ApiResponse(responseCode = "409", description = "이미 PENDING 상태의 결제가 존재함", content = @Content)
             })
     @PostMapping
-    public ResponseEntity<Void> createPayment(
+    public ResponseEntity<PaymentResponse> createPayment(
             @RequestBody PaymentRequest request, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
-        paymentService.createPayment(request, userDetails);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        PaymentResponse response = paymentService.createPayment(request, userDetails);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(
@@ -54,10 +55,10 @@ public class PaymentController {
                 @ApiResponse(responseCode = "409", description = "이미 완료된 결제이거나 초과 결제 상태", content = @Content)
             })
     @PutMapping
-    public ResponseEntity<Void> updatePayment(
+    public ResponseEntity<PaymentResponse> updatePayment(
             @RequestBody PaymentRequest request, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
-        paymentService.updatePayment(request, userDetails);
-        return ResponseEntity.ok().build();
+        PaymentResponse response = paymentService.updatePayment(request, userDetails);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(

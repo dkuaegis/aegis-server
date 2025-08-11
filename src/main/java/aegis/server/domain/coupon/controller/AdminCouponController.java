@@ -51,9 +51,9 @@ public class AdminCouponController {
                 @ApiResponse(responseCode = "409", description = "동일한 이름과 할인금액의 쿠폰이 이미 존재", content = @Content)
             })
     @PostMapping
-    public ResponseEntity<Void> createCoupon(@Valid @RequestBody CouponCreateRequest request) {
-        couponService.createCoupon(request);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<CouponResponse> createCoupon(@Valid @RequestBody CouponCreateRequest request) {
+        CouponResponse response = couponService.createCoupon(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(
@@ -91,9 +91,10 @@ public class AdminCouponController {
                 @ApiResponse(responseCode = "404", description = "존재하지 않는 쿠폰 또는 사용자", content = @Content)
             })
     @PostMapping("/issued")
-    public ResponseEntity<Void> createIssuedCoupon(@Valid @RequestBody CouponIssueRequest request) {
-        couponService.createIssuedCoupon(request);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<List<IssuedCouponResponse>> createIssuedCoupon(
+            @Valid @RequestBody CouponIssueRequest request) {
+        List<IssuedCouponResponse> responses = couponService.createIssuedCoupon(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responses);
     }
 
     @Operation(
@@ -131,9 +132,9 @@ public class AdminCouponController {
                 @ApiResponse(responseCode = "500", description = "고유 쿠폰 코드 생성 실패 (100회 시도 후 실패)", content = @Content)
             })
     @PostMapping("/code")
-    public ResponseEntity<Void> createCodeCoupon(@Valid @RequestBody CouponCodeCreateRequest request) {
-        couponService.createCouponCode(request);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<CouponCodeResponse> createCodeCoupon(@Valid @RequestBody CouponCodeCreateRequest request) {
+        CouponCodeResponse response = couponService.createCouponCode(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(

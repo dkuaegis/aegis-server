@@ -40,7 +40,7 @@ public class MemberService {
     }
 
     @Transactional
-    public void updatePersonalInfo(UserDetails userDetails, PersonalInfoUpdateRequest request) {
+    public PersonalInfoResponse updatePersonalInfo(UserDetails userDetails, PersonalInfoUpdateRequest request) {
         Member member = memberRepository
                 .findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
@@ -52,15 +52,19 @@ public class MemberService {
                 request.grade(),
                 request.birthDate(),
                 request.gender());
+
+        return PersonalInfoResponse.from(member);
     }
 
     @Transactional
-    public void updateProfileIcon(UserDetails userDetails, ProfileIconUpdateRequest request) {
+    public PersonalInfoResponse updateProfileIcon(UserDetails userDetails, ProfileIconUpdateRequest request) {
         Member member = memberRepository
                 .findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         member.updateProfileIcon(request.profileIcon());
+
+        return PersonalInfoResponse.from(member);
     }
 
     @Transactional

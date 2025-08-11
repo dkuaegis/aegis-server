@@ -65,11 +65,11 @@ public class StudyController {
                 @ApiResponse(responseCode = "409", description = "이미 존재하는 스터디", content = @Content)
             })
     @PostMapping
-    public ResponseEntity<Void> createStudy(
+    public ResponseEntity<StudyDetailResponse> createStudy(
             @Parameter(hidden = true) @LoginUser UserDetails userDetails,
             @Valid @RequestBody StudyCreateUpdateRequest request) {
-        studyService.createStudy(request, userDetails);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        StudyDetailResponse response = studyService.createStudy(request, userDetails);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(
@@ -83,11 +83,11 @@ public class StudyController {
                 @ApiResponse(responseCode = "404", description = "스터디 또는 사용자 정보를 찾을 수 없음", content = @Content)
             })
     @PutMapping("/{studyId}")
-    public ResponseEntity<Void> updateStudy(
+    public ResponseEntity<StudyDetailResponse> updateStudy(
             @PathVariable Long studyId,
             @Parameter(hidden = true) @LoginUser UserDetails userDetails,
             @Valid @RequestBody StudyCreateUpdateRequest request) {
-        studyService.updateStudy(studyId, request, userDetails);
-        return ResponseEntity.ok().build();
+        StudyDetailResponse response = studyService.updateStudy(studyId, request, userDetails);
+        return ResponseEntity.ok(response);
     }
 }
