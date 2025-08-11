@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.coupon.dto.request.CouponCodeUseRequest;
+import aegis.server.domain.coupon.dto.response.CouponCodeResponse;
 import aegis.server.domain.coupon.dto.response.IssuedCouponResponse;
 import aegis.server.domain.coupon.service.CouponService;
 import aegis.server.global.security.annotation.LoginUser;
@@ -54,10 +55,10 @@ public class CouponController {
                 @ApiResponse(responseCode = "409", description = "이미 사용된 쿠폰 코드 또는 중복 사용", content = @Content)
             })
     @PostMapping("/code")
-    public ResponseEntity<Void> codeCouponIssue(
+    public ResponseEntity<CouponCodeResponse> codeCouponIssue(
             @Parameter(hidden = true) @LoginUser UserDetails userDetails,
             @Valid @RequestBody CouponCodeUseRequest request) {
-        couponService.useCouponCode(userDetails, request);
-        return ResponseEntity.ok().build();
+        CouponCodeResponse response = couponService.useCouponCode(userDetails, request);
+        return ResponseEntity.ok().body(response);
     }
 }
