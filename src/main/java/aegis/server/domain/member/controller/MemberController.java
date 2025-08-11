@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,33 +46,33 @@ public class MemberController {
             summary = "개인정보 수정",
             description = "로그인한 사용자의 개인정보를 수정합니다.",
             responses = {
-                @ApiResponse(responseCode = "201", description = "개인정보 수정 성공"),
+                @ApiResponse(responseCode = "200", description = "개인정보 수정 성공"),
                 @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
                 @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
                 @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음", content = @Content)
             })
     @PostMapping
-    public ResponseEntity<Void> updatePersonalInfo(
+    public ResponseEntity<PersonalInfoResponse> updatePersonalInfo(
             @Parameter(hidden = true) @LoginUser UserDetails userDetails,
             @Valid @RequestBody PersonalInfoUpdateRequest request) {
-        memberService.updatePersonalInfo(userDetails, request);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        PersonalInfoResponse response = memberService.updatePersonalInfo(userDetails, request);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(
             summary = "프로필 아이콘 수정",
             description = "로그인한 사용자의 프로필 아이콘을 수정합니다.",
             responses = {
-                @ApiResponse(responseCode = "201", description = "프로필 아이콘 수정 성공"),
+                @ApiResponse(responseCode = "200", description = "프로필 아이콘 수정 성공"),
                 @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
                 @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
                 @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음", content = @Content)
             })
     @PutMapping("/profile-icon")
-    public ResponseEntity<Void> updateProfileIcon(
+    public ResponseEntity<PersonalInfoResponse> updateProfileIcon(
             @Parameter(hidden = true) @LoginUser UserDetails userDetails,
             @Valid @RequestBody ProfileIconUpdateRequest request) {
-        memberService.updateProfileIcon(userDetails, request);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        PersonalInfoResponse response = memberService.updateProfileIcon(userDetails, request);
+        return ResponseEntity.ok(response);
     }
 }
