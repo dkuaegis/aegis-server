@@ -8,22 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-import aegis.server.domain.activity.domain.Activity;
-import aegis.server.domain.activity.repository.ActivityRepository;
-import aegis.server.domain.coupon.domain.Coupon;
-import aegis.server.domain.coupon.domain.IssuedCoupon;
-import aegis.server.domain.coupon.repository.CouponRepository;
-import aegis.server.domain.coupon.repository.IssuedCouponRepository;
 import aegis.server.domain.discord.service.listener.DiscordEventListener;
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.repository.MemberRepository;
-import aegis.server.domain.payment.domain.Payment;
-import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.domain.point.domain.PointAccount;
 import aegis.server.domain.point.domain.PointTransaction;
 import aegis.server.domain.point.domain.PointTransactionType;
@@ -31,40 +20,10 @@ import aegis.server.domain.point.repository.PointAccountRepository;
 import aegis.server.domain.point.repository.PointTransactionRepository;
 import aegis.server.global.security.oidc.UserDetails;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-
 @SpringBootTest
 @ActiveProfiles("test")
-@Testcontainers
+@Transactional
 public class IntegrationTest {
-
-    @Autowired
-    DatabaseCleaner databaseCleaner;
-
-    @Autowired
-    RedisCleaner redisCleaner;
-
-    @Autowired
-    MemberRepository memberRepository;
-
-    @Autowired
-    CouponRepository couponRepository;
-
-    @Autowired
-    IssuedCouponRepository issuedCouponRepository;
-
-    @Autowired
-    ActivityRepository activityRepository;
-
-    @Autowired
-    PointAccountRepository pointAccountRepository;
-
-    @Autowired
-    PointTransactionRepository pointTransactionRepository;
-
-    @Autowired
-    PaymentRepository paymentRepository;
 
     @MockitoBean
     JDA jda;
@@ -72,29 +31,18 @@ public class IntegrationTest {
     @MockitoBean
     DiscordEventListener discordEventListener;
 
-    @BeforeEach
-    void setUp() {
-        databaseCleaner.clean();
-        redisCleaner.clean();
+    @Autowired
+    MemberRepository memberRepository;
 
-        doNothing().when(discordEventListener).handlePaymentCompletedEvent(any());
-        doNothing().when(discordEventListener).handleMismatchEvent(any());
-    }
+    @Autowired
+    PointAccountRepository pointAccountRepository;
 
-    protected Member createInitialMember() {
-        Member member = Member.create("12345678901234567890", "test@dankook.ac.kr", "테스트사용자이름");
-        memberRepository.save(member);
-
-        // 한 개의 테스트 케이스에서 여러 번 호출되도 Member 엔티티의 고유성을 위하여 Reflection을 사용하여 수정
-        ReflectionTestUtils.setField(member, "oidcId", member.getOidcId() + member.getId());
-        ReflectionTestUtils.setField(member, "email", "test" + member.getId() + "@dankook.ac.kr");
-        ReflectionTestUtils.setField(member, "name", "테스트사용자이름" + member.getId());
-
-        return memberRepository.save(member);
-    }
+    @Autowired
+    PointTransactionRepository pointTransactionRepository;
 
     protected Member createMember() {
-        Member member = createInitialMember();
+        String uniqueId = String.valueOf(System.nanoTime());
+        Member member = Member.create(uniqueId, "test" + uniqueId + "@dankook.ac.kr", "테스트사용자이름" + uniqueId);
         member.updatePersonalInfo(
                 "010-1234-5678", "32000001", Department.SW융합대학_컴퓨터공학과, Grade.THREE, "010101", Gender.MALE);
         member.promoteToUser();
@@ -106,26 +54,6 @@ public class IntegrationTest {
         return UserDetails.from(member);
     }
 
-    protected Coupon create5000DiscountCoupon() {
-        Coupon coupon = Coupon.create("테스트쿠폰", BigDecimal.valueOf(5000L));
-        couponRepository.save(coupon);
-        ReflectionTestUtils.setField(coupon, "couponName", "테스트쿠폰" + coupon.getId());
-
-        return couponRepository.save(coupon);
-    }
-
-    protected IssuedCoupon createIssuedCoupon(Member member, Coupon coupon) {
-        return issuedCouponRepository.save(IssuedCoupon.of(coupon, member));
-    }
-
-    protected Activity createActivity(String name) {
-        Activity activity = Activity.create(name);
-        activityRepository.save(activity);
-        ReflectionTestUtils.setField(activity, "name", name + activity.getId());
-
-        return activityRepository.save(activity);
-    }
-
     protected PointAccount createPointAccount(Member member) {
         return pointAccountRepository.save(PointAccount.create(member));
     }
@@ -135,21 +63,15 @@ public class IntegrationTest {
         pointTransactionRepository.save(PointTransaction.create(account, type, amount, reason));
     }
 
-    protected void createEarnTransaction(PointAccount account, BigDecimal amount, String reason) {
+    protected void createEarnPointTransaction(PointAccount account, BigDecimal amount, String reason) {
         account.add(amount);
         pointAccountRepository.save(account);
         createPointTransaction(account, PointTransactionType.EARN, amount, reason);
     }
 
-    protected void createSpendTransaction(PointAccount account, BigDecimal amount, String reason) {
+    protected void createSpendPointTransaction(PointAccount account, BigDecimal amount, String reason) {
         account.deduct(amount);
         pointAccountRepository.save(account);
         createPointTransaction(account, PointTransactionType.SPEND, amount, reason);
-    }
-
-    protected void createCompletedPaymentForCurrentSemester(Member member) {
-        Payment payment = Payment.of(member);
-        payment.completePayment();
-        paymentRepository.save(payment);
     }
 }
