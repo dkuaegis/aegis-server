@@ -17,6 +17,7 @@ import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
 import aegis.server.domain.payment.dto.internal.PaymentInfo;
 import aegis.server.domain.payment.dto.request.PaymentRequest;
+import aegis.server.domain.payment.dto.response.PaymentResponse;
 import aegis.server.domain.payment.dto.response.PaymentStatusResponse;
 import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.global.exception.CustomException;
@@ -42,8 +43,8 @@ public class PaymentService {
     }
 
     @Transactional
-    public void createPayment(PaymentRequest request, UserDetails userDetails) {
-        validateNoPendingPayment(userDetails.getMemberId());
+    public PaymentResponse createPayment(PaymentRequest request, UserDetails userDetails) {
+        validateNoPendingPaymentInCurrentSemester(userDetails.getMemberId());
         validateUsableCoupons(userDetails.getMemberId(), request.getIssuedCouponIds());
 
         Member member = memberRepository
@@ -58,10 +59,12 @@ public class PaymentService {
             payment.completePayment();
             applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
         }
+
+        return PaymentResponse.from(payment);
     }
 
     @Transactional
-    public void updatePayment(PaymentRequest request, UserDetails userDetails) {
+    public PaymentResponse updatePayment(PaymentRequest request, UserDetails userDetails) {
         validateUsableCoupons(userDetails.getMemberId(), request.getIssuedCouponIds());
 
         Payment payment = paymentRepository
@@ -73,9 +76,11 @@ public class PaymentService {
             payment.completePayment();
             applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
         }
+
+        return PaymentResponse.from(payment);
     }
 
-    private void validateNoPendingPayment(Long memberId) {
+    private void validateNoPendingPaymentInCurrentSemester(Long memberId) {
         if (paymentRepository
                 .findByMemberIdAndCurrentYearSemesterAndStatusIsPending(memberId)
                 .isPresent()) {
