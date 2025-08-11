@@ -80,13 +80,12 @@ public class CouponService {
                 .toList();
     }
 
-    public List<IssuedCouponResponse> findMyAllValidIssuedCoupons(UserDetails userDetails) {
+    public List<IssuedCouponResponse> findMyAllIssuedCoupons(UserDetails userDetails) {
         Member member = memberRepository
                 .findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        return issuedCouponRepository.findAllByMember(member).stream()
-                .filter(IssuedCoupon::getIsValid)
+        return issuedCouponRepository.findAllByMemberWithCoupon(member).stream()
                 .map(IssuedCouponResponse::from)
                 .toList();
     }

@@ -32,15 +32,15 @@ public class CouponController {
 
     @Operation(
             summary = "내 발급된 쿠폰 조회",
-            description = "로그인한 사용자의 유효한 발급된 쿠폰을 모두 조회합니다.",
+            description = "로그인한 사용자의 모든 발급된 쿠폰을 조회합니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "쿠폰 조회 성공"),
                 @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content)
             })
-    @GetMapping("/issued/me")
-    public ResponseEntity<List<IssuedCouponResponse>> getMyAllValidIssuedCoupon(
+    @GetMapping("/me")
+    public ResponseEntity<List<IssuedCouponResponse>> getMyAllIssuedCoupon(
             @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
-        List<IssuedCouponResponse> responses = couponService.findMyAllValidIssuedCoupons(userDetails);
+        List<IssuedCouponResponse> responses = couponService.findMyAllIssuedCoupons(userDetails);
         return ResponseEntity.ok().body(responses);
     }
 
