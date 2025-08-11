@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -20,18 +19,19 @@ import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.dto.request.PaymentRequest;
+import aegis.server.domain.payment.dto.response.PaymentResponse;
 import aegis.server.domain.payment.dto.response.PaymentStatusResponse;
 import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
-import aegis.server.helper.IntegrationTest;
+import aegis.server.helper.IntegrationTestWithoutTransactional;
 
 import static aegis.server.global.constant.Constant.CLUB_DUES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class PaymentServiceTest extends IntegrationTest {
+public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
 
     @Autowired
     PaymentService paymentService;
@@ -45,29 +45,26 @@ public class PaymentServiceTest extends IntegrationTest {
     @Autowired
     CouponRepository couponRepository;
 
-    private Member member;
-    private UserDetails userDetails;
-
-    @BeforeEach
-    void setUp() {
-        member = createMember();
-        userDetails = createUserDetails(member);
-    }
-
     @Nested
     class 결제정보_생성 {
 
         @Test
         void 성공한다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
             PaymentRequest request = new PaymentRequest(List.of());
 
             // when
-            paymentService.createPayment(request, userDetails);
+            PaymentResponse response = paymentService.createPayment(request, userDetails);
 
             // then
-            Payment payment =
-                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            // 반환값 검증
+            assertEquals(PaymentStatus.PENDING, response.getStatus());
+            assertEquals(CLUB_DUES, response.getFinalPrice());
+
+            // DB 상태 검증
+            Payment payment = paymentRepository.findById(response.getId()).get();
             assertEquals(member.getId(), payment.getMember().getId());
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
             assertEquals(CLUB_DUES, payment.getFinalPrice());
@@ -76,40 +73,55 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void 쿠폰_적용_시_할인된_가격이_적용된다() {
             // given
-            Coupon coupon = create5000DiscountCoupon();
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Coupon coupon = createCoupon();
             IssuedCoupon issuedCoupon = createIssuedCoupon(member, coupon);
             PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
 
             // when
-            paymentService.createPayment(request, userDetails);
+            PaymentResponse response = paymentService.createPayment(request, userDetails);
 
             // then
-            Payment payment =
-                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            // 반환값 검증
             BigDecimal discountedPrice = CLUB_DUES.subtract(coupon.getDiscountAmount());
+            assertEquals(discountedPrice, response.getFinalPrice());
+            assertEquals(PaymentStatus.PENDING, response.getStatus());
+
+            // DB 상태 검증
+            Payment payment = paymentRepository.findById(response.getId()).get();
             assertEquals(discountedPrice, payment.getFinalPrice());
         }
 
         @Test
         void 결제_금액이_0원일_시_즉시_완료한다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
             Coupon coupon = Coupon.create("전액 쿠폰", CLUB_DUES);
             couponRepository.save(coupon);
-            createIssuedCoupon(member, coupon);
-            PaymentRequest request = new PaymentRequest(List.of(1L));
+            IssuedCoupon issuedCoupon = createIssuedCoupon(member, coupon);
+            PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
 
             // when
-            paymentService.createPayment(request, userDetails);
+            PaymentResponse response = paymentService.createPayment(request, userDetails);
 
             // then
-            Payment payment =
-                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            // 반환값 검증
+            assertEquals(PaymentStatus.COMPLETED, response.getStatus());
+            assertEquals(BigDecimal.ZERO, response.getFinalPrice());
+
+            // DB 상태 검증
+            Payment payment = paymentRepository.findById(response.getId()).get();
             assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
+            assertEquals(BigDecimal.ZERO, payment.getFinalPrice());
         }
 
         @Test
         void 할인_금액이_원래_가격보다_클_때_최종가격이_0원이_된다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
             Coupon coupon1 = Coupon.create("대형 할인 쿠폰1", CLUB_DUES);
             Coupon coupon2 = Coupon.create("대형 할인 쿠폰2", BigDecimal.valueOf(10000));
             couponRepository.save(coupon1);
@@ -134,22 +146,26 @@ public class PaymentServiceTest extends IntegrationTest {
         @Transactional
         void 쿠폰_적용_시_결제_정보에_저장된다() {
             // given
-            Coupon coupon = create5000DiscountCoupon();
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Coupon coupon = createCoupon();
             IssuedCoupon issuedCoupon = createIssuedCoupon(member, coupon);
             PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
 
             // when
-            paymentService.createPayment(request, userDetails);
+            PaymentResponse response = paymentService.createPayment(request, userDetails);
 
             // then
-            Payment payment = paymentRepository.findById(1L).get();
+            Payment payment = paymentRepository.findById(response.getId()).get();
             assertEquals(1, payment.getUsedCoupons().size());
         }
 
         @Test
         void 본인에게_발급되지_않은_쿠폰_사용_시_실패한다() {
             // given
-            Coupon coupon = create5000DiscountCoupon();
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Coupon coupon = createCoupon();
             Member anotherMember = createMember();
             IssuedCoupon issuedCoupon = createIssuedCoupon(anotherMember, coupon);
             PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
@@ -158,6 +174,7 @@ public class PaymentServiceTest extends IntegrationTest {
             CustomException exception =
                     assertThrows(CustomException.class, () -> paymentService.createPayment(request, userDetails));
             assertEquals(ErrorCode.INVALID_ISSUED_COUPON_INCLUDED, exception.getErrorCode());
+
             IssuedCoupon shouldNotBeUpdatedIssuedCoupon =
                     issuedCouponRepository.findById(issuedCoupon.getId()).get();
             assertEquals(true, shouldNotBeUpdatedIssuedCoupon.getIsValid());
@@ -166,6 +183,8 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void 이미_PENDING_상태의_결제가_존재하면_실패한다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
             PaymentRequest request = new PaymentRequest(List.of());
             paymentService.createPayment(request, userDetails);
 
@@ -178,19 +197,17 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void 이전_학기_결제_완료_후_새_학기_결제가_성공한다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
             PaymentRequest request1 = new PaymentRequest(List.of());
-            paymentService.createPayment(request1, userDetails);
+            PaymentResponse firstPayment = paymentService.createPayment(request1, userDetails);
 
-            // 완료된 결제 상태로 변경
-            Payment payment =
-                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            // 완료된 결제 상태로 변경 후 새로운 학기로 설정
+            Payment payment = paymentRepository.findById(firstPayment.getId()).get();
             ReflectionTestUtils.setField(payment, "status", PaymentStatus.COMPLETED);
+            ReflectionTestUtils.setField(payment, "yearSemester", YearSemester.YEAR_SEMESTER_2025_1);
             paymentRepository.save(payment);
 
-            // 새로운 학기 결제 요청
-            Payment oldPayment = paymentRepository.findById(1L).get();
-            ReflectionTestUtils.setField(oldPayment, "yearSemester", YearSemester.YEAR_SEMESTER_2025_1);
-            paymentRepository.save(oldPayment);
             PaymentRequest request2 = new PaymentRequest(List.of());
 
             // when
@@ -206,13 +223,17 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void 이전_학기_결제_미완료_상태에서도_새_학기_결제가_성공한다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
             PaymentRequest request1 = new PaymentRequest(List.of());
-            paymentService.createPayment(request1, userDetails);
+            PaymentResponse firstPayment = paymentService.createPayment(request1, userDetails);
 
-            // 새로운 학기 결제 요청
-            Payment oldPayment = paymentRepository.findById(1L).get();
+            // 이전 학기로 변경
+            Payment oldPayment =
+                    paymentRepository.findById(firstPayment.getId()).get();
             ReflectionTestUtils.setField(oldPayment, "yearSemester", YearSemester.YEAR_SEMESTER_2025_1);
             paymentRepository.save(oldPayment);
+
             PaymentRequest request2 = new PaymentRequest(List.of());
 
             // when
@@ -232,19 +253,25 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void 성공한다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
             PaymentRequest createRequest = new PaymentRequest(List.of());
             paymentService.createPayment(createRequest, userDetails);
 
-            Coupon coupon = create5000DiscountCoupon();
-            createIssuedCoupon(member, coupon);
-            PaymentRequest updateRequest = new PaymentRequest(List.of(1L));
+            Coupon coupon = createCoupon();
+            IssuedCoupon issuedCoupon = createIssuedCoupon(member, coupon);
+            PaymentRequest updateRequest = new PaymentRequest(List.of(issuedCoupon.getId()));
 
             // when
-            paymentService.updatePayment(updateRequest, userDetails);
+            PaymentResponse response = paymentService.updatePayment(updateRequest, userDetails);
 
             // then
-            Payment payment =
-                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            // 반환값 검증
+            assertEquals(PaymentStatus.PENDING, response.getStatus());
+            assertEquals(CLUB_DUES.subtract(coupon.getDiscountAmount()), response.getFinalPrice());
+
+            // DB 상태 검증
+            Payment payment = paymentRepository.findById(response.getId()).get();
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
             assertEquals(CLUB_DUES.subtract(coupon.getDiscountAmount()), payment.getFinalPrice());
         }
@@ -252,19 +279,25 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void 쿠폰을_제거하면_할인이_취소된다() {
             // given
-            Coupon coupon = create5000DiscountCoupon();
-            createIssuedCoupon(member, coupon);
-            PaymentRequest createRequest = new PaymentRequest(List.of(1L));
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Coupon coupon = createCoupon();
+            IssuedCoupon issuedCoupon = createIssuedCoupon(member, coupon);
+            PaymentRequest createRequest = new PaymentRequest(List.of(issuedCoupon.getId()));
             paymentService.createPayment(createRequest, userDetails);
 
             PaymentRequest updateRequest = new PaymentRequest(List.of());
 
             // when
-            paymentService.updatePayment(updateRequest, userDetails);
+            PaymentResponse response = paymentService.updatePayment(updateRequest, userDetails);
 
             // then
-            Payment payment =
-                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            // 반환값 검증
+            assertEquals(PaymentStatus.PENDING, response.getStatus());
+            assertEquals(CLUB_DUES, response.getFinalPrice());
+
+            // DB 상태 검증
+            Payment payment = paymentRepository.findById(response.getId()).get();
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
             assertEquals(CLUB_DUES, payment.getFinalPrice());
         }
@@ -272,6 +305,8 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void PENDING_상태의_결제가_없으면_실패한다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
             PaymentRequest request = new PaymentRequest(List.of());
 
             // when-then
@@ -283,6 +318,8 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void 쿠폰_적용으로_0원이_되면_즉시_완료한다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
             PaymentRequest createRequest = new PaymentRequest(List.of());
             paymentService.createPayment(createRequest, userDetails);
 
@@ -292,11 +329,15 @@ public class PaymentServiceTest extends IntegrationTest {
             PaymentRequest updateRequest = new PaymentRequest(List.of(issuedCoupon.getId()));
 
             // when
-            paymentService.updatePayment(updateRequest, userDetails);
+            PaymentResponse response = paymentService.updatePayment(updateRequest, userDetails);
 
             // then
-            Payment payment =
-                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            // 반환값 검증
+            assertEquals(PaymentStatus.COMPLETED, response.getStatus());
+            assertEquals(BigDecimal.ZERO, response.getFinalPrice());
+
+            // DB 상태 검증
+            Payment payment = paymentRepository.findById(response.getId()).get();
             assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
             assertEquals(BigDecimal.ZERO, payment.getFinalPrice());
         }
@@ -304,6 +345,8 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void 할인_금액이_원래_가격보다_클_때_수정_시에도_최종가격이_0원이_된다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
             PaymentRequest createRequest = new PaymentRequest(List.of());
             paymentService.createPayment(createRequest, userDetails);
 
@@ -328,9 +371,10 @@ public class PaymentServiceTest extends IntegrationTest {
         }
 
         @Test
-        @Transactional
         void 완료된_결제정보가_존재하면_실패한다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
             PaymentRequest request = new PaymentRequest(List.of());
 
             Payment payment = Payment.of(member);
@@ -350,6 +394,8 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void PENDING_상태의_결제를_성공적으로_조회한다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
             PaymentRequest request = new PaymentRequest(List.of());
             paymentService.createPayment(request, userDetails);
 
@@ -364,6 +410,8 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void COMPLETED_상태의_결제를_성공적으로_조회한다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
             Coupon coupon = Coupon.create("전액 쿠폰", CLUB_DUES);
             couponRepository.save(coupon);
             IssuedCoupon issuedCoupon = createIssuedCoupon(member, coupon);
@@ -381,7 +429,9 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void 쿠폰_할인이_적용된_결제상태를_성공적으로_조회한다() {
             // given
-            Coupon coupon = create5000DiscountCoupon();
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Coupon coupon = createCoupon();
             IssuedCoupon issuedCoupon = createIssuedCoupon(member, coupon);
             PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
             paymentService.createPayment(request, userDetails);
@@ -397,6 +447,8 @@ public class PaymentServiceTest extends IntegrationTest {
         @Test
         void 결제정보가_존재하지_않으면_실패한다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
             // 결제정보를 생성하지 않음
 
             // when-then
@@ -404,5 +456,14 @@ public class PaymentServiceTest extends IntegrationTest {
                     assertThrows(CustomException.class, () -> paymentService.checkPaymentStatus(userDetails));
             assertEquals(ErrorCode.PAYMENT_NOT_FOUND, exception.getErrorCode());
         }
+    }
+
+    private Coupon createCoupon() {
+        Coupon coupon = Coupon.create("테스트쿠폰", BigDecimal.valueOf(5000L));
+        return couponRepository.save(coupon);
+    }
+
+    private IssuedCoupon createIssuedCoupon(Member member, Coupon coupon) {
+        return issuedCouponRepository.save(IssuedCoupon.of(coupon, member));
     }
 }

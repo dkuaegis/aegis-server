@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -18,12 +19,12 @@ import aegis.server.domain.payment.dto.request.PaymentRequest;
 import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.domain.payment.repository.TransactionRepository;
 import aegis.server.global.security.oidc.UserDetails;
-import aegis.server.helper.IntegrationTest;
+import aegis.server.helper.IntegrationTestWithoutTransactional;
 
 import static aegis.server.global.constant.Constant.CLUB_DUES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TransactionServiceTest extends IntegrationTest {
+public class TransactionServiceTest extends IntegrationTestWithoutTransactional {
 
     @Autowired
     TransactionService transactionService;
@@ -54,22 +55,17 @@ public class TransactionServiceTest extends IntegrationTest {
             01/09 12:25 / 잔액 1000000원
             """;
 
-    private Member member;
-
-    @BeforeEach
-    void setUp() {
-        member = createMember();
-        UserDetails userDetails = UserDetails.from(member);
-        PaymentRequest request = new PaymentRequest(List.of());
-        paymentService.createPayment(request, userDetails);
-    }
-
     @Nested
     class 올바른_입금 {
 
         @Test
         void 결제를_COMPLETED_처리한다() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = UserDetails.from(member);
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createPayment(request, userDetails);
+            
             String transactionLog = String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName());
 
             // when
@@ -88,6 +84,11 @@ public class TransactionServiceTest extends IntegrationTest {
         @Test
         void 잘못된_입금자명() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = UserDetails.from(member);
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createPayment(request, userDetails);
+            
             String transactionLog =
                     String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName() + "WRONG");
 
@@ -103,6 +104,11 @@ public class TransactionServiceTest extends IntegrationTest {
         @Test
         void 틀린_입금액() {
             // given
+            Member member = createMember();
+            UserDetails userDetails = UserDetails.from(member);
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createPayment(request, userDetails);
+            
             String transactionLog =
                     String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES.subtract(BigDecimal.ONE), member.getName());
 
@@ -166,7 +172,7 @@ public class TransactionServiceTest extends IntegrationTest {
         void ADMIN_회원은_입금_완료해도_역할이_변하지_않는다() {
             // given
             Member adminMember = createMember();
-            org.springframework.test.util.ReflectionTestUtils.setField(adminMember, "role", Role.ADMIN);
+            ReflectionTestUtils.setField(adminMember, "role", Role.ADMIN);
             memberRepository.save(adminMember);
 
             UserDetails userDetails = UserDetails.from(adminMember);
@@ -191,6 +197,7 @@ public class TransactionServiceTest extends IntegrationTest {
         @Test
         void 출금_거래는_거래_정보만_저장된다() {
             // given
+            Member member = createMember();
             String transactionLog = String.format(WITHDRAWAL_TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName());
             int initialTransactionCount = transactionRepository.findAll().size();
 
