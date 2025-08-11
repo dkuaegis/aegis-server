@@ -57,4 +57,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     }
 
     List<Payment> findAllByStatusAndYearSemester(PaymentStatus paymentStatus, YearSemester currentYearSemester);
+
+    @Query("SELECT p FROM Payment p WHERE p.member.id = :memberId ORDER BY p.yearSemester DESC, p.createdAt DESC")
+    List<Payment> findAllByMemberIdOrderByYearSemesterDescCreatedAtDesc(Long memberId);
 }

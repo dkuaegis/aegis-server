@@ -57,6 +57,16 @@ public class Payment extends BaseEntity {
                 .build();
     }
 
+    public static Payment createForDev(Member member, PaymentStatus status, YearSemester yearSemester) {
+        return Payment.builder()
+                .member(member)
+                .status(status)
+                .yearSemester(yearSemester)
+                .originalPrice(CLUB_DUES)
+                .finalPrice(CLUB_DUES)
+                .build();
+    }
+
     public void applyCoupons(List<IssuedCoupon> issuedCoupons) {
         this.usedCoupons.clear();
         this.usedCoupons.addAll(issuedCoupons);
@@ -79,5 +89,10 @@ public class Payment extends BaseEntity {
     public void completePayment() {
         this.status = PaymentStatus.COMPLETED;
         this.usedCoupons.forEach(issuedCoupon -> issuedCoupon.use(this));
+    }
+
+    public void updateForDev(PaymentStatus status, YearSemester yearSemester) {
+        this.status = status;
+        this.yearSemester = yearSemester;
     }
 }

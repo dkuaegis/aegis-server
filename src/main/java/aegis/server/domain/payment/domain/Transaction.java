@@ -60,4 +60,16 @@ public class Transaction extends BaseEntity {
                 .balance(balance)
                 .build();
     }
+
+    public static Transaction createForDev(
+            String depositorName, TransactionType transactionType, BigDecimal amount, BigDecimal balance) {
+        return Transaction.builder()
+                .yearSemester(CURRENT_YEAR_SEMESTER)
+                .transactionTime(LocalDateTime.now())
+                .depositorName(depositorName)
+                .transactionType(transactionType)
+                .amount(amount)
+                .balance(balance)
+                .build();
+    }
 }
