@@ -45,14 +45,14 @@ public class PaymentService {
     @Transactional
     public PaymentResponse createPayment(PaymentRequest request, UserDetails userDetails) {
         validateNoPendingPaymentInCurrentSemester(userDetails.getMemberId());
-        validateUsableCoupons(userDetails.getMemberId(), request.getIssuedCouponIds());
+        validateUsableCoupons(userDetails.getMemberId(), request.issuedCouponIds());
 
         Member member = memberRepository
                 .findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         Payment payment = Payment.of(member);
-        applyCoupons(payment, request.getIssuedCouponIds());
+        applyCoupons(payment, request.issuedCouponIds());
         paymentRepository.save(payment);
 
         if (payment.getFinalPrice().equals(BigDecimal.ZERO)) {
@@ -65,12 +65,12 @@ public class PaymentService {
 
     @Transactional
     public PaymentResponse updatePayment(PaymentRequest request, UserDetails userDetails) {
-        validateUsableCoupons(userDetails.getMemberId(), request.getIssuedCouponIds());
+        validateUsableCoupons(userDetails.getMemberId(), request.issuedCouponIds());
 
         Payment payment = paymentRepository
                 .findByMemberIdAndCurrentYearSemesterAndStatusIsPending(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
-        applyCoupons(payment, request.getIssuedCouponIds());
+        applyCoupons(payment, request.issuedCouponIds());
 
         if (payment.getFinalPrice().equals(BigDecimal.ZERO)) {
             payment.completePayment();

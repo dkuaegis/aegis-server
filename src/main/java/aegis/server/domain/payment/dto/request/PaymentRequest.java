@@ -2,14 +2,6 @@ package aegis.server.domain.payment.dto.request;
 
 import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotNull;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class PaymentRequest {
-
-    List<Long> issuedCouponIds;
-}
+public record PaymentRequest(@NotNull List<Long> issuedCouponIds) {}

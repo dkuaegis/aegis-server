@@ -2,19 +2,13 @@ package aegis.server.domain.payment.dto.request;
 
 import java.math.BigDecimal;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import aegis.server.domain.payment.domain.TransactionType;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class DevTransactionCreateRequest {
-
-    private String depositorName;
-    private BigDecimal amount;
-    private TransactionType transactionType;
-    private BigDecimal balance;
-}
+public record DevTransactionCreateRequest(
+        @NotBlank String depositorName,
+        @NotNull BigDecimal amount,
+        @NotNull TransactionType transactionType,
+        @NotNull BigDecimal balance) {}

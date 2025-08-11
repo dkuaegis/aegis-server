@@ -2,6 +2,8 @@ package aegis.server.domain.payment.controller;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -41,7 +43,7 @@ public class DevPaymentController {
             })
     @PostMapping
     public ResponseEntity<DevPaymentResponse> createPayment(
-            @RequestBody DevPaymentCreateRequest request,
+            @Valid @RequestBody DevPaymentCreateRequest request,
             @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
         DevPaymentResponse response = devPaymentService.createPayment(request, userDetails);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -59,7 +61,7 @@ public class DevPaymentController {
     @PutMapping("/{id}")
     public ResponseEntity<DevPaymentResponse> updatePayment(
             @PathVariable Long id,
-            @RequestBody DevPaymentUpdateRequest request,
+            @Valid @RequestBody DevPaymentUpdateRequest request,
             @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
         DevPaymentResponse response = devPaymentService.updatePayment(id, request, userDetails);
         return ResponseEntity.ok(response);

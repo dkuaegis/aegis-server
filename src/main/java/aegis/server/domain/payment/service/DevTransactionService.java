@@ -29,7 +29,7 @@ public class DevTransactionService {
     @Transactional
     public DevTransactionResponse createTransaction(DevTransactionCreateRequest request) {
         Transaction transaction = Transaction.createForDev(
-                request.getDepositorName(), request.getTransactionType(), request.getAmount(), request.getBalance());
+                request.depositorName(), request.transactionType(), request.amount(), request.balance());
 
         transactionRepository.save(transaction);
         logTransactionInfo(transaction);

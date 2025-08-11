@@ -57,7 +57,7 @@ class DiscordServiceTest extends IntegrationTest {
             DiscordIdResponse response = discordService.getDiscordId(userDetails);
 
             // then
-            assertEquals(DISCORD_ID, response.getDiscordId());
+            assertEquals(DISCORD_ID, response.discordId());
         }
 
         @Test
@@ -70,7 +70,7 @@ class DiscordServiceTest extends IntegrationTest {
             DiscordIdResponse response = discordService.getDiscordId(userDetails);
 
             // then
-            assertNull(response.getDiscordId());
+            assertNull(response.discordId());
         }
 
         @Test
@@ -100,14 +100,14 @@ class DiscordServiceTest extends IntegrationTest {
 
             // then
             // 반환값 검증
-            assertNotNull(response.getCode());
-            assertEquals(6, response.getCode().length());
+            assertNotNull(response.code());
+            assertEquals(6, response.code().length());
 
             // DB 상태 검증
             DiscordVerification verification =
-                    discordVerificationRepository.findById(response.getCode()).get();
+                    discordVerificationRepository.findById(response.code()).get();
             assertEquals(member.getId(), verification.getMemberId());
-            assertEquals(response.getCode(), verification.getCode());
+            assertEquals(response.code(), verification.getCode());
         }
 
         @Test
@@ -121,7 +121,7 @@ class DiscordServiceTest extends IntegrationTest {
             DiscordVerificationCodeResponse secondResponse = discordService.createVerificationCode(userDetails);
 
             // then
-            assertEquals(firstResponse.getCode(), secondResponse.getCode());
+            assertEquals(firstResponse.code(), secondResponse.code());
             assertEquals(1, discordVerificationRepository.count());
         }
 
@@ -147,7 +147,7 @@ class DiscordServiceTest extends IntegrationTest {
             Member member = createMember();
             UserDetails userDetails = createUserDetails(member);
             DiscordVerificationCodeResponse codeResponse = discordService.createVerificationCode(userDetails);
-            String code = codeResponse.getCode();
+            String code = codeResponse.code();
 
             // when
             discordService.verifyAndUpdateDiscordId(code, DISCORD_ID);
@@ -173,12 +173,12 @@ class DiscordServiceTest extends IntegrationTest {
             Member member = createMember();
             UserDetails userDetails = createUserDetails(member);
             DiscordVerificationCodeResponse response = discordService.createVerificationCode(userDetails);
-            discordVerificationRepository.deleteById(response.getCode());
+            discordVerificationRepository.deleteById(response.code());
 
             // when-then
             assertThrows(
                     NoSuchElementException.class,
-                    () -> discordService.verifyAndUpdateDiscordId(response.getCode(), DISCORD_ID));
+                    () -> discordService.verifyAndUpdateDiscordId(response.code(), DISCORD_ID));
 
             // DB 상태 검증 - 멤버의 디스코드 ID는 변경되지 않아야 함
             Member member2 = memberRepository.findById(member.getId()).get();

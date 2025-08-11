@@ -49,8 +49,8 @@ public class DevPaymentService {
                 .findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        Payment payment = Payment.createForDev(member, request.getStatus(), request.getYearSemester());
-        applyCoupons(payment, request.getIssuedCouponIds());
+        Payment payment = Payment.createForDev(member, request.status(), request.yearSemester());
+        applyCoupons(payment, request.issuedCouponIds());
         paymentRepository.save(payment);
 
         if (payment.getFinalPrice().equals(BigDecimal.ZERO)) {
@@ -71,8 +71,8 @@ public class DevPaymentService {
             throw new CustomException(ErrorCode.PAYMENT_ACCESS_DENIED);
         }
 
-        payment.updateForDev(request.getStatus(), request.getYearSemester());
-        applyCoupons(payment, request.getIssuedCouponIds());
+        payment.updateForDev(request.status(), request.yearSemester());
+        applyCoupons(payment, request.issuedCouponIds());
 
         if (payment.getFinalPrice().equals(BigDecimal.ZERO)) {
             payment.completePayment();

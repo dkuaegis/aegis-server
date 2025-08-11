@@ -1,5 +1,7 @@
 package aegis.server.domain.payment.controller;
 
+import jakarta.validation.Valid;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -39,7 +41,7 @@ public class PaymentController {
             })
     @PostMapping
     public ResponseEntity<PaymentResponse> createPayment(
-            @RequestBody PaymentRequest request, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
+            @Valid @RequestBody PaymentRequest request, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
         PaymentResponse response = paymentService.createPayment(request, userDetails);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -56,7 +58,7 @@ public class PaymentController {
             })
     @PutMapping
     public ResponseEntity<PaymentResponse> updatePayment(
-            @RequestBody PaymentRequest request, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
+            @Valid @RequestBody PaymentRequest request, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
         PaymentResponse response = paymentService.updatePayment(request, userDetails);
         return ResponseEntity.ok(response);
     }

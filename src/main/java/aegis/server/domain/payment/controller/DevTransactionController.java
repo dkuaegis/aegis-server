@@ -1,5 +1,7 @@
 package aegis.server.domain.payment.controller;
 
+import jakarta.validation.Valid;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,7 +35,8 @@ public class DevTransactionController {
                 @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content)
             })
     @PostMapping
-    public ResponseEntity<DevTransactionResponse> createTransaction(@RequestBody DevTransactionCreateRequest request) {
+    public ResponseEntity<DevTransactionResponse> createTransaction(
+            @Valid @RequestBody DevTransactionCreateRequest request) {
         DevTransactionResponse response = devTransactionService.createTransaction(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

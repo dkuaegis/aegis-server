@@ -60,11 +60,11 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
 
             // then
             // 반환값 검증
-            assertEquals(PaymentStatus.PENDING, response.getStatus());
-            assertEquals(CLUB_DUES, response.getFinalPrice());
+            assertEquals(PaymentStatus.PENDING, response.status());
+            assertEquals(CLUB_DUES, response.finalPrice());
 
             // DB 상태 검증
-            Payment payment = paymentRepository.findById(response.getId()).get();
+            Payment payment = paymentRepository.findById(response.id()).get();
             assertEquals(member.getId(), payment.getMember().getId());
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
             assertEquals(CLUB_DUES, payment.getFinalPrice());
@@ -85,11 +85,11 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             // then
             // 반환값 검증
             BigDecimal discountedPrice = CLUB_DUES.subtract(coupon.getDiscountAmount());
-            assertEquals(discountedPrice, response.getFinalPrice());
-            assertEquals(PaymentStatus.PENDING, response.getStatus());
+            assertEquals(discountedPrice, response.finalPrice());
+            assertEquals(PaymentStatus.PENDING, response.status());
 
             // DB 상태 검증
-            Payment payment = paymentRepository.findById(response.getId()).get();
+            Payment payment = paymentRepository.findById(response.id()).get();
             assertEquals(discountedPrice, payment.getFinalPrice());
         }
 
@@ -108,11 +108,11 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
 
             // then
             // 반환값 검증
-            assertEquals(PaymentStatus.COMPLETED, response.getStatus());
-            assertEquals(BigDecimal.ZERO, response.getFinalPrice());
+            assertEquals(PaymentStatus.COMPLETED, response.status());
+            assertEquals(BigDecimal.ZERO, response.finalPrice());
 
             // DB 상태 검증
-            Payment payment = paymentRepository.findById(response.getId()).get();
+            Payment payment = paymentRepository.findById(response.id()).get();
             assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
             assertEquals(BigDecimal.ZERO, payment.getFinalPrice());
         }
@@ -156,7 +156,7 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             PaymentResponse response = paymentService.createPayment(request, userDetails);
 
             // then
-            Payment payment = paymentRepository.findById(response.getId()).get();
+            Payment payment = paymentRepository.findById(response.id()).get();
             assertEquals(1, payment.getUsedCoupons().size());
         }
 
@@ -203,7 +203,7 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             PaymentResponse firstPayment = paymentService.createPayment(request1, userDetails);
 
             // 완료된 결제 상태로 변경 후 새로운 학기로 설정
-            Payment payment = paymentRepository.findById(firstPayment.getId()).get();
+            Payment payment = paymentRepository.findById(firstPayment.id()).get();
             ReflectionTestUtils.setField(payment, "status", PaymentStatus.COMPLETED);
             ReflectionTestUtils.setField(payment, "yearSemester", YearSemester.YEAR_SEMESTER_2025_1);
             paymentRepository.save(payment);
@@ -229,8 +229,7 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             PaymentResponse firstPayment = paymentService.createPayment(request1, userDetails);
 
             // 이전 학기로 변경
-            Payment oldPayment =
-                    paymentRepository.findById(firstPayment.getId()).get();
+            Payment oldPayment = paymentRepository.findById(firstPayment.id()).get();
             ReflectionTestUtils.setField(oldPayment, "yearSemester", YearSemester.YEAR_SEMESTER_2025_1);
             paymentRepository.save(oldPayment);
 
@@ -267,11 +266,11 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
 
             // then
             // 반환값 검증
-            assertEquals(PaymentStatus.PENDING, response.getStatus());
-            assertEquals(CLUB_DUES.subtract(coupon.getDiscountAmount()), response.getFinalPrice());
+            assertEquals(PaymentStatus.PENDING, response.status());
+            assertEquals(CLUB_DUES.subtract(coupon.getDiscountAmount()), response.finalPrice());
 
             // DB 상태 검증
-            Payment payment = paymentRepository.findById(response.getId()).get();
+            Payment payment = paymentRepository.findById(response.id()).get();
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
             assertEquals(CLUB_DUES.subtract(coupon.getDiscountAmount()), payment.getFinalPrice());
         }
@@ -293,11 +292,11 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
 
             // then
             // 반환값 검증
-            assertEquals(PaymentStatus.PENDING, response.getStatus());
-            assertEquals(CLUB_DUES, response.getFinalPrice());
+            assertEquals(PaymentStatus.PENDING, response.status());
+            assertEquals(CLUB_DUES, response.finalPrice());
 
             // DB 상태 검증
-            Payment payment = paymentRepository.findById(response.getId()).get();
+            Payment payment = paymentRepository.findById(response.id()).get();
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
             assertEquals(CLUB_DUES, payment.getFinalPrice());
         }
@@ -333,11 +332,11 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
 
             // then
             // 반환값 검증
-            assertEquals(PaymentStatus.COMPLETED, response.getStatus());
-            assertEquals(BigDecimal.ZERO, response.getFinalPrice());
+            assertEquals(PaymentStatus.COMPLETED, response.status());
+            assertEquals(BigDecimal.ZERO, response.finalPrice());
 
             // DB 상태 검증
-            Payment payment = paymentRepository.findById(response.getId()).get();
+            Payment payment = paymentRepository.findById(response.id()).get();
             assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
             assertEquals(BigDecimal.ZERO, payment.getFinalPrice());
         }
@@ -403,8 +402,8 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             PaymentStatusResponse response = paymentService.checkPaymentStatus(userDetails);
 
             // then
-            assertEquals(PaymentStatus.PENDING, response.getStatus());
-            assertEquals(CLUB_DUES, response.getFinalPrice());
+            assertEquals(PaymentStatus.PENDING, response.status());
+            assertEquals(CLUB_DUES, response.finalPrice());
         }
 
         @Test
@@ -422,8 +421,8 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             PaymentStatusResponse response = paymentService.checkPaymentStatus(userDetails);
 
             // then
-            assertEquals(PaymentStatus.COMPLETED, response.getStatus());
-            assertEquals(BigDecimal.ZERO, response.getFinalPrice());
+            assertEquals(PaymentStatus.COMPLETED, response.status());
+            assertEquals(BigDecimal.ZERO, response.finalPrice());
         }
 
         @Test
@@ -440,8 +439,8 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             PaymentStatusResponse response = paymentService.checkPaymentStatus(userDetails);
 
             // then
-            assertEquals(PaymentStatus.PENDING, response.getStatus());
-            assertEquals(CLUB_DUES.subtract(coupon.getDiscountAmount()), response.getFinalPrice());
+            assertEquals(PaymentStatus.PENDING, response.status());
+            assertEquals(CLUB_DUES.subtract(coupon.getDiscountAmount()), response.finalPrice());
         }
 
         @Test
