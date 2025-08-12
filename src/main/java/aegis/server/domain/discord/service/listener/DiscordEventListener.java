@@ -9,8 +9,9 @@ import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +40,7 @@ public class DiscordEventListener {
     @Value("${discord.alarm-channel-id}")
     private String alarmChannelId;
 
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlePaymentCompletedEvent(PaymentCompletedEvent event) {
         Optional<Member> member = memberRepository.findById(event.paymentInfo().memberId());
 
@@ -69,7 +70,7 @@ public class DiscordEventListener {
                 discordId);
     }
 
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleMismatchEvent(MismatchEvent event) {
         alarmChannel()
                 .sendMessage(String.format(
