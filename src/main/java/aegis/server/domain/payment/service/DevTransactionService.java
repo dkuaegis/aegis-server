@@ -51,6 +51,6 @@ public class DevTransactionService {
     }
 
     private boolean isDeposit(Transaction transaction) {
-        return transaction.getTransactionType().equals(TransactionType.DEPOSIT);
+        return transaction.getTransactionType() == TransactionType.DEPOSIT;
     }
 }

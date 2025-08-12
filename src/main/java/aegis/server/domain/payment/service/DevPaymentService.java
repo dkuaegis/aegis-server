@@ -45,6 +45,9 @@ public class DevPaymentService {
 
     @Transactional
     public DevPaymentResponse createPayment(DevPaymentCreateRequest request, UserDetails userDetails) {
+        validateNoPendingPaymentInCurrentSemester(userDetails.getMemberId());
+        validateUsableCoupons(userDetails.getMemberId(), request.issuedCouponIds());
+
         Member member = memberRepository
                 .findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
@@ -53,7 +56,7 @@ public class DevPaymentService {
         applyCoupons(payment, request.issuedCouponIds());
         paymentRepository.save(payment);
 
-        if (payment.getFinalPrice().equals(BigDecimal.ZERO)) {
+        if (payment.getFinalPrice().compareTo(BigDecimal.ZERO) == 0) {
             payment.completePayment();
             applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
         }
@@ -63,6 +66,8 @@ public class DevPaymentService {
 
     @Transactional
     public DevPaymentResponse updatePayment(Long paymentId, DevPaymentUpdateRequest request, UserDetails userDetails) {
+        validateUsableCoupons(userDetails.getMemberId(), request.issuedCouponIds());
+
         Payment payment = paymentRepository
                 .findById(paymentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
@@ -74,7 +79,7 @@ public class DevPaymentService {
         payment.updateForDev(request.status(), request.yearSemester());
         applyCoupons(payment, request.issuedCouponIds());
 
-        if (payment.getFinalPrice().equals(BigDecimal.ZERO)) {
+        if (payment.getFinalPrice().compareTo(BigDecimal.ZERO) == 0) {
             payment.completePayment();
             applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
         }
@@ -95,12 +100,22 @@ public class DevPaymentService {
         paymentRepository.delete(payment);
     }
 
-    private void applyCoupons(Payment payment, List<Long> issuedCouponIds) {
-        if (issuedCouponIds == null || issuedCouponIds.isEmpty()) {
-            payment.applyCoupons(List.of());
-            return;
+    private void validateNoPendingPaymentInCurrentSemester(Long memberId) {
+        if (paymentRepository
+                .findByMemberIdAndCurrentYearSemesterAndStatusIsPending(memberId)
+                .isPresent()) {
+            throw new CustomException(ErrorCode.PAYMENT_ALREADY_EXISTS);
         }
+    }
 
+    private void validateUsableCoupons(Long memberId, List<Long> issuedCouponIds) {
+        long validIssuedCouponCount = issuedCouponRepository.countValidByIdInAndMemberId(issuedCouponIds, memberId);
+        if (validIssuedCouponCount != issuedCouponIds.size()) {
+            throw new CustomException(ErrorCode.INVALID_ISSUED_COUPON_INCLUDED);
+        }
+    }
+
+    private void applyCoupons(Payment payment, List<Long> issuedCouponIds) {
         List<IssuedCoupon> issuedCoupons = issuedCouponRepository.findByIdInAndMemberIdAndValid(
                 issuedCouponIds, payment.getMember().getId());
         payment.applyCoupons(issuedCoupons);
