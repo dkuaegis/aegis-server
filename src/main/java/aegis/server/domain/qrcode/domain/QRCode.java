@@ -2,8 +2,7 @@ package aegis.server.domain.qrcode.domain;
 
 import java.util.UUID;
 
-import jakarta.persistence.Id;
-
+import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
 
