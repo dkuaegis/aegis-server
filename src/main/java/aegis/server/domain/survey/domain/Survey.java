@@ -5,7 +5,10 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import aegis.server.domain.common.domain.BaseEntity;
+import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.member.domain.Member;
+
+import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
 @Entity
 @Getter
@@ -19,9 +22,12 @@ public class Survey extends BaseEntity {
     @Column(name = "survey_id")
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    @Enumerated(EnumType.STRING)
+    private YearSemester yearSemester;
 
     @Enumerated(EnumType.STRING)
     private AcquisitionType acquisitionType;
@@ -32,6 +38,7 @@ public class Survey extends BaseEntity {
     public static Survey create(Member member, AcquisitionType acquisitionType, String joinReason) {
         return Survey.builder()
                 .member(member)
+                .yearSemester(CURRENT_YEAR_SEMESTER)
                 .acquisitionType(acquisitionType)
                 .joinReason(joinReason)
                 .build();

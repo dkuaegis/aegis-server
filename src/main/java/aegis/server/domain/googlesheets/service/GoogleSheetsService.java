@@ -35,7 +35,7 @@ public class GoogleSheetsService {
 
     public void addMemberRegistration(Member member, PaymentInfo paymentInfo) throws IOException {
         Survey survey = surveyRepository
-                .findByMember(member)
+                .findByMemberIdInCurrentYearSemester(member.getId())
                 .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_NOT_FOUND));
 
         ImportData importData = new ImportData(

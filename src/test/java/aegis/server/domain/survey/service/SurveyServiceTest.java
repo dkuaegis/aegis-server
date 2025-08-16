@@ -1,10 +1,12 @@
 package aegis.server.domain.survey.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.survey.domain.AcquisitionType;
 import aegis.server.domain.survey.domain.Survey;
@@ -72,7 +74,9 @@ class SurveyServiceTest extends IntegrationTest {
             surveyService.createOrUpdateSurvey(userDetails, validSurveyRequest);
 
             // then
-            Survey survey = surveyRepository.findByMember(member).get();
+            Survey survey = surveyRepository
+                    .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
+                    .get();
 
             assertEquals(validSurveyRequest.acquisitionType(), survey.getAcquisitionType());
             assertEquals(validSurveyRequest.joinReason(), survey.getJoinReason());
@@ -93,10 +97,64 @@ class SurveyServiceTest extends IntegrationTest {
             surveyService.createOrUpdateSurvey(userDetails, updatedSurveyRequest);
 
             // then
-            Survey survey = surveyRepository.findByMember(member).get();
+            Survey survey = surveyRepository
+                    .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
+                    .get();
 
             assertEquals(updatedSurveyRequest.acquisitionType(), survey.getAcquisitionType());
             assertEquals(updatedSurveyRequest.joinReason(), survey.getJoinReason());
+        }
+
+        @Test
+        void 이전_학기_설문조사_존재_후_새_학기_설문조사_생성에_성공한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+
+            SurveyCommon firstSurveyRequest = new SurveyCommon(AcquisitionType.EVERYTIME, "첫 번째 학기 가입 이유");
+            surveyService.createOrUpdateSurvey(userDetails, firstSurveyRequest);
+
+            // 기존 설문조사를 이전 학기로 변경
+            Survey oldSurvey = surveyRepository
+                    .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
+                    .get();
+            ReflectionTestUtils.setField(oldSurvey, "yearSemester", YearSemester.YEAR_SEMESTER_2025_1);
+            surveyRepository.save(oldSurvey);
+
+            SurveyCommon newSurveyRequest = new SurveyCommon(AcquisitionType.FRIEND, "새 학기 가입 이유");
+
+            // when
+            surveyService.createOrUpdateSurvey(userDetails, newSurveyRequest);
+
+            // then
+            Survey newSurvey = surveyRepository
+                    .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
+                    .get();
+
+            assertEquals(newSurveyRequest.acquisitionType(), newSurvey.getAcquisitionType());
+            assertEquals(newSurveyRequest.joinReason(), newSurvey.getJoinReason());
+            assertEquals(YearSemester.YEAR_SEMESTER_2025_2, newSurvey.getYearSemester());
+        }
+
+        @Test
+        void 새_학기_시작_후_설문조사_조회_시_예외가_발생한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+
+            SurveyCommon surveyRequest = new SurveyCommon(AcquisitionType.EVERYTIME, "가입 이유");
+            surveyService.createOrUpdateSurvey(userDetails, surveyRequest);
+
+            // 기존 설문조사를 이전 학기로 변경
+            Survey oldSurvey = surveyRepository
+                    .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
+                    .get();
+            ReflectionTestUtils.setField(oldSurvey, "yearSemester", YearSemester.YEAR_SEMESTER_2025_1);
+            surveyRepository.save(oldSurvey);
+
+            // when & then
+            CustomException exception = assertThrows(CustomException.class, () -> surveyService.getSurvey(userDetails));
+            assertEquals(ErrorCode.SURVEY_NOT_FOUND, exception.getErrorCode());
         }
     }
 }

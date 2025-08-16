@@ -23,9 +23,8 @@ public class SurveyService {
     private final MemberRepository memberRepository;
 
     public SurveyCommon getSurvey(UserDetails userDetails) {
-        Member member = findMemberById(userDetails.getMemberId());
         Survey survey = surveyRepository
-                .findByMember(member)
+                .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_NOT_FOUND));
 
         return SurveyCommon.from(survey);
@@ -35,7 +34,7 @@ public class SurveyService {
     public void createOrUpdateSurvey(UserDetails userDetails, SurveyCommon surveyCommon) {
         Member member = findMemberById(userDetails.getMemberId());
         surveyRepository
-                .findByMember(member)
+                .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
                 .ifPresentOrElse(
                         survey -> survey.update(surveyCommon.acquisitionType(), surveyCommon.joinReason()),
                         () -> surveyRepository.save(
