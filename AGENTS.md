@@ -36,8 +36,8 @@
 - 단 무조건적으로 Fetch Join 을 사용하지 마세요.
   - 테스트를 통해 문제가 발생하는지 확인하고, 필요한 경우에만 사용하세요.
 - 가능한 경우 반드시 쿼리 단에서 필터링을 실행하세요.
-- `@Param` 어노테이션을 사용하지 마세요.
-- 테스트코드, 로컬, 프로덕션 환경 모두 Postgres 를 사용하므로, 필요한 경우 Postgres 전용 기능을 사용하세요.
+- `-parameters` 를 옵션을 사용하고 있으므로 `@Param` 어노테이션을 사용하지 마세요.
+- 테스트 환경에서 Testcontainers 를 사용할 수 있으므로, 필요한 경우 Postgres 전용 기능을 사용하세요.
 - JPQL 로 처리하기 힘든 복잡한 쿼리는 Native Query 를 사용하세요.
 
 # Entity
@@ -73,6 +73,9 @@
 - 본 프로젝트의 테스트코드는 조금 독특하므로 테스트코드 컨벤션은 다른 코드를 참조하세요.
 - 코드 구현을 마치고 항상 전체 테스트 코드를 실행하여, 시스템에 문제가 없는지 확인하세요.
 - 필요한 경우 `ReflectionTestUtils`을 사용하여 private 필드에 접근하세요.
+- 동시성 로직을 테스트하는 경우 별도의 테스트 클래스에 `IntegrationTestWithoutTransactional` 과 `@ActiveProfiles("postgres")` 어노테이션을 사용하여 작성하세요.
+  - `@ActiveProfiles("postgres")` 의 경우 Testcontainers 를 사용하여 Postgres 데이터베이스를 실행하기 위한 설정입니다.
+  - 자세한 코드 예시는 `StudyEnrollConcurrencyTest`, `CouponCodeUseConcurrencyTest` 를 참조하세요.
 - 생성/수정/삭제(CUD) 테스트는 '반환값(Response)'과 'DB 상태(Entity)'를 모두 검증하세요.
   > - CUD 작업은 '클라이언트와의 계약 이행'과 '데이터 상태 변경'이라는 두 가지 임무를 가집니다.
   > - 반환값 검증을 통해 계약 이행 여부를, DB 상태 검증을 통해 최종 임무 완수 여부를 확인하여 테스트의 신뢰도를 높입니다.
