@@ -42,6 +42,7 @@ public class Study extends BaseEntity {
 
     private int maxParticipants;
 
+    @Builder.Default
     private int currentParticipants = 0;
 
     private String schedule;
