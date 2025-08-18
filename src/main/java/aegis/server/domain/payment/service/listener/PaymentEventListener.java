@@ -1,6 +1,9 @@
 package aegis.server.domain.payment.service.listener;
 
+import java.util.List;
+
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.event.MismatchEvent;
+import aegis.server.domain.payment.domain.event.NameConflictEvent;
 import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
 import aegis.server.domain.payment.domain.event.TransactionCreatedEvent;
 import aegis.server.domain.payment.dto.internal.PaymentInfo;
@@ -29,11 +33,15 @@ public class PaymentEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleTransactionCreatedEvent(TransactionCreatedEvent event) {
-        paymentRepository
-                .findPendingPaymentForCurrentSemester(
-                        event.transactionInfo().depositorName(),
-                        event.transactionInfo().amount())
-                .ifPresentOrElse(this::processPayment, () -> handleMismatch(event.transactionInfo()));
+        try {
+            paymentRepository
+                    .findPendingPaymentForCurrentSemester(
+                            event.transactionInfo().depositorName(),
+                            event.transactionInfo().amount())
+                    .ifPresentOrElse(this::processPayment, () -> handleMismatch(event.transactionInfo()));
+        } catch (IncorrectResultSizeDataAccessException e) {
+            handleNameConflict(event.transactionInfo());
+        }
     }
 
     private void processPayment(Payment payment) {
@@ -45,6 +53,17 @@ public class PaymentEventListener {
     private void handleMismatch(TransactionInfo transactionInfo) {
         logMismatch(transactionInfo);
         applicationEventPublisher.publishEvent(new MismatchEvent(transactionInfo));
+    }
+
+    private void handleNameConflict(TransactionInfo transactionInfo) {
+        List<Payment> conflictedPayments = paymentRepository.findAllPendingPaymentsForCurrentSemester(
+                transactionInfo.depositorName(), transactionInfo.amount());
+        List<Long> memberIds = conflictedPayments.stream()
+                .map(payment -> payment.getMember().getId())
+                .toList();
+
+        logNameConflict(transactionInfo, memberIds);
+        applicationEventPublisher.publishEvent(new NameConflictEvent(transactionInfo, memberIds));
     }
 
     private void logCompleted(Payment payment) {
@@ -61,5 +80,14 @@ public class PaymentEventListener {
                 transactionInfo.id(),
                 transactionInfo.depositorName(),
                 transactionInfo.amount());
+    }
+
+    private void logNameConflict(TransactionInfo transactionInfo, List<Long> memberIds) {
+        log.warn(
+                "[PaymentEventListener][TransactionCreatedEvent] 동명이인 결제 충돌: transactionId={}, depositorName={}, amount={}, memberIds={}",
+                transactionInfo.id(),
+                transactionInfo.depositorName(),
+                transactionInfo.amount(),
+                memberIds);
     }
 }
