@@ -24,6 +24,5 @@ public interface StudyApplicationRepository extends JpaRepository<StudyApplicati
             "SELECT sa FROM StudyApplication sa JOIN FETCH sa.study s JOIN FETCH sa.member WHERE sa.id = :studyApplicationId")
     Optional<StudyApplication> findByIdWithStudy(Long studyApplicationId);
 
-    @Query("SELECT COUNT(sa) > 0 FROM StudyApplication sa WHERE sa.study = :study AND sa.member = :member")
     boolean existsByStudyAndMember(Study study, Member member);
 }
