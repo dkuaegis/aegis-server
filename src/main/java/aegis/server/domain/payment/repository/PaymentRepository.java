@@ -40,6 +40,14 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     }
 
     @Query(
+            "SELECT COUNT(p) > 0 FROM Payment p WHERE p.member.id = :memberId AND p.yearSemester = :yearSemester AND p.status = :status")
+    boolean existsByMemberIdAndYearSemesterAndStatus(Long memberId, YearSemester yearSemester, PaymentStatus status);
+
+    default boolean existsByMemberIdAndCurrentYearSemesterAndStatusIsPending(Long memberId) {
+        return existsByMemberIdAndYearSemesterAndStatus(memberId, CURRENT_YEAR_SEMESTER, PaymentStatus.PENDING);
+    }
+
+    @Query(
             "SELECT p FROM Payment p WHERE p.member.name = :memberName AND p.finalPrice = :finalPrice AND p.yearSemester = :yearSemester AND p.status = :status")
     Optional<Payment> findByMemberNameAndFinalPriceAndYearSemesterAndStatus(
             String memberName, BigDecimal finalPrice, YearSemester yearSemester, PaymentStatus status);

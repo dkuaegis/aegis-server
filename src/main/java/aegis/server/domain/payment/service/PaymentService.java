@@ -81,9 +81,7 @@ public class PaymentService {
     }
 
     private void validateNoPendingPaymentInCurrentSemester(Long memberId) {
-        if (paymentRepository
-                .findByMemberIdAndCurrentYearSemesterAndStatusIsPending(memberId)
-                .isPresent()) {
+        if (paymentRepository.existsByMemberIdAndCurrentYearSemesterAndStatusIsPending(memberId)) {
             throw new CustomException(ErrorCode.PAYMENT_ALREADY_EXISTS);
         }
     }
