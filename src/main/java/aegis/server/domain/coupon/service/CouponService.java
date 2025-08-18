@@ -140,7 +140,7 @@ public class CouponService {
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         CouponCode couponCode = couponCodeRepository
-                .findByCode(request.code().strip())
+                .findByCodeWithLock(request.code().strip())
                 .orElseThrow(() -> new CustomException(ErrorCode.COUPON_CODE_NOT_FOUND));
 
         IssuedCoupon issuedCoupon = IssuedCoupon.of(couponCode.getCoupon(), member);

@@ -30,6 +30,7 @@ public class CouponCode extends BaseEntity {
     @JoinColumn(name = "issued_coupon_id")
     private IssuedCoupon issuedCoupon;
 
+    @Column(unique = true)
     private String code;
 
     private Boolean isValid;
