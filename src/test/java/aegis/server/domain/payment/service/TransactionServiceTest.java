@@ -9,6 +9,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import aegis.server.domain.member.domain.Department;
+import aegis.server.domain.member.domain.Gender;
+import aegis.server.domain.member.domain.Grade;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.domain.Role;
 import aegis.server.domain.member.repository.MemberRepository;
@@ -206,6 +209,46 @@ public class TransactionServiceTest extends IntegrationTestWithoutTransactional 
             // then
             int finalTransactionCount = transactionRepository.findAll().size();
             assertEquals(initialTransactionCount + 1, finalTransactionCount);
+        }
+    }
+
+    @Nested
+    class 동명이인_결제 {
+
+        @Test
+        void 동명이인이_있는_경우_두_결제_모두_PENDING_상태를_유지한다() {
+            // given
+            Member member1 = createMemberWithName("홍길동");
+            Member member2 = createMemberWithName("홍길동");
+
+            UserDetails userDetails1 = UserDetails.from(member1);
+            UserDetails userDetails2 = UserDetails.from(member2);
+
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createPayment(request, userDetails1);
+            paymentService.createPayment(request, userDetails2);
+
+            String transactionLog = String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, "홍길동");
+
+            // when
+            transactionService.createTransaction(transactionLog);
+
+            // then
+            Payment payment1 =
+                    paymentRepository.findByMemberInCurrentYearSemester(member1).get();
+            Payment payment2 =
+                    paymentRepository.findByMemberInCurrentYearSemester(member2).get();
+            assertEquals(PaymentStatus.PENDING, payment1.getStatus());
+            assertEquals(PaymentStatus.PENDING, payment2.getStatus());
+        }
+
+        private Member createMemberWithName(String name) {
+            String uniqueId = String.valueOf(System.nanoTime());
+            Member member = Member.create(uniqueId, "test" + uniqueId + "@dankook.ac.kr", name);
+            member.updatePersonalInfo(
+                    "010-1234-5678", "32000001", Department.SW융합대학_컴퓨터공학과, Grade.THREE, "010101", Gender.MALE);
+            member.promoteToUser();
+            return memberRepository.save(member);
         }
     }
 }

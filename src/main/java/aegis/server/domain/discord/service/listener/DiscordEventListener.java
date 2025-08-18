@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.event.MismatchEvent;
+import aegis.server.domain.payment.domain.event.NameConflictEvent;
 import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
@@ -78,6 +79,18 @@ public class DiscordEventListener {
                         event.transactionInfo().id(),
                         event.transactionInfo().depositorName(),
                         event.transactionInfo().amount()))
+                .queue();
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleNameConflictEvent(NameConflictEvent event) {
+        alarmChannel()
+                .sendMessage(String.format(
+                        "[NAME_CONFLICT]\n동명이인 결제 충돌\nTX ID: %s\n입금자명: %s\n입금 금액: %s\n해당 회원 ID: %s",
+                        event.transactionInfo().id(),
+                        event.transactionInfo().depositorName(),
+                        event.transactionInfo().amount(),
+                        event.memberIds()))
                 .queue();
     }
 
