@@ -4,7 +4,7 @@ import aegis.server.domain.study.domain.StudyCategory;
 import aegis.server.domain.study.domain.StudyLevel;
 import aegis.server.domain.study.domain.StudyRecruitmentMethod;
 
-public record StudyDetailResponse(
+public record GeneralStudyDetail(
         Long id,
         String title,
         StudyCategory category,
@@ -18,7 +18,7 @@ public record StudyDetailResponse(
         String qualifications,
         String instructor) {
 
-    public static StudyDetailResponse from(
+    public static GeneralStudyDetail from(
             Long id,
             String title,
             StudyCategory category,
@@ -31,7 +31,7 @@ public record StudyDetailResponse(
             String curricula,
             String qualifications,
             String instructor) {
-        return new StudyDetailResponse(
+        return new GeneralStudyDetail(
                 id,
                 title,
                 category,

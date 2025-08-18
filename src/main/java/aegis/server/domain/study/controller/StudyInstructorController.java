@@ -1,0 +1,118 @@
+package aegis.server.domain.study.controller;
+
+import java.util.List;
+
+import jakarta.validation.Valid;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import lombok.RequiredArgsConstructor;
+
+import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
+import aegis.server.domain.study.dto.response.GeneralStudyDetail;
+import aegis.server.domain.study.dto.response.InstructorStudyApplicationReason;
+import aegis.server.domain.study.dto.response.InstructorStudyApplicationSummary;
+import aegis.server.domain.study.service.StudyInstructorService;
+import aegis.server.global.security.annotation.LoginUser;
+import aegis.server.global.security.oidc.UserDetails;
+
+@Tag(name = "Study Instructor", description = "스터디장용 API")
+@RestController
+@RequiredArgsConstructor
+public class StudyInstructorController {
+
+    private final StudyInstructorService studyInstructorService;
+
+    @Operation(
+            summary = "스터디 지원서 목록 조회",
+            description = "스터디장이 자신의 스터디에 대한 모든 지원서 목록을 조회합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "지원서 목록 조회 성공"),
+                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
+            })
+    @GetMapping("/studies/{studyId}/applications-instructor")
+    public ResponseEntity<List<InstructorStudyApplicationSummary>> getStudyApplications(
+            @PathVariable Long studyId, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
+        List<InstructorStudyApplicationSummary> response =
+                studyInstructorService.findAllStudyApplications(studyId, userDetails);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "스터디 지원서 상세 조회",
+            description = "스터디장이 특정 지원서의 상세 내용을 조회합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "지원서 상세 조회 성공"),
+                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "404", description = "지원서를 찾을 수 없음", content = @Content)
+            })
+    @GetMapping("/studies/{studyId}/applications/{studyApplicationId}")
+    public ResponseEntity<InstructorStudyApplicationReason> findStudyApplicationById(
+            @PathVariable Long studyId,
+            @PathVariable Long studyApplicationId,
+            @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
+        InstructorStudyApplicationReason response =
+                studyInstructorService.findStudyApplicationById(studyId, studyApplicationId, userDetails);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "스터디 정보 수정",
+            description = "스터디장이 자신의 스터디 정보를 수정합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "스터디 수정 성공"),
+                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
+            })
+    @PutMapping("/studies/{studyId}")
+    public ResponseEntity<GeneralStudyDetail> updateStudy(
+            @PathVariable Long studyId,
+            @Parameter(hidden = true) @LoginUser UserDetails userDetails,
+            @Valid @RequestBody StudyCreateUpdateRequest request) {
+        GeneralStudyDetail response = studyInstructorService.updateStudy(studyId, request, userDetails);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "스터디 지원서 승인",
+            description = "스터디장이 지원서를 승인하여 지원자를 스터디 멤버로 추가합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "지원서 승인 성공"),
+                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "404", description = "지원서를 찾을 수 없음", content = @Content)
+            })
+    @PutMapping("/studies/{studyId}/applications/{studyApplicationId}/approve")
+    public ResponseEntity<Void> approveStudyApplication(
+            @PathVariable Long studyId,
+            @PathVariable Long studyApplicationId,
+            @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
+        studyInstructorService.approveStudyApplication(studyId, studyApplicationId, userDetails);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(
+            summary = "스터디 지원서 거절",
+            description = "스터디장이 지원서를 거절합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "지원서 거절 성공"),
+                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "404", description = "지원서를 찾을 수 없음", content = @Content)
+            })
+    @PutMapping("/studies/{studyId}/applications/{studyApplicationId}/reject")
+    public ResponseEntity<Void> rejectStudyApplication(
+            @PathVariable Long studyId,
+            @PathVariable Long studyApplicationId,
+            @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
+        studyInstructorService.rejectStudyApplication(studyId, studyApplicationId, userDetails);
+        return ResponseEntity.ok().build();
+    }
+}

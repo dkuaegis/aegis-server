@@ -6,6 +6,8 @@ import lombok.*;
 
 import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.common.domain.YearSemester;
+import aegis.server.global.exception.CustomException;
+import aegis.server.global.exception.ErrorCode;
 
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
@@ -39,6 +41,8 @@ public class Study extends BaseEntity {
     private StudyRecruitmentMethod recruitmentMethod;
 
     private int maxParticipants;
+
+    private int currentParticipants = 0;
 
     private String schedule;
 
@@ -93,7 +97,10 @@ public class Study extends BaseEntity {
         this.qualifications = qualifications;
     }
 
-    public boolean hasAvailableSlots() {
-        return true;
+    public void increaseCurrentParticipant() {
+        if (this.currentParticipants >= this.maxParticipants) {
+            throw new CustomException(ErrorCode.STUDY_FULL);
+        }
+        this.currentParticipants++;
     }
 }

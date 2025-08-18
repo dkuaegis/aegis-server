@@ -7,6 +7,7 @@ import lombok.*;
 import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.member.domain.Member;
 
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"study_id", "member_id"}))
 @Entity
 @Getter
 @Builder(access = AccessLevel.PRIVATE)

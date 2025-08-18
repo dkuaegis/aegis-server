@@ -3,7 +3,7 @@ package aegis.server.domain.study.dto.response;
 import aegis.server.domain.study.domain.StudyCategory;
 import aegis.server.domain.study.domain.StudyLevel;
 
-public record StudySummaryResponse(
+public record GeneralStudySummary(
         Long id,
         String title,
         StudyCategory category,
@@ -13,7 +13,7 @@ public record StudySummaryResponse(
         String schedule,
         String instructor) {
 
-    public static StudySummaryResponse from(
+    public static GeneralStudySummary from(
             Long id,
             String title,
             StudyCategory category,
@@ -22,7 +22,7 @@ public record StudySummaryResponse(
             int maxParticipants,
             String schedule,
             String instructor) {
-        return new StudySummaryResponse(
+        return new GeneralStudySummary(
                 id, title, category, level, participantCount, maxParticipants, schedule, instructor);
     }
 }
