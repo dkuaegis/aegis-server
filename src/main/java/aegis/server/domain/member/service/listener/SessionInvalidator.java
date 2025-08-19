@@ -15,34 +15,27 @@ import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
 import aegis.server.domain.payment.dto.internal.PaymentInfo;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
+import aegis.server.global.session.SessionInvalidationService;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MemberEventListener {
+public class SessionInvalidator {
 
     private final MemberRepository memberRepository;
+    private final SessionInvalidationService sessionInvalidationService;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void handlePaymentCompletedEvent(PaymentCompletedEvent event) {
+    public void handleSessionInvalidationEvent(PaymentCompletedEvent event) {
         PaymentInfo paymentInfo = event.paymentInfo();
 
         Member member = memberRepository
                 .findById(paymentInfo.memberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        promoteToUserIfGuest(member);
-    }
-
-    private void promoteToUserIfGuest(Member member) {
-        if (member.isGuest()) {
-            member.promoteToUser();
-            memberRepository.save(member);
-            log.info(
-                    "[MemberEventListener] 회비 납부 완료로 인한 자동 승격: memberId={}, memberName={}, GUEST → USER",
-                    member.getId(),
-                    member.getName());
-        }
+        // 결제가 완료되는 경우 사용자의 권한이 변경될 수 있으므로 세션을 무효화합니다.
+        // 이때 바로 무효화 하는 경우 회원가입 페이지에서 문제가 생기므로 지연시간을 두고 무효화합니다.
+        sessionInvalidationService.invalidateAllUserSessionsWithDelay(member.getId());
     }
 }

@@ -14,7 +14,7 @@ import aegis.server.domain.coupon.repository.IssuedCouponRepository;
 import aegis.server.domain.discord.service.listener.DiscordEventListener;
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.repository.MemberRepository;
-import aegis.server.domain.study.domain.*;
+import aegis.server.domain.member.service.listener.SessionInvalidator;
 import aegis.server.global.security.oidc.UserDetails;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -44,6 +44,9 @@ public class IntegrationTestWithoutTransactional {
 
     @MockitoBean
     DiscordEventListener discordEventListener;
+
+    @MockitoBean
+    SessionInvalidator sessionInvalidator;
 
     @AfterEach
     void setUp() {

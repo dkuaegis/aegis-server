@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import aegis.server.domain.discord.service.listener.DiscordEventListener;
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.repository.MemberRepository;
+import aegis.server.domain.member.service.listener.SessionInvalidator;
 import aegis.server.domain.point.domain.PointAccount;
 import aegis.server.domain.point.domain.PointTransaction;
 import aegis.server.domain.point.domain.PointTransactionType;
@@ -30,6 +31,9 @@ public class IntegrationTest {
 
     @MockitoBean
     DiscordEventListener discordEventListener;
+
+    @MockitoBean
+    SessionInvalidator sessionInvalidator;
 
     @Autowired
     MemberRepository memberRepository;
