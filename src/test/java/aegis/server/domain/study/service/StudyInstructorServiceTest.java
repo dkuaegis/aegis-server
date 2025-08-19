@@ -229,6 +229,62 @@ class StudyInstructorServiceTest extends IntegrationTest {
                     () -> studyInstructorService.updateStudy(nonExistentStudyId, request, instructorDetails));
             assertEquals(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR, exception.getErrorCode());
         }
+
+        @Test
+        void PARTICIPANT가_없으면_모집_방식을_변경할_수_있다() {
+            // given
+            Member instructor = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor, StudyRecruitmentMethod.FCFS);
+
+            StudyCreateUpdateRequest request = new StudyCreateUpdateRequest(
+                    "수정된 제목",
+                    StudyCategory.WEB,
+                    StudyLevel.BASIC,
+                    "수정된 설명",
+                    StudyRecruitmentMethod.APPLICATION, // FCFS에서 APPLICATION으로 변경
+                    10,
+                    "매주 화요일",
+                    "커리큘럼",
+                    "자격");
+
+            // when
+            GeneralStudyDetail response = studyInstructorService.updateStudy(study.getId(), request, instructorDetails);
+
+            // then
+            assertEquals(StudyRecruitmentMethod.APPLICATION, response.recruitmentMethod());
+
+            Study updatedStudy = studyRepository.findById(study.getId()).get();
+            assertEquals(StudyRecruitmentMethod.APPLICATION, updatedStudy.getRecruitmentMethod());
+        }
+
+        @Test
+        void PARTICIPANT가_있으면_모집_방식을_변경할_수_없다() {
+            // given
+            Member instructor = createMember();
+            Member participant = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+
+            Study study = createStudyWithInstructor(instructor, StudyRecruitmentMethod.FCFS);
+            createStudyMember(study, participant, StudyRole.PARTICIPANT);
+
+            StudyCreateUpdateRequest request = new StudyCreateUpdateRequest(
+                    "수정된 제목",
+                    StudyCategory.WEB,
+                    StudyLevel.BASIC,
+                    "수정된 설명",
+                    StudyRecruitmentMethod.APPLICATION, // FCFS에서 APPLICATION으로 변경 시도
+                    10,
+                    "매주 화요일",
+                    "커리큘럼",
+                    "자격");
+
+            // when & then
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> studyInstructorService.updateStudy(study.getId(), request, instructorDetails));
+            assertEquals(ErrorCode.STUDY_RECRUITMENT_METHOD_CHANGE_NOT_ALLOWED, exception.getErrorCode());
+        }
     }
 
     @Nested
@@ -438,6 +494,25 @@ class StudyInstructorServiceTest extends IntegrationTest {
         return study;
     }
 
+    private Study createStudyWithInstructor(Member instructor, StudyRecruitmentMethod recruitmentMethod) {
+        Study study = Study.create(
+                "강사 스터디",
+                StudyCategory.WEB,
+                StudyLevel.INTERMEDIATE,
+                "강사가 있는 스터디 설명",
+                recruitmentMethod,
+                10,
+                "주 2회",
+                "테스트 커리큘럼",
+                "테스트 자격 요건");
+        study = studyRepository.save(study);
+
+        StudyMember studyMember = StudyMember.create(study, instructor, StudyRole.INSTRUCTOR);
+        studyMemberRepository.save(studyMember);
+
+        return study;
+    }
+
     private Study createStudyWithMaxParticipants(Member instructor, int maxParticipants) {
         Study study = Study.create(
                 "정원 제한 스터디",
@@ -473,5 +548,10 @@ class StudyInstructorServiceTest extends IntegrationTest {
                 "주 3회",
                 "수정된 커리큘럼",
                 "수정된 자격 요건");
+    }
+
+    private StudyMember createStudyMember(Study study, Member member, StudyRole role) {
+        StudyMember studyMember = StudyMember.create(study, member, role);
+        return studyMemberRepository.save(studyMember);
     }
 }

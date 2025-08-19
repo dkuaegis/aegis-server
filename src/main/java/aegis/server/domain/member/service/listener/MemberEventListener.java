@@ -46,8 +46,8 @@ public class MemberEventListener {
                     member.getId(),
                     member.getName());
 
-            // 권한 승급 후 기존 세션 무효화
-            sessionInvalidationService.invalidateAllUserSessions(member.getId());
+            // 권한 승급 후 10초 뒤 기존 세션 무효화 (프론트엔드 완료 메시지 표시 시간 확보)
+            sessionInvalidationService.invalidateAllUserSessionsWithDelay(member.getId());
         }
     }
 }

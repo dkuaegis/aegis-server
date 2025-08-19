@@ -2,6 +2,7 @@ package aegis.server.global.session;
 
 import java.util.Map;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.Session;
 import org.springframework.stereotype.Service;
@@ -28,5 +29,17 @@ public class SessionInvalidationService {
                 "[SessionInvalidationService] 사용자의 모든 세션 무효화 완료: memberId={}, 무효화된 세션 수={}",
                 memberId,
                 userSessions.size());
+    }
+
+    @Async("sessionInvalidationExecutor")
+    public void invalidateAllUserSessionsWithDelay(Long memberId) {
+        try {
+            Thread.sleep(10000);
+            invalidateAllUserSessions(memberId);
+            log.info("[SessionInvalidationService] 지연 세션 무효화 완료: memberId={}", memberId);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("[SessionInvalidationService] 지연 세션 무효화 중단됨: memberId={}", memberId, e);
+        }
     }
 }
