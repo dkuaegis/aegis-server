@@ -28,6 +28,7 @@ public class Constant {
 
     public static final String LOCAL_VITE_BUILD_CLIENT_URL = "http://localhost:4173";
     public static final String LOCAL_VITE_CLIENT_URL = "http://localhost:5173";
+    public static final String LOCAL_VITE_CLIENT_URL_2 = "http://localhost:5174";
     public static final String LOCAL_SERVER_URL = "http://localhost:8080";
 
     public static final List<String> ALLOWED_CLIENT_URLS = List.of(
@@ -45,5 +46,6 @@ public class Constant {
             DEV_MYPAGE_URL,
             LOCAL_VITE_BUILD_CLIENT_URL,
             LOCAL_VITE_CLIENT_URL,
+            LOCAL_VITE_CLIENT_URL_2,
             LOCAL_SERVER_URL);
 }
