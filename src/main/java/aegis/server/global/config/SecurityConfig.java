@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -44,18 +46,24 @@ public class SecurityConfig {
         http.exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(
                 (request, response, authException) -> response.setStatus(HttpStatus.UNAUTHORIZED.value())));
 
-        http.authorizeHttpRequests(auth -> auth.requestMatchers("/internal/transaction")
+        http.authorizeHttpRequests(auth -> auth
+                // 공개 API (인증 불필요)
+                .requestMatchers("/internal/**", "/test/**", "/auth/error/**", "/docs/**")
                 .permitAll()
-                .requestMatchers("/internal/importer")
-                .permitAll()
-                .requestMatchers("/test/**")
-                .permitAll()
-                .requestMatchers("/auth/error/**")
-                .permitAll()
+
+                // 관리자 전용 API
                 .requestMatchers("/admin/**")
                 .hasRole("ADMIN")
-                .requestMatchers("/docs/**")
-                .permitAll()
+
+                // 정회원 전용 API (개발용 포함)
+                .requestMatchers("/dev/**", "/mypage", "/studies/**", "/points/**", "/qrcode/**")
+                .hasRole("USER")
+
+                // 회원가입 과정 API (게스트 이상 접근 가능)
+                .requestMatchers("/auth/check", "/members/**", "/survey", "/discord/**", "/coupons/**", "/payments/**")
+                .hasRole("GUEST")
+
+                // 나머지 모든 요청은 인증 필요
                 .anyRequest()
                 .authenticated());
 
@@ -70,6 +78,11 @@ public class SecurityConfig {
         http.addFilterBefore(refererFilter, OAuth2AuthorizationRequestRedirectFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        return RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_USER > ROLE_GUEST");
     }
 
     @Bean

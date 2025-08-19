@@ -24,9 +24,3 @@ server:
         same-site: none
         secure: true
         domain: dkuaegis.org
-
-springdoc:
-  api-docs:
-    enabled: false
-  swagger-ui:
-    enabled: false
