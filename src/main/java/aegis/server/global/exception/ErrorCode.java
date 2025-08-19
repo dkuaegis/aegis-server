@@ -1,13 +1,13 @@
 package aegis.server.global.exception;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
-
     BAD_REQUEST(HttpStatus.BAD_REQUEST),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR),
@@ -34,16 +34,6 @@ public enum ErrorCode {
     DISCORD_CHANNEL_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR),
     DISCORD_ROLE_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR),
 
-    // Timetable
-    TIMETABLE_INVALID_URL(HttpStatus.BAD_REQUEST),
-    TIMETABLE_FETCH_EVERYTIME_NOT_WORKING(HttpStatus.GATEWAY_TIMEOUT),
-    TIMETABLE_PARSE_NOT_FOUND(HttpStatus.NOT_FOUND), // 시간표를 찾을 수 없는 경우
-    TIMETABLE_PARSE_PRIVATE(HttpStatus.FORBIDDEN), // 시간표 미공개 또는 등록된 강의가 없는 경우
-    TIMETABLE_PARSE_XML_FAILED(HttpStatus.INTERNAL_SERVER_ERROR),
-    TIMETABLE_PARSE_JSON_FAILED(HttpStatus.INTERNAL_SERVER_ERROR),
-
-    TIMETABLE_IDENTIFIER_ALREADY_EXISTS(HttpStatus.CONFLICT),
-
     // Coupon
     COUPON_DISCOUNT_AMOUNT_NOT_POSITIVE(HttpStatus.BAD_REQUEST),
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND),
@@ -52,7 +42,7 @@ public enum ErrorCode {
     COUPON_ISSUED_COUPON_EXISTS(HttpStatus.CONFLICT), // 발급된 쿠폰이 존재하는 경우 발급된 쿠폰을 모두 지워야 삭제 가능
 
     ISSUED_COUPON_NOT_FOUND(HttpStatus.NOT_FOUND),
-    ISSUED_COUPON_NOT_FOUND_FOR_MEMBER(HttpStatus.BAD_REQUEST),
+    INVALID_ISSUED_COUPON_INCLUDED(HttpStatus.BAD_REQUEST),
 
     COUPON_CODE_NOT_FOUND(HttpStatus.NOT_FOUND),
     COUPON_CODE_ALREADY_USED(HttpStatus.CONFLICT),
@@ -60,11 +50,34 @@ public enum ErrorCode {
 
     // Payment
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND),
-    PAYMENT_ALREADY_COMPLETED(HttpStatus.CONFLICT),
-    PAYMENT_ALREADY_OVER_PAID(HttpStatus.CONFLICT),
-    PAYMENT_CANNOT_BE_CONFIRMED(HttpStatus.INTERNAL_SERVER_ERROR),
+    PAYMENT_ALREADY_EXISTS(HttpStatus.CONFLICT),
+    PAYMENT_ACCESS_DENIED(HttpStatus.FORBIDDEN),
 
+    // Activity
+    ACTIVITY_NOT_FOUND(HttpStatus.NOT_FOUND),
+    ACTIVITY_NAME_ALREADY_EXISTS(HttpStatus.CONFLICT),
+    ACTIVITY_ALREADY_ACTIVE(HttpStatus.CONFLICT),
+    ACTIVITY_ALREADY_INACTIVE(HttpStatus.CONFLICT),
+    ACTIVITY_HAS_ASSOCIATED_ENTITIES(HttpStatus.CONFLICT),
 
-    ;
+    // Point
+    POINT_ACCOUNT_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR), // 소셜로그인 과정에서 일반적으로는 생성되어야함
+    POINT_INSUFFICIENT_BALANCE(HttpStatus.BAD_REQUEST),
+    POINT_ACTION_AMOUNT_NOT_POSITIVE(HttpStatus.BAD_REQUEST),
+
+    // QR Code
+    QR_CODE_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR),
+
+    // Study
+    STUDY_NOT_FOUND(HttpStatus.NOT_FOUND),
+    STUDY_MEMBER_NOT_INSTRUCTOR(HttpStatus.FORBIDDEN),
+
+    STUDY_APPLICATION_NOT_FOUND(HttpStatus.NOT_FOUND),
+    STUDY_APPLICATION_ALREADY_EXISTS(HttpStatus.CONFLICT),
+    STUDY_APPLICATION_ALREADY_APPROVED(HttpStatus.CONFLICT),
+    STUDY_APPLICATION_ACCESS_DENIED(HttpStatus.FORBIDDEN),
+
+    STUDY_FULL(HttpStatus.CONFLICT);
+
     private final HttpStatus httpStatus;
 }

@@ -1,12 +1,14 @@
 package aegis.server.domain.payment.domain;
 
-import aegis.server.domain.common.domain.BaseEntity;
-import aegis.server.domain.common.domain.YearSemester;
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.*;
+
+import lombok.*;
+
+import aegis.server.domain.common.domain.BaseEntity;
+import aegis.server.domain.common.domain.YearSemester;
 
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
@@ -17,9 +19,8 @@ import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         indexes = {
-                @Index(name = "idx_transaction_depositor_name", columnList = "depositorName"),
-        }
-)
+            @Index(name = "idx_transaction_depositor_name", columnList = "depositorName"),
+        })
 public class Transaction extends BaseEntity {
 
     @Id
@@ -49,11 +50,22 @@ public class Transaction extends BaseEntity {
             String depositorName,
             TransactionType transactionType,
             BigDecimal amount,
-            BigDecimal balance
-    ) {
+            BigDecimal balance) {
         return Transaction.builder()
                 .yearSemester(CURRENT_YEAR_SEMESTER)
                 .transactionTime(transactionTime)
+                .depositorName(depositorName)
+                .transactionType(transactionType)
+                .amount(amount)
+                .balance(balance)
+                .build();
+    }
+
+    public static Transaction createForDev(
+            String depositorName, TransactionType transactionType, BigDecimal amount, BigDecimal balance) {
+        return Transaction.builder()
+                .yearSemester(CURRENT_YEAR_SEMESTER)
+                .transactionTime(LocalDateTime.now())
                 .depositorName(depositorName)
                 .transactionType(transactionType)
                 .amount(amount)

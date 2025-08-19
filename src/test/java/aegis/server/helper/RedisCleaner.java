@@ -1,9 +1,11 @@
 package aegis.server.helper;
 
+import jakarta.annotation.PreDestroy;
+
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
-import jakarta.annotation.PreDestroy;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

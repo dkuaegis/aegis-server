@@ -1,0 +1,37 @@
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: jdbc:tc:postgresql:17-alpine://test/testdb
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-client-id
+            client-secret: test-client-secret
+  session:
+    timeout: 0
+
+exception:
+  log-only-aegis-stack-trace: false
+
+email-restriction:
+  enabled: true
+
+internal-api-key:
+  tx-track-api: test-api-key
+
+discord:
+  token: test-discord-token
+  guild-id: test-guild-id
+  alarm-channel-id: test-alarm-channel-id
+  complete-role-id: test-complete-role-id

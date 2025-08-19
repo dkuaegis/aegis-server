@@ -14,10 +14,26 @@ spring:
               - email
               - profile
               - openid
+  jpa:
+    open-in-view: false
   session:
     redis:
-      namespace: aegis:session
+      namespace: aegis
+      flush-mode: on_save
+      save-mode: always
     timeout: ${SESSION_TIMEOUT}
+
+springdoc:
+  swagger-ui:
+    path: /docs/swagger-ui.html
+    url: /docs/api
+    disable-swagger-default-url: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /docs/api
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
 
 exception:
   log-only-aegis-stack-trace: ${LOG_ONLY_AEGIS_STACK_TRACE}
@@ -33,6 +49,10 @@ payment:
 
 time:
   zone: Asia/Seoul
+
+logging:
+  level:
+    org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport: WARN
 
 internal-api-key:
   tx-track-api: ${TRANSACTION_TRACK_API_KEY}

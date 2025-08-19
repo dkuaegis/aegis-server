@@ -1,8 +1,10 @@
 package aegis.server.domain.member.domain;
 
-import aegis.server.domain.common.domain.BaseEntity;
 import jakarta.persistence.*;
+
 import lombok.*;
+
+import aegis.server.domain.common.domain.BaseEntity;
 
 @Entity
 @Getter
@@ -31,30 +33,42 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
+    private String phoneNumber;
+
+    private String studentId;
+
     @Enumerated(EnumType.STRING)
-    private Gender gender;
+    private Department department;
+
+    @Enumerated(EnumType.STRING)
+    private Grade grade;
 
     private String birthdate;
 
-    private String phoneNumber;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+    @Enumerated(EnumType.STRING)
+    private ProfileIcon profileIcon;
 
     public static Member create(String oidcId, String email, String name) {
         return Member.builder()
-                .role(Role.USER)
+                .role(Role.GUEST)
                 .oidcId(oidcId)
                 .email(email)
                 .name(name)
+                .profileIcon(ProfileIcon.NONE)
                 .build();
     }
 
-    public void updateMember(
-            Gender gender,
-            String birthdate,
-            String phoneNumber
-    ) {
-        this.gender = gender;
-        this.birthdate = birthdate;
+    public void updatePersonalInfo(
+            String phoneNumber, String studentId, Department department, Grade grade, String birthdate, Gender gender) {
         this.phoneNumber = phoneNumber;
+        this.studentId = studentId;
+        this.department = department;
+        this.grade = grade;
+        this.birthdate = birthdate;
+        this.gender = gender;
     }
 
     public void updateName(String name) {
@@ -67,5 +81,21 @@ public class Member extends BaseEntity {
 
     public void updateDiscordId(String discordId) {
         this.discordId = discordId;
+    }
+
+    public void updateProfileIcon(ProfileIcon profileIcon) {
+        this.profileIcon = profileIcon;
+    }
+
+    public boolean isGuest() {
+        return Role.GUEST.equals(this.role);
+    }
+
+    public void promoteToUser() {
+        this.role = Role.USER;
+    }
+
+    public void demoteToGuest() {
+        this.role = Role.GUEST;
     }
 }

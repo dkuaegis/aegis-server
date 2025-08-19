@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum Grade {
-
     ONE("1학년"),
     TWO("2학년"),
     THREE("3학년"),

@@ -1,5 +1,14 @@
 package aegis.server.domain.coupon.service;
 
+import java.util.List;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+
 import aegis.server.domain.coupon.domain.Coupon;
 import aegis.server.domain.coupon.domain.CouponCode;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
@@ -18,12 +27,6 @@ import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
-import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -36,13 +39,11 @@ public class CouponService {
     private final MemberRepository memberRepository;
 
     public List<CouponResponse> findAllCoupons() {
-        return couponRepository.findAll().stream()
-                .map(CouponResponse::from)
-                .toList();
+        return couponRepository.findAll().stream().map(CouponResponse::from).toList();
     }
 
     @Transactional
-    public void createCoupon(CouponCreateRequest request) {
+    public CouponResponse createCoupon(CouponCreateRequest request) {
         Coupon coupon = Coupon.create(request.couponName(), request.discountAmount());
 
         if (couponRepository.existsByCouponNameAndDiscountAmount(coupon.getCouponName(), coupon.getDiscountAmount())) {
@@ -50,12 +51,14 @@ public class CouponService {
         }
 
         couponRepository.save(coupon);
+        return CouponResponse.from(coupon);
     }
 
     @Transactional
     public void deleteCoupon(Long couponId) {
         try {
-            couponRepository.findById(couponId)
+            couponRepository
+                    .findById(couponId)
                     .ifPresentOrElse(
                             coupon -> {
                                 couponRepository.delete(coupon);
@@ -63,9 +66,8 @@ public class CouponService {
                             },
                             () -> {
                                 throw new CustomException(ErrorCode.COUPON_NOT_FOUND);
-                            }
-                    );
-        } catch (DataIntegrityViolationException e) {
+                            });
+        } catch (DataIntegrityViolationException | InvalidDataAccessApiUsageException e) {
             throw new CustomException(ErrorCode.COUPON_ISSUED_COUPON_EXISTS);
         }
     }
@@ -78,39 +80,36 @@ public class CouponService {
                 .toList();
     }
 
-    public List<IssuedCouponResponse> findMyAllValidIssuedCoupons(UserDetails userDetails) {
-        Member member = memberRepository.findById(userDetails.getMemberId())
+    public List<IssuedCouponResponse> findMyAllIssuedCoupons(UserDetails userDetails) {
+        Member member = memberRepository
+                .findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        return issuedCouponRepository.findAllByMember(member).stream()
-                .filter(IssuedCoupon::getIsValid)
+        return issuedCouponRepository.findAllByMemberWithCoupon(member).stream()
                 .map(IssuedCouponResponse::from)
                 .toList();
     }
 
     @Transactional
-    public void createIssuedCoupon(CouponIssueRequest request) {
-        Coupon coupon = couponRepository.findById(request.couponId())
+    public List<IssuedCouponResponse> createIssuedCoupon(CouponIssueRequest request) {
+        Coupon coupon = couponRepository
+                .findById(request.couponId())
                 .orElseThrow(() -> new CustomException(ErrorCode.COUPON_NOT_FOUND));
 
         List<Member> members = memberRepository.findAllById(request.memberIds());
 
-        List<IssuedCoupon> issuedCoupons = members.stream()
-                .map(member -> IssuedCoupon.of(coupon, member))
-                .toList();
+        List<IssuedCoupon> issuedCoupons =
+                members.stream().map(member -> IssuedCoupon.of(coupon, member)).toList();
 
         issuedCouponRepository.saveAll(issuedCoupons);
+        return issuedCoupons.stream().map(IssuedCouponResponse::from).toList();
     }
 
     @Transactional
     public void deleteIssuedCoupon(Long issuedCouponId) {
-        issuedCouponRepository.findById(issuedCouponId)
-                .ifPresentOrElse(
-                        issuedCouponRepository::delete,
-                        () -> {
-                            throw new CustomException(ErrorCode.ISSUED_COUPON_NOT_FOUND);
-                        }
-                );
+        issuedCouponRepository.findById(issuedCouponId).ifPresentOrElse(issuedCouponRepository::delete, () -> {
+            throw new CustomException(ErrorCode.ISSUED_COUPON_NOT_FOUND);
+        });
     }
 
     // - - -
@@ -122,39 +121,41 @@ public class CouponService {
     }
 
     @Transactional
-    public void createCouponCode(CouponCodeCreateRequest request) {
-        Coupon coupon = couponRepository.findById(request.couponId())
+    public CouponCodeResponse createCouponCode(CouponCodeCreateRequest request) {
+        Coupon coupon = couponRepository
+                .findById(request.couponId())
                 .orElseThrow(() -> new CustomException(ErrorCode.COUPON_NOT_FOUND));
 
         String code = generateUniqueCode();
         CouponCode couponCode = CouponCode.of(coupon, code);
 
         couponCodeRepository.save(couponCode);
+        return CouponCodeResponse.from(couponCode);
     }
 
     @Transactional
-    public void useCouponCode(UserDetails userDetails, CouponCodeUseRequest request) {
-        Member member = memberRepository.findById(userDetails.getMemberId())
+    public CouponCodeResponse useCouponCode(UserDetails userDetails, CouponCodeUseRequest request) {
+        Member member = memberRepository
+                .findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        CouponCode couponCode = couponCodeRepository.findByCode(request.code().strip())
+        CouponCode couponCode = couponCodeRepository
+                .findByCodeWithLock(request.code().strip())
                 .orElseThrow(() -> new CustomException(ErrorCode.COUPON_CODE_NOT_FOUND));
 
         IssuedCoupon issuedCoupon = IssuedCoupon.of(couponCode.getCoupon(), member);
         issuedCouponRepository.save(issuedCoupon);
 
         couponCode.use(issuedCoupon);
+
+        return CouponCodeResponse.from(couponCode);
     }
 
     @Transactional
     public void deleteCodeCoupon(Long codeCouponId) {
-        couponCodeRepository.findById(codeCouponId)
-                .ifPresentOrElse(
-                        couponCodeRepository::delete,
-                        () -> {
-                            throw new CustomException(ErrorCode.COUPON_CODE_NOT_FOUND);
-                        }
-                );
+        couponCodeRepository.findById(codeCouponId).ifPresentOrElse(couponCodeRepository::delete, () -> {
+            throw new CustomException(ErrorCode.COUPON_CODE_NOT_FOUND);
+        });
     }
 
     private String generateUniqueCode() {

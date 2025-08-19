@@ -1,17 +1,17 @@
 package aegis.server.domain.payment.domain;
 
-import aegis.server.domain.common.domain.BaseEntity;
-import aegis.server.domain.common.domain.YearSemester;
-import aegis.server.domain.coupon.domain.IssuedCoupon;
-import aegis.server.domain.member.domain.Student;
-import aegis.server.global.exception.CustomException;
-import aegis.server.global.exception.ErrorCode;
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.*;
+
+import lombok.*;
+
+import aegis.server.domain.common.domain.BaseEntity;
+import aegis.server.domain.common.domain.YearSemester;
+import aegis.server.domain.coupon.domain.IssuedCoupon;
+import aegis.server.domain.member.domain.Member;
 
 import static aegis.server.global.constant.Constant.CLUB_DUES;
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
@@ -27,9 +27,9 @@ public class Payment extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id")
-    private Student student;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @OneToMany(mappedBy = "payment")
     @Builder.Default
@@ -47,20 +47,23 @@ public class Payment extends BaseEntity {
     @Column(precision = 10, scale = 0)
     private BigDecimal finalPrice;
 
-    private String expectedDepositorName;
-
-    public static String expectedDepositorName(Student student) {
-        return student.getMember().getName();
-    }
-
-    public static Payment of(Student student) {
+    public static Payment of(Member member) {
         return Payment.builder()
-                .student(student)
+                .member(member)
                 .status(PaymentStatus.PENDING)
                 .yearSemester(CURRENT_YEAR_SEMESTER)
                 .originalPrice(CLUB_DUES)
                 .finalPrice(CLUB_DUES)
-                .expectedDepositorName(expectedDepositorName(student))
+                .build();
+    }
+
+    public static Payment createForDev(Member member, PaymentStatus status, YearSemester yearSemester) {
+        return Payment.builder()
+                .member(member)
+                .status(status)
+                .yearSemester(yearSemester)
+                .originalPrice(CLUB_DUES)
+                .finalPrice(CLUB_DUES)
                 .build();
     }
 
@@ -83,11 +86,13 @@ public class Payment extends BaseEntity {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public void confirmPayment(PaymentStatus status) {
-        if (status.equals(PaymentStatus.PENDING)) {
-            throw new CustomException(ErrorCode.PAYMENT_CANNOT_BE_CONFIRMED);
-        }
-        this.status = status;
+    public void completePayment() {
+        this.status = PaymentStatus.COMPLETED;
         this.usedCoupons.forEach(issuedCoupon -> issuedCoupon.use(this));
+    }
+
+    public void updateForDev(PaymentStatus status, YearSemester yearSemester) {
+        this.status = status;
+        this.yearSemester = yearSemester;
     }
 }

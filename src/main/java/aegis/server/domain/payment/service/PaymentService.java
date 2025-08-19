@@ -1,29 +1,28 @@
 package aegis.server.domain.payment.service;
 
-import aegis.server.domain.coupon.domain.IssuedCoupon;
-import aegis.server.domain.coupon.repository.IssuedCouponRepository;
-import aegis.server.domain.member.domain.Member;
-import aegis.server.domain.member.domain.Student;
-import aegis.server.domain.member.repository.StudentRepository;
-import aegis.server.domain.payment.domain.Payment;
-import aegis.server.domain.payment.domain.PaymentStatus;
-import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
-import aegis.server.domain.payment.dto.internal.PaymentInfo;
-import aegis.server.domain.payment.dto.request.PaymentRequest;
-import aegis.server.domain.payment.dto.response.PaymentStatusResponse;
-import aegis.server.domain.payment.repository.PaymentRepository;
-import aegis.server.domain.payment.repository.TransactionRepository;
-import aegis.server.global.exception.CustomException;
-import aegis.server.global.exception.ErrorCode;
-import aegis.server.global.security.oidc.UserDetails;
-import lombok.RequiredArgsConstructor;
+import java.math.BigDecimal;
+import java.util.List;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+
+import aegis.server.domain.coupon.domain.IssuedCoupon;
+import aegis.server.domain.coupon.repository.IssuedCouponRepository;
+import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.repository.MemberRepository;
+import aegis.server.domain.payment.domain.Payment;
+import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
+import aegis.server.domain.payment.dto.internal.PaymentInfo;
+import aegis.server.domain.payment.dto.request.PaymentRequest;
+import aegis.server.domain.payment.dto.response.PaymentResponse;
+import aegis.server.domain.payment.dto.response.PaymentStatusResponse;
+import aegis.server.domain.payment.repository.PaymentRepository;
+import aegis.server.global.exception.CustomException;
+import aegis.server.global.exception.ErrorCode;
+import aegis.server.global.security.oidc.UserDetails;
 
 @Service
 @Transactional(readOnly = true)
@@ -31,60 +30,72 @@ import java.util.stream.Collectors;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
-    private final TransactionRepository transactionRepository;
     private final IssuedCouponRepository issuedCouponRepository;
-    private final StudentRepository studentRepository;
+    private final MemberRepository memberRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     public PaymentStatusResponse checkPaymentStatus(UserDetails userDetails) {
-        Student student = studentRepository.findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
-                .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
-
-        Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student)
+        Payment payment = paymentRepository
+                .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        BigDecimal currentDepositAmount = transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName());
-
-        return PaymentStatusResponse.from(payment, currentDepositAmount);
+        return PaymentStatusResponse.from(payment);
     }
 
     @Transactional
-    public void createOrUpdatePendingPayment(PaymentRequest request, UserDetails userDetails) {
-        Student student = studentRepository.findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
-                .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
+    public PaymentResponse createPayment(PaymentRequest request, UserDetails userDetails) {
+        validateNoPendingPaymentInCurrentSemester(userDetails.getMemberId());
+        validateUsableCoupons(userDetails.getMemberId(), request.issuedCouponIds());
 
-        Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student)
-                .orElseGet(() -> createNewPayment(student));
+        Member member = memberRepository
+                .findById(userDetails.getMemberId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        validatePaymentStatus(payment);
-        applyCouponsIfPresent(payment, request.getIssuedCouponIds());
+        Payment payment = Payment.of(member);
+        applyCoupons(payment, request.issuedCouponIds());
+        paymentRepository.save(payment);
 
-        if (payment.getFinalPrice().equals(BigDecimal.ZERO)) {
-            payment.confirmPayment(PaymentStatus.COMPLETED);
+        if (payment.getFinalPrice().compareTo(BigDecimal.ZERO) == 0) {
+            payment.completePayment();
             applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
         }
+
+        return PaymentResponse.from(payment);
     }
 
-    private Payment createNewPayment(Student student) {
-        Payment payment = Payment.of(student);
-        return paymentRepository.save(payment);
-    }
+    @Transactional
+    public PaymentResponse updatePayment(PaymentRequest request, UserDetails userDetails) {
+        validateUsableCoupons(userDetails.getMemberId(), request.issuedCouponIds());
 
-    private void validatePaymentStatus(Payment payment) {
-        if (payment.getStatus().equals(PaymentStatus.COMPLETED)) {
-            throw new CustomException(ErrorCode.PAYMENT_ALREADY_COMPLETED);
+        Payment payment = paymentRepository
+                .findByMemberIdAndCurrentYearSemesterAndStatusIsPending(userDetails.getMemberId())
+                .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
+        applyCoupons(payment, request.issuedCouponIds());
+
+        if (payment.getFinalPrice().compareTo(BigDecimal.ZERO) == 0) {
+            payment.completePayment();
+            applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
         }
-        if (payment.getStatus().equals(PaymentStatus.OVERPAID)) {
-            throw new CustomException(ErrorCode.PAYMENT_ALREADY_OVER_PAID);
+
+        return PaymentResponse.from(payment);
+    }
+
+    private void validateNoPendingPaymentInCurrentSemester(Long memberId) {
+        if (paymentRepository.existsByMemberIdAndCurrentYearSemesterAndStatusIsPending(memberId)) {
+            throw new CustomException(ErrorCode.PAYMENT_ALREADY_EXISTS);
         }
     }
 
-    private void applyCouponsIfPresent(Payment payment, List<Long> issuedCouponIds) {
-        Member member = payment.getStudent().getMember();
-        List<IssuedCoupon> validIssuedCoupons = issuedCouponIds.stream()
-                .map(issuedCouponId -> issuedCouponRepository.findByIdAndMember(issuedCouponId, member)
-                        .orElseThrow(() -> new CustomException(ErrorCode.ISSUED_COUPON_NOT_FOUND_FOR_MEMBER)))
-                .collect(Collectors.toList());
-        payment.applyCoupons(validIssuedCoupons);
+    private void validateUsableCoupons(Long memberId, List<Long> issuedCouponIds) {
+        long validIssuedCouponCount = issuedCouponRepository.countValidByIdInAndMemberId(issuedCouponIds, memberId);
+        if (validIssuedCouponCount != issuedCouponIds.size()) {
+            throw new CustomException(ErrorCode.INVALID_ISSUED_COUPON_INCLUDED);
+        }
+    }
+
+    private void applyCoupons(Payment payment, List<Long> issuedCouponIds) {
+        List<IssuedCoupon> issuedCoupons = issuedCouponRepository.findByIdInAndMemberIdAndValid(
+                issuedCouponIds, payment.getMember().getId());
+        payment.applyCoupons(issuedCoupons);
     }
 }

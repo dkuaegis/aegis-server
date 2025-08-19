@@ -1,14 +1,23 @@
 package aegis.server.domain.coupon.repository;
 
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import aegis.server.domain.coupon.domain.IssuedCoupon;
 import aegis.server.domain.member.domain.Member;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.List;
-import java.util.Optional;
 
 public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long> {
-    List<IssuedCoupon> findAllByMember(Member member);
 
-    Optional<IssuedCoupon> findByIdAndMember(Long id, Member member);
+    @Query("SELECT ic FROM IssuedCoupon ic JOIN FETCH ic.member JOIN FETCH ic.coupon WHERE ic.member = :member")
+    List<IssuedCoupon> findAllByMemberWithCoupon(@Param("member") Member member);
+
+    @Query(
+            "SELECT COUNT(ic) FROM IssuedCoupon ic WHERE ic.id IN :ids AND ic.member.id = :memberId AND ic.isValid = true")
+    long countValidByIdInAndMemberId(List<Long> ids, Long memberId);
+
+    @Query("SELECT ic FROM IssuedCoupon ic WHERE ic.id IN :ids AND ic.member.id = :memberId AND ic.isValid = true")
+    List<IssuedCoupon> findByIdInAndMemberIdAndValid(List<Long> ids, Long memberId);
 }

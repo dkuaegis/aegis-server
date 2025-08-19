@@ -1,17 +1,19 @@
 package aegis.server.helper;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.metamodel.EntityType;
-import org.hibernate.Session;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.stereotype.Component;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.metamodel.EntityType;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Component;
+
+import org.hibernate.Session;
 
 @Component
 public class DatabaseCleaner implements InitializingBean {
@@ -35,11 +37,28 @@ public class DatabaseCleaner implements InitializingBean {
 
     private void doClean(Connection connection) throws SQLException {
         try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate("SET REFERENTIAL_INTEGRITY FALSE");
-            for (String tableName : tableNames) {
-                statement.executeUpdate("TRUNCATE TABLE " + tableName + " RESTART IDENTITY");
+            String databaseProductName = connection.getMetaData().getDatabaseProductName();
+
+            if ("H2".equals(databaseProductName)) {
+                // H2 specific syntax
+                statement.executeUpdate("SET REFERENTIAL_INTEGRITY FALSE");
+                for (String tableName : tableNames) {
+                    statement.executeUpdate("TRUNCATE TABLE " + tableName + " RESTART IDENTITY");
+                }
+                statement.executeUpdate("SET REFERENTIAL_INTEGRITY TRUE");
+            } else if ("PostgreSQL".equals(databaseProductName)) {
+                // PostgreSQL specific syntax
+                statement.executeUpdate("SET session_replication_role = replica");
+                for (String tableName : tableNames) {
+                    statement.executeUpdate("TRUNCATE TABLE " + tableName + " RESTART IDENTITY CASCADE");
+                }
+                statement.executeUpdate("SET session_replication_role = DEFAULT");
+            } else {
+                // Fallback for other databases
+                for (String tableName : tableNames) {
+                    statement.executeUpdate("DELETE FROM " + tableName);
+                }
             }
-            statement.executeUpdate("SET REFERENTIAL_INTEGRITY TRUE");
         }
     }
 }

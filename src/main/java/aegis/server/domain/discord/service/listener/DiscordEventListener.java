@@ -1,24 +1,28 @@
 package aegis.server.domain.discord.service.listener;
 
-import aegis.server.domain.member.domain.Member;
-import aegis.server.domain.member.repository.MemberRepository;
-import aegis.server.domain.payment.domain.event.MissingDepositorNameEvent;
-import aegis.server.domain.payment.domain.event.OverpaidEvent;
-import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
-import aegis.server.global.exception.CustomException;
-import aegis.server.global.exception.ErrorCode;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Optional;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.repository.MemberRepository;
+import aegis.server.domain.payment.domain.event.MismatchEvent;
+import aegis.server.domain.payment.domain.event.NameConflictEvent;
+import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
+import aegis.server.global.exception.CustomException;
+import aegis.server.global.exception.ErrorCode;
 
 @Slf4j
 @Component
@@ -37,7 +41,7 @@ public class DiscordEventListener {
     @Value("${discord.alarm-channel-id}")
     private String alarmChannelId;
 
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlePaymentCompletedEvent(PaymentCompletedEvent event) {
         Optional<Member> member = memberRepository.findById(event.paymentInfo().memberId());
 
@@ -64,30 +68,30 @@ public class DiscordEventListener {
                 "[DiscordEventListener][PaymentCompletedEvent] 디스코드 회원 역할 승급: paymentId={}, memberId={}, discordId={}",
                 event.paymentInfo().id(),
                 event.paymentInfo().memberId(),
-                discordId
-        );
+                discordId);
     }
 
-    @EventListener
-    public void handleMissingDepositorNameEvent(MissingDepositorNameEvent event) {
-        alarmChannel().sendMessage(
-                String.format(
-                        "[MISSING_DEPOSITOR_NAME]\nTX ID: %s 입금자명: %s",
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleMismatchEvent(MismatchEvent event) {
+        alarmChannel()
+                .sendMessage(String.format(
+                        "[MISMATCH]\nTX ID: %s 입금자명: %s 입금 금액: %s",
                         event.transactionInfo().id(),
-                        event.transactionInfo().depositorName()
-                )
-        ).queue();
+                        event.transactionInfo().depositorName(),
+                        event.transactionInfo().amount()))
+                .queue();
     }
 
-    @EventListener
-    public void handleOverpaidEvent(OverpaidEvent event) {
-        alarmChannel().sendMessage(
-                String.format(
-                        "[OVERPAID]\nTX ID: %s 입금자명: %s",
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleNameConflictEvent(NameConflictEvent event) {
+        alarmChannel()
+                .sendMessage(String.format(
+                        "[NAME_CONFLICT]\n동명이인 결제 충돌\nTX ID: %s\n입금자명: %s\n입금 금액: %s\n해당 회원 ID: %s",
                         event.transactionInfo().id(),
-                        event.transactionInfo().depositorName()
-                )
-        ).queue();
+                        event.transactionInfo().depositorName(),
+                        event.transactionInfo().amount(),
+                        event.memberIds()))
+                .queue();
     }
 
     private TextChannel alarmChannel() {

@@ -1,30 +1,13 @@
 package aegis.server.domain.payment.dto.response;
 
-import aegis.server.domain.payment.domain.Payment;
-import aegis.server.domain.payment.domain.PaymentStatus;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-
 import java.math.BigDecimal;
 
-@Getter
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder(access = AccessLevel.PRIVATE)
-public class PaymentStatusResponse {
+import aegis.server.domain.payment.domain.Payment;
+import aegis.server.domain.payment.domain.PaymentStatus;
 
-    private final PaymentStatus status;
+public record PaymentStatusResponse(PaymentStatus status, BigDecimal finalPrice) {
 
-    private final BigDecimal expectedDepositAmount;
-
-    private final BigDecimal currentDepositAmount;
-
-    public static PaymentStatusResponse from(Payment payment, BigDecimal currentDepositAmount) {
-        return PaymentStatusResponse.builder()
-                .status(payment.getStatus())
-                .expectedDepositAmount(payment.getFinalPrice())
-                .currentDepositAmount(currentDepositAmount)
-                .build();
+    public static PaymentStatusResponse from(Payment payment) {
+        return new PaymentStatusResponse(payment.getStatus(), payment.getFinalPrice());
     }
 }

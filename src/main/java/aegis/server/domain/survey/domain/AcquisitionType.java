@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum AcquisitionType {
-    KAKAOTALK("카카오톡"),
+    OFFLINE_EVENT("오프라인 행사"),
     INSTAGRAM("인스타그램"),
     EVERYTIME("에브리타임"),
     FRIEND("지인"),

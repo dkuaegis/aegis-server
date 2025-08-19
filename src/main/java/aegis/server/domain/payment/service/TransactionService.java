@@ -1,16 +1,18 @@
 package aegis.server.domain.payment.service;
 
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import aegis.server.domain.payment.domain.Transaction;
 import aegis.server.domain.payment.domain.TransactionType;
 import aegis.server.domain.payment.domain.event.TransactionCreatedEvent;
 import aegis.server.domain.payment.dto.internal.TransactionInfo;
 import aegis.server.domain.payment.repository.TransactionRepository;
 import aegis.server.domain.payment.service.parser.TransactionParser;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -30,9 +32,7 @@ public class TransactionService {
         logTransactionInfo(transaction);
 
         if (isDeposit(transaction)) {
-            applicationEventPublisher.publishEvent(
-                    new TransactionCreatedEvent(TransactionInfo.from(transaction))
-            );
+            applicationEventPublisher.publishEvent(new TransactionCreatedEvent(TransactionInfo.from(transaction)));
         }
     }
 
@@ -42,11 +42,10 @@ public class TransactionService {
                 transaction.getId(),
                 transaction.getTransactionType(),
                 transaction.getDepositorName(),
-                transaction.getAmount()
-        );
+                transaction.getAmount());
     }
 
     private boolean isDeposit(Transaction transaction) {
-        return transaction.getTransactionType().equals(TransactionType.DEPOSIT);
+        return transaction.getTransactionType() == TransactionType.DEPOSIT;
     }
 }

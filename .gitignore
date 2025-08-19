@@ -50,3 +50,6 @@ aegis-*.json
 
 ### Environment Variables ###
 .env
+
+### Run Configurations ###
+.run

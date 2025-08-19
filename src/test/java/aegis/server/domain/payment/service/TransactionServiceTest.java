@@ -1,26 +1,32 @@
 package aegis.server.domain.payment.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import aegis.server.domain.member.domain.Department;
+import aegis.server.domain.member.domain.Gender;
+import aegis.server.domain.member.domain.Grade;
 import aegis.server.domain.member.domain.Member;
-import aegis.server.domain.member.domain.Student;
+import aegis.server.domain.member.domain.Role;
+import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.dto.request.PaymentRequest;
 import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.domain.payment.repository.TransactionRepository;
 import aegis.server.global.security.oidc.UserDetails;
-import aegis.server.helper.IntegrationTest;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.math.BigDecimal;
-import java.util.List;
+import aegis.server.helper.IntegrationTestWithoutTransactional;
 
 import static aegis.server.global.constant.Constant.CLUB_DUES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TransactionServiceTest extends IntegrationTest {
+public class TransactionServiceTest extends IntegrationTestWithoutTransactional {
 
     @Autowired
     TransactionService transactionService;
@@ -34,25 +40,22 @@ public class TransactionServiceTest extends IntegrationTest {
     @Autowired
     PaymentRepository paymentRepository;
 
-    private final String TRANSACTION_LOG_FORMAT = """
+    @Autowired
+    MemberRepository memberRepository;
+
+    private final String DEPOSIT_TRANSACTION_LOG_FORMAT =
+            """
             [입금] %s원 %s
             982-******-01-017
             01/09 12:25 / 잔액 1000000원
             """;
 
-    private Member member;
-    private Student student;
-    private String expectedDepositorName;
-
-    @BeforeEach
-    void setUp() {
-        member = createMember();
-        student = createStudent(member);
-        expectedDepositorName = member.getName();
-        UserDetails userDetails = UserDetails.from(member);
-        PaymentRequest request = new PaymentRequest(List.of());
-        paymentService.createOrUpdatePendingPayment(request, userDetails);
-    }
+    private final String WITHDRAWAL_TRANSACTION_LOG_FORMAT =
+            """
+            [출금] %s원 %s
+            982-******-01-017
+            01/09 12:25 / 잔액 1000000원
+            """;
 
     @Nested
     class 올바른_입금 {
@@ -60,123 +63,192 @@ public class TransactionServiceTest extends IntegrationTest {
         @Test
         void 결제를_COMPLETED_처리한다() {
             // given
-            String transactionLog = String.format(
-                    TRANSACTION_LOG_FORMAT,
-                    CLUB_DUES,
-                    expectedDepositorName
-            );
+            Member member = createMember();
+            UserDetails userDetails = UserDetails.from(member);
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createPayment(request, userDetails);
+
+            String transactionLog = String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName());
 
             // when
             transactionService.createTransaction(transactionLog);
 
             // then
-            Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student).get();
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
             assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
         }
     }
 
     @Nested
-    class 잘못된_입금 {
+    class 틀린_입금 {
 
         @Test
         void 잘못된_입금자명() {
             // given
-            String transactionLog = String.format(
-                    TRANSACTION_LOG_FORMAT,
-                    CLUB_DUES,
-                    expectedDepositorName + "WRONG"
-            );
+            Member member = createMember();
+            UserDetails userDetails = UserDetails.from(member);
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createPayment(request, userDetails);
+
+            String transactionLog =
+                    String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName() + "WRONG");
 
             // when
             transactionService.createTransaction(transactionLog);
 
             // then
-            Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student).get();
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
-            assertEquals(BigDecimal.ZERO, transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName()));
         }
 
         @Test
-        void 부족한_입금액() {
+        void 틀린_입금액() {
             // given
-            String transactionLog = String.format(
-                    TRANSACTION_LOG_FORMAT,
-                    CLUB_DUES.subtract(BigDecimal.ONE),
-                    expectedDepositorName
-            );
+            Member member = createMember();
+            UserDetails userDetails = UserDetails.from(member);
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createPayment(request, userDetails);
+
+            String transactionLog =
+                    String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES.subtract(BigDecimal.ONE), member.getName());
 
             // when
             transactionService.createTransaction(transactionLog);
 
             // then
-            Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student).get();
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
             assertEquals(PaymentStatus.PENDING, payment.getStatus());
-            assertEquals(CLUB_DUES.subtract(BigDecimal.ONE), transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName()));
-        }
-
-        @Test
-        void 초과된_입금액() {
-            // given
-            String transactionLog = String.format(
-                    TRANSACTION_LOG_FORMAT,
-                    CLUB_DUES.add(BigDecimal.ONE),
-                    expectedDepositorName
-            );
-
-            // when
-            transactionService.createTransaction(transactionLog);
-
-            // then
-            Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student).get();
-            assertEquals(PaymentStatus.OVERPAID, payment.getStatus());
-            assertEquals(CLUB_DUES.add(BigDecimal.ONE), transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName()));
         }
     }
 
     @Nested
-    class 다중입금 {
+    class 입금_후_승격 {
 
         @Test
-        void 올바른_추가입금() {
+        void GUEST_회원이_입금_완료하면_USER로_승격한다() {
             // given
-            String transactionLog1 = String.format(
-                    TRANSACTION_LOG_FORMAT,
-                    CLUB_DUES.subtract(BigDecimal.ONE),
-                    expectedDepositorName
-            );
-            transactionService.createTransaction(transactionLog1);
+            Member guestMember = createMember();
+            guestMember.demoteToGuest();
+            memberRepository.save(guestMember);
+
+            UserDetails userDetails = UserDetails.from(guestMember);
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createPayment(request, userDetails);
+
+            String transactionLog = String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, guestMember.getName());
 
             // when
-            String transactionLog2 = String.format(
-                    TRANSACTION_LOG_FORMAT,
-                    BigDecimal.ONE,
-                    expectedDepositorName
-            );
-            transactionService.createTransaction(transactionLog2);
+            transactionService.createTransaction(transactionLog);
 
             // then
-            Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student).get();
-            assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
+            Member updatedMember =
+                    memberRepository.findById(guestMember.getId()).get();
+            assertEquals(Role.USER, updatedMember.getRole());
         }
 
         @Test
-        void 초과된_추가입금() {
+        void USER_회원은_입금_완료해도_역할이_변하지_않는다() {
             // given
-            String transactionLog1 = String.format(
-                    TRANSACTION_LOG_FORMAT,
-                    CLUB_DUES.subtract(BigDecimal.ONE),
-                    expectedDepositorName
-            );
-            transactionService.createTransaction(transactionLog1);
+            Member userMember = createMember();
+            userMember.promoteToUser();
+            memberRepository.save(userMember);
+
+            UserDetails userDetails = UserDetails.from(userMember);
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createPayment(request, userDetails);
+
+            String transactionLog = String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, userMember.getName());
 
             // when
-            String transactionLog2 = String.format(TRANSACTION_LOG_FORMAT, BigDecimal.TWO, expectedDepositorName);
-            transactionService.createTransaction(transactionLog2);
+            transactionService.createTransaction(transactionLog);
 
             // then
-            Payment payment = paymentRepository.findByStudentInCurrentYearSemester(student).get();
-            assertEquals(PaymentStatus.OVERPAID, payment.getStatus());
-            assertEquals(CLUB_DUES.add(BigDecimal.ONE), transactionRepository.sumAmountByDepositorName(payment.getExpectedDepositorName()));
+            Member updatedMember = memberRepository.findById(userMember.getId()).get();
+            assertEquals(Role.USER, updatedMember.getRole());
+        }
+
+        @Test
+        void ADMIN_회원은_입금_완료해도_역할이_변하지_않는다() {
+            // given
+            Member adminMember = createMember();
+            ReflectionTestUtils.setField(adminMember, "role", Role.ADMIN);
+            memberRepository.save(adminMember);
+
+            UserDetails userDetails = UserDetails.from(adminMember);
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createPayment(request, userDetails);
+
+            String transactionLog = String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, adminMember.getName());
+
+            // when
+            transactionService.createTransaction(transactionLog);
+
+            // then
+            Member updatedMember =
+                    memberRepository.findById(adminMember.getId()).get();
+            assertEquals(Role.ADMIN, updatedMember.getRole());
+        }
+    }
+
+    @Nested
+    class 출금_거래 {
+
+        @Test
+        void 출금_거래는_거래_정보만_저장된다() {
+            // given
+            Member member = createMember();
+            String transactionLog = String.format(WITHDRAWAL_TRANSACTION_LOG_FORMAT, CLUB_DUES, member.getName());
+            int initialTransactionCount = transactionRepository.findAll().size();
+
+            // when
+            transactionService.createTransaction(transactionLog);
+
+            // then
+            int finalTransactionCount = transactionRepository.findAll().size();
+            assertEquals(initialTransactionCount + 1, finalTransactionCount);
+        }
+    }
+
+    @Nested
+    class 동명이인_결제 {
+
+        @Test
+        void 동명이인이_있는_경우_두_결제_모두_PENDING_상태를_유지한다() {
+            // given
+            Member member1 = createMemberWithName("홍길동");
+            Member member2 = createMemberWithName("홍길동");
+
+            UserDetails userDetails1 = UserDetails.from(member1);
+            UserDetails userDetails2 = UserDetails.from(member2);
+
+            PaymentRequest request = new PaymentRequest(List.of());
+            paymentService.createPayment(request, userDetails1);
+            paymentService.createPayment(request, userDetails2);
+
+            String transactionLog = String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, CLUB_DUES, "홍길동");
+
+            // when
+            transactionService.createTransaction(transactionLog);
+
+            // then
+            Payment payment1 =
+                    paymentRepository.findByMemberInCurrentYearSemester(member1).get();
+            Payment payment2 =
+                    paymentRepository.findByMemberInCurrentYearSemester(member2).get();
+            assertEquals(PaymentStatus.PENDING, payment1.getStatus());
+            assertEquals(PaymentStatus.PENDING, payment2.getStatus());
+        }
+
+        private Member createMemberWithName(String name) {
+            String uniqueId = String.valueOf(System.nanoTime());
+            Member member = Member.create(uniqueId, "test" + uniqueId + "@dankook.ac.kr", name);
+            member.updatePersonalInfo(
+                    "010-1234-5678", "32000001", Department.SW융합대학_컴퓨터공학과, Grade.THREE, "010101", Gender.MALE);
+            member.promoteToUser();
+            return memberRepository.save(member);
         }
     }
 }

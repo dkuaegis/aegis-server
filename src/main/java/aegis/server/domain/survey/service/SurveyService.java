@@ -1,16 +1,18 @@
 package aegis.server.domain.survey.service;
 
-import aegis.server.domain.member.domain.Student;
-import aegis.server.domain.member.repository.StudentRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+
+import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.survey.domain.Survey;
 import aegis.server.domain.survey.dto.SurveyCommon;
 import aegis.server.domain.survey.repository.SurveyRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,11 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class SurveyService {
 
     private final SurveyRepository surveyRepository;
-    private final StudentRepository studentRepository;
+    private final MemberRepository memberRepository;
 
     public SurveyCommon getSurvey(UserDetails userDetails) {
-        Student student = findStudentByMemberId(userDetails.getMemberId());
-        Survey survey = surveyRepository.findByStudent(student)
+        Survey survey = surveyRepository
+                .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_NOT_FOUND));
 
         return SurveyCommon.from(survey);
@@ -30,31 +32,16 @@ public class SurveyService {
 
     @Transactional
     public void createOrUpdateSurvey(UserDetails userDetails, SurveyCommon surveyCommon) {
-        Student student = findStudentByMemberId(userDetails.getMemberId());
-        surveyRepository.findByStudent(student)
+        Member member = findMemberById(userDetails.getMemberId());
+        surveyRepository
+                .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
                 .ifPresentOrElse(
-                        survey -> survey.update(
-                                surveyCommon.interests(),
-                                surveyCommon.interestsEtc(),
-                                surveyCommon.acquisitionType(),
-                                surveyCommon.joinReason(),
-                                surveyCommon.feedback()
-                        ),
+                        survey -> survey.update(surveyCommon.acquisitionType(), surveyCommon.joinReason()),
                         () -> surveyRepository.save(
-                                Survey.create(
-                                        student,
-                                        surveyCommon.interests(),
-                                        surveyCommon.interestsEtc(),
-                                        surveyCommon.acquisitionType(),
-                                        surveyCommon.joinReason(),
-                                        surveyCommon.feedback()
-                                )
-                        )
-                );
+                                Survey.create(member, surveyCommon.acquisitionType(), surveyCommon.joinReason())));
     }
 
-    private Student findStudentByMemberId(Long memberId) {
-        return studentRepository.findByMemberIdInCurrentYearSemester(memberId)
-                .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
+    private Member findMemberById(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
     }
 }

@@ -9,13 +9,19 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
   data:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       username: ${REDIS_USER}
       password: ${REDIS_PASSWORD}
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
 
 server:
   servlet:

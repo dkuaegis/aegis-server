@@ -5,5 +5,4 @@ import aegis.server.domain.payment.domain.Transaction;
 public interface TransactionParser {
 
     Transaction parse(String transactionLog);
-
 }

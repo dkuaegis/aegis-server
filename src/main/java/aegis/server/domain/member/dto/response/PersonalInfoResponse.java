@@ -4,28 +4,22 @@ import aegis.server.domain.member.domain.*;
 
 public record PersonalInfoResponse(
         String name,
-        String birthDate,
-        Gender gender,
         String phoneNumber,
         String studentId,
         Department department,
-        AcademicStatus academicStatus,
         Grade grade,
-        Semester semester,
-        Boolean fresh
-) {
-    public static PersonalInfoResponse from(Member member, Student student) {
+        String birthDate,
+        Gender gender,
+        ProfileIcon profileIcon) {
+    public static PersonalInfoResponse from(Member member) {
         return new PersonalInfoResponse(
                 member.getName(),
+                member.getPhoneNumber(),
+                member.getStudentId(),
+                member.getDepartment(),
+                member.getGrade(),
                 member.getBirthdate(),
                 member.getGender(),
-                member.getPhoneNumber(),
-                student.getStudentId(),
-                student.getDepartment(),
-                student.getAcademicStatus(),
-                student.getGrade(),
-                student.getSemester(),
-                student.getFresh()
-        );
+                member.getProfileIcon());
     }
 }

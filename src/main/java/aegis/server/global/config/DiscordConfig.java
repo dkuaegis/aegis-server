@@ -1,14 +1,17 @@
 package aegis.server.global.config;
 
-import aegis.server.domain.discord.service.listener.DiscordSlashCommandListener;
-import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import lombok.RequiredArgsConstructor;
+
+import aegis.server.domain.discord.service.listener.DiscordSlashCommandListener;
 
 @Configuration
 @RequiredArgsConstructor
@@ -22,11 +25,7 @@ public class DiscordConfig {
     @Bean
     public JDA jda() {
         JDA jda = JDABuilder.createDefault(token)
-                .enableIntents(
-                        GatewayIntent.GUILD_MEMBERS,
-                        GatewayIntent.GUILD_MESSAGES,
-                        GatewayIntent.MESSAGE_CONTENT
-                )
+                .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
                 .addEventListeners(discordSlashCommandListener)
                 .build();
 

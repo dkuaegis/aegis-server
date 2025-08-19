@@ -1,16 +1,44 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.3'
+    id 'org.springframework.boot' version '3.5.3'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.diffplug.spotless' version '7.1.0'
 }
 
 group = 'aegis'
-version = '0.0.1-SNAPSHOT'
+version = '2025.08.20-1'
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+}
+
+spotless {
+    java {
+        palantirJavaFormat()
+        formatAnnotations()
+        removeUnusedImports()
+        importOrder(
+                'java',
+                'javax',
+                'jakarta',
+                '',
+                'org.springframework',
+                'org',
+                'com',
+                'lombok',
+                '',
+                'aegis',
+                '\\#'
+        )
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+tasks.named('compileJava') {
+    dependsOn 'spotlessApply'
 }
 
 configurations {
@@ -35,24 +63,27 @@ dependencies {
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.postgresql:postgresql'
 
-    implementation 'net.dv8tion:JDA:5.3.0'
-    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.2'
-    implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.5'
+    implementation 'net.dv8tion:JDA:5.6.1'
 
-    implementation 'com.google.api-client:google-api-client:2.7.2'
-    implementation 'com.google.oauth-client:google-oauth-client-jetty:1.38.0'
-    implementation 'com.google.apis:google-api-services-sheets:v4-rev20250211-2.0.0'
+    implementation 'com.google.api-client:google-api-client:2.8.0'
+    implementation 'com.google.oauth-client:google-oauth-client-jetty:1.39.0'
+    implementation 'com.google.apis:google-api-services-sheets:v4-rev20250616-2.0.0'
 
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
+    
+    implementation 'com.google.zxing:core:3.5.3'
+    implementation 'com.google.zxing:javase:3.5.3'
 
-    testImplementation 'com.github.fppt:jedis-mock:1.1.8'
+    testImplementation 'com.github.fppt:jedis-mock:1.1.11'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }
-
 
 test {
     useJUnitPlatform()
@@ -60,3 +91,11 @@ test {
     jvmArgs += '-javaagent:' +
             configurations.testRuntimeClasspath.find { it.name.contains("byte-buddy-agent") }.absolutePath
 }
+
+tasks.register('writeVersionFile') {
+    doLast {
+        new File(layout.buildDirectory.get().asFile, 'version.txt').text = project.version
+    }
+}
+
+jar.dependsOn writeVersionFile

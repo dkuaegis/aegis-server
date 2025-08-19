@@ -1,12 +1,5 @@
 package aegis.server.global.security.oidc;
 
-import aegis.server.domain.member.domain.Member;
-import aegis.server.domain.member.domain.Student;
-import aegis.server.domain.member.repository.MemberRepository;
-import aegis.server.domain.member.repository.StudentRepository;
-import aegis.server.global.exception.CustomException;
-import aegis.server.global.exception.ErrorCode;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
@@ -16,12 +9,21 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
+
+import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.repository.MemberRepository;
+import aegis.server.domain.point.domain.PointAccount;
+import aegis.server.domain.point.repository.PointAccountRepository;
+import aegis.server.global.exception.CustomException;
+import aegis.server.global.exception.ErrorCode;
+
 @Service
 @RequiredArgsConstructor
 public class CustomOidcUserService extends OidcUserService {
 
     private final MemberRepository memberRepository;
-    private final StudentRepository studentRepository;
+    private final PointAccountRepository pointAccountRepository;
 
     @Value("${email-restriction.enabled}")
     private boolean emailRestrictionEnabled;
@@ -32,7 +34,7 @@ public class CustomOidcUserService extends OidcUserService {
         OidcUser oidcUser = super.loadUser(userRequest);
 
         Member member = findOrCreateMember(oidcUser);
-        findOrCreateStudent(member);
+        createPointAccountIfNotExists(member);
 
         return new CustomOidcUser(oidcUser, member);
     }
@@ -63,9 +65,9 @@ public class CustomOidcUserService extends OidcUserService {
         return member;
     }
 
-    private void findOrCreateStudent(Member member) {
-        studentRepository.findByMemberInCurrentYearSemester(member).orElseGet(
-                () -> studentRepository.save(Student.from(member))
-        );
+    private void createPointAccountIfNotExists(Member member) {
+        if (!pointAccountRepository.existsByMember(member)) {
+            pointAccountRepository.save(PointAccount.create(member));
+        }
     }
 }
