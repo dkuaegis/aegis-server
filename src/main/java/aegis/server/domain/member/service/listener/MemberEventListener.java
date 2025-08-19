@@ -15,6 +15,7 @@ import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
 import aegis.server.domain.payment.dto.internal.PaymentInfo;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
+import aegis.server.global.session.SessionInvalidationService;
 
 @Slf4j
 @Component
@@ -22,6 +23,7 @@ import aegis.server.global.exception.ErrorCode;
 public class MemberEventListener {
 
     private final MemberRepository memberRepository;
+    private final SessionInvalidationService sessionInvalidationService;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -43,6 +45,9 @@ public class MemberEventListener {
                     "[MemberEventListener] 회비 납부 완료로 인한 자동 승격: memberId={}, memberName={}, GUEST → USER",
                     member.getId(),
                     member.getName());
+
+            // 권한 승급 후 기존 세션 무효화
+            sessionInvalidationService.invalidateAllUserSessions(member.getId());
         }
     }
 }

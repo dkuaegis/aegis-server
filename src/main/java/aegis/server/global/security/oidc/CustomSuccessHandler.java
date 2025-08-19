@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpSession;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,9 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         UserDetails userDetails = customOidcUser.getUserDetails();
 
         httpSession.setAttribute("userDetails", userDetails);
+        httpSession.setAttribute(
+                FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME,
+                userDetails.getMemberId().toString());
 
         String redirectUri = (String) httpSession.getAttribute("redirectUri");
         httpSession.removeAttribute("redirectUri");
