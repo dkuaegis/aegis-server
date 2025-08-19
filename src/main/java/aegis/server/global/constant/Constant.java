@@ -16,6 +16,11 @@ public class Constant {
     public static final String PROD_STUDY_URL = "https://study.dkuaegis.org";
     public static final String PROD_MYPAGE_URL = "https://mypage.dkuaegis.org";
 
+    public static final String STAGING_SERVER_URL = "https://staging-api.dkuaegis.org";
+    public static final String STAGING_JOIN_URL = "https://staging-join.dkuaegis.org";
+    public static final String STAGING_STUDY_URL = "https://staging-study.dkuaegis.org";
+    public static final String STAGING_MYPAGE_URL = "https://staging-mypage.dkuaegis.org";
+
     public static final String DEV_SERVER_URL = "https://dev-api.dkuaegis.org";
     public static final String DEV_JOIN_URL = "https://dev-join.dkuaegis.org";
     public static final String DEV_STUDY_URL = "https://dev-study.dkuaegis.org";
@@ -30,6 +35,10 @@ public class Constant {
             PROD_JOIN_URL,
             PROD_STUDY_URL,
             PROD_MYPAGE_URL,
+            STAGING_SERVER_URL,
+            STAGING_JOIN_URL,
+            STAGING_STUDY_URL,
+            STAGING_MYPAGE_URL,
             DEV_SERVER_URL,
             DEV_JOIN_URL,
             DEV_STUDY_URL,
