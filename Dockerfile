@@ -18,7 +18,7 @@ WORKDIR /app
 RUN wget -O /app/grafana-opentelemetry-java.jar https://github.com/grafana/grafana-opentelemetry-java/releases/latest/download/grafana-opentelemetry-java.jar
 
 COPY --from=builder /tmp/build/version.txt /app/version.txt
-COPY --from=builder /tmp/build/libs/*-SNAPSHOT.jar /app/app.jar
+COPY --from=builder /tmp/build/libs/*-*.jar /app/app.jar
 
 EXPOSE 8080
 
