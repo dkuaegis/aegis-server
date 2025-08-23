@@ -339,13 +339,17 @@ class PointServiceTest extends IntegrationTest {
             }
 
             Member[] pendingMembers = new Member[2]; // 이번 학기 결제 생성하되 미완료(PENDING)
+            PointAccount[] pendingAccounts = new PointAccount[2];
             for (int i = 0; i < 2; i++) {
                 pendingMembers[i] = createMember();
-                PointAccount account = createPointAccount(pendingMembers[i]);
+                pendingAccounts[i] = createPointAccount(pendingMembers[i]);
                 Payment pending = Payment.of(pendingMembers[i]); // 기본이 PENDING
                 paymentRepository.save(pending);
-                createEarnPointTransaction(account, BigDecimal.valueOf(400 - (i * 100)), "적립");
             }
+            // 사용자 중 한 명에게는 매우 높은 포인트를 부여
+            createEarnPointTransaction(pendingAccounts[0], BigDecimal.valueOf(1200), "적립");
+            // 다른 한 명은 낮은 포인트
+            createEarnPointTransaction(pendingAccounts[1], BigDecimal.valueOf(300), "적립");
 
             // 랭킹 조회 (현재 사용자는 결제 완료자 중 한 명)
             Member currentUser = paidMembers[3];
@@ -369,6 +373,9 @@ class PointServiceTest extends IntegrationTest {
                         response.top10().stream().anyMatch(r -> r.name().equals(m.getName()));
                 assertFalse(exists);
             }
+
+            // 현재 사용자는 결제 완료자 중 네 번째(700,600,500,400)여야 한다
+            assertEquals(4L, response.me().rank());
         }
     }
 }

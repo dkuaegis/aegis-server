@@ -19,14 +19,15 @@ public interface PointAccountRepository extends JpaRepository<PointAccount, Long
     @Query("SELECT pa FROM PointAccount pa JOIN FETCH pa.member WHERE pa.member.id = :memberId")
     Optional<PointAccount> findByMemberId(Long memberId);
 
-    @Query("SELECT pa FROM PointAccount pa JOIN FETCH pa.member ORDER BY pa.totalEarned DESC LIMIT 10")
-    List<PointAccount> findTop10ByTotalEarned();
-
-    @Query("SELECT COUNT(pa) FROM PointAccount pa WHERE pa.totalEarned > :totalEarned")
-    Long countByTotalEarnedGreaterThan(BigDecimal totalEarned);
-
     @Query("SELECT pa FROM PointAccount pa JOIN FETCH pa.member "
             + "WHERE EXISTS (SELECT 1 FROM Payment p WHERE p.member = pa.member AND p.yearSemester = :yearSemester AND p.status = :status) "
             + "ORDER BY pa.totalEarned DESC")
     List<PointAccount> findTopByEligible(YearSemester yearSemester, PaymentStatus status, Pageable pageable);
+
+    @Query(
+            "SELECT COUNT(pa) FROM PointAccount pa "
+                    + "WHERE pa.totalEarned > :totalEarnedThreshold "
+                    + "AND EXISTS (SELECT 1 FROM Payment p WHERE p.member = pa.member AND p.yearSemester = :yearSemester AND p.status = :status)")
+    long countEligibleWithTotalEarnedGreaterThan(
+            YearSemester yearSemester, PaymentStatus status, BigDecimal totalEarnedThreshold);
 }

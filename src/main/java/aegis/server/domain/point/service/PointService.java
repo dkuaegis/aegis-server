@@ -66,7 +66,9 @@ public class PointService {
                 .orElseThrow(() -> new CustomException(ErrorCode.POINT_ACCOUNT_NOT_FOUND));
 
         BigDecimal userTotalEarned = currentUserAccount.getTotalEarned();
-        Long rank = pointAccountRepository.countByTotalEarnedGreaterThan(userTotalEarned) + 1;
+        long higherCount = pointAccountRepository.countEligibleWithTotalEarnedGreaterThan(
+                CURRENT_YEAR_SEMESTER, PaymentStatus.COMPLETED, userTotalEarned);
+        Long rank = higherCount + 1;
 
         return PointRankingResponse.of(
                 rank,
