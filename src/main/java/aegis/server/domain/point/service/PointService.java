@@ -4,11 +4,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.domain.point.domain.PointAccount;
 import aegis.server.domain.point.domain.PointTransaction;
@@ -20,6 +22,8 @@ import aegis.server.domain.point.repository.PointTransactionRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
+
+import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
 @Service
 @RequiredArgsConstructor
@@ -45,11 +49,12 @@ public class PointService {
         // 현재 학기 회원 수 조회
         long memberCount = paymentRepository.countCompletedPaymentsInCurrentYearSemester();
 
-        // 상위 10명 조회
-        List<PointAccount> top10Accounts = pointAccountRepository.findTop10ByTotalEarned();
+        // 상위 10명 조회 (결제 완료자만)
+        List<PointAccount> top10Accounts = pointAccountRepository.findTopByEligible(
+                CURRENT_YEAR_SEMESTER, PaymentStatus.COMPLETED, PageRequest.of(0, 10));
         List<PointRankingResponse> top10Rankings = convertToRankingResponses(top10Accounts);
 
-        // 현재 사용자 랭킹 계산
+        // 현재 사용자 랭킹 계산 (결제 완료자 기준)
         PointRankingResponse currentUserRanking = getCurrentUserRanking(userDetails.getMemberId());
 
         return PointRankingListResponse.of(memberCount, top10Rankings, currentUserRanking);

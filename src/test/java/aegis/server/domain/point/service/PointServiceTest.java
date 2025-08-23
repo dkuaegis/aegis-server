@@ -310,5 +310,65 @@ class PointServiceTest extends IntegrationTest {
                     response.top10().stream().anyMatch(r -> r.name().equals(currentUser.getName()));
             assertFalse(currentUserInTop10);
         }
+
+        @Test
+        void 이번_학기_결제_완료자만_랭킹에_포함된다() {
+            // given: 결제 완료자 7명, 미결제자(결제 없음) 3명, 미완료자(PENDING) 2명
+            Member[] paidMembers = new Member[7];
+            PointAccount[] paidAccounts = new PointAccount[7];
+
+            for (int i = 0; i < 7; i++) {
+                paidMembers[i] = createMember();
+                createCompletedPaymentForCurrentSemester(paidMembers[i]);
+                paidAccounts[i] = createPointAccount(paidMembers[i]);
+                // 점수: 700, 600, ..., 100
+                createEarnPointTransaction(paidAccounts[i], BigDecimal.valueOf(700 - (i * 100)), "적립");
+            }
+
+            Member[] unpaidMembers = new Member[3]; // 결제 자체가 없는 회원
+            for (int i = 0; i < 3; i++) {
+                unpaidMembers[i] = createMember();
+                createPointAccount(unpaidMembers[i]);
+                // 포인트가 있어도 랭킹에 포함되면 안 됨
+                createEarnPointTransaction(
+                        pointAccountRepository
+                                .findById(unpaidMembers[i].getId())
+                                .orElseThrow(),
+                        BigDecimal.valueOf(50),
+                        "적립");
+            }
+
+            Member[] pendingMembers = new Member[2]; // 이번 학기 결제 생성하되 미완료(PENDING)
+            for (int i = 0; i < 2; i++) {
+                pendingMembers[i] = createMember();
+                PointAccount account = createPointAccount(pendingMembers[i]);
+                Payment pending = Payment.of(pendingMembers[i]); // 기본이 PENDING
+                paymentRepository.save(pending);
+                createEarnPointTransaction(account, BigDecimal.valueOf(400 - (i * 100)), "적립");
+            }
+
+            // 랭킹 조회 (현재 사용자는 결제 완료자 중 한 명)
+            Member currentUser = paidMembers[3];
+            UserDetails userDetails = createUserDetails(currentUser);
+
+            // when
+            PointRankingListResponse response = pointService.getPointRanking(userDetails);
+
+            // then: 상위 10 중 결제 완료자 7명만 포함되므로 7명, 총원도 7명
+            assertEquals(7, response.top10().size());
+            assertEquals(7, response.memberCount());
+
+            // 미결제자/미완료자는 랭킹에 포함되지 않아야 함
+            for (Member m : unpaidMembers) {
+                boolean exists =
+                        response.top10().stream().anyMatch(r -> r.name().equals(m.getName()));
+                assertFalse(exists);
+            }
+            for (Member m : pendingMembers) {
+                boolean exists =
+                        response.top10().stream().anyMatch(r -> r.name().equals(m.getName()));
+                assertFalse(exists);
+            }
+        }
     }
 }
