@@ -21,6 +21,7 @@ import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(indexes = {@Index(name = "idx_payment_year_status_member", columnList = "year_semester, status, member_id")})
 public class Payment extends BaseEntity {
 
     @Id
