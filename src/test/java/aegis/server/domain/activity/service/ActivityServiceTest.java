@@ -42,13 +42,11 @@ class ActivityServiceTest extends IntegrationTest {
             // 반환값 검증
             assertNotNull(response.activityId());
             assertEquals(ACTIVITY_NAME_1, response.name());
-            assertFalse(response.isActive());
 
             // DB 상태 검증
             Activity activity =
                     activityRepository.findById(response.activityId()).get();
             assertEquals(ACTIVITY_NAME_1, activity.getName());
-            assertFalse(activity.getIsActive());
         }
 
         @Test
@@ -80,96 +78,6 @@ class ActivityServiceTest extends IntegrationTest {
             assertEquals(2, responses.size());
             assertTrue(responses.stream().anyMatch(r -> r.name().equals(ACTIVITY_NAME_1)));
             assertTrue(responses.stream().anyMatch(r -> r.name().equals(ACTIVITY_NAME_2)));
-        }
-    }
-
-    @Nested
-    class 활동_활성화 {
-        @Test
-        void 성공한다() {
-            // given
-            Activity activity = createActivity(ACTIVITY_NAME_1);
-
-            // when
-            ActivityResponse response = activityService.activateActivity(activity.getId());
-
-            // then
-            // 반환값 검증
-            assertEquals(activity.getId(), response.activityId());
-            assertTrue(response.isActive());
-
-            // DB 상태 검증
-            Activity updatedActivity =
-                    activityRepository.findById(response.activityId()).get();
-            assertTrue(updatedActivity.getIsActive());
-        }
-
-        @Test
-        void 존재하지_않는_활동이면_실패한다() {
-            // given
-            Long nonExistentId = 999L;
-
-            // when & then
-            CustomException exception =
-                    assertThrows(CustomException.class, () -> activityService.activateActivity(nonExistentId));
-            assertEquals(ErrorCode.ACTIVITY_NOT_FOUND, exception.getErrorCode());
-        }
-
-        @Test
-        void 이미_활성화된_활동이면_실패한다() {
-            // given
-            Activity activeActivity = createActivity(ACTIVITY_NAME_1);
-            activeActivity.activate();
-
-            // when & then
-            CustomException exception =
-                    assertThrows(CustomException.class, () -> activityService.activateActivity(activeActivity.getId()));
-            assertEquals(ErrorCode.ACTIVITY_ALREADY_ACTIVE, exception.getErrorCode());
-        }
-    }
-
-    @Nested
-    class 활동_비활성화 {
-        @Test
-        void 성공한다() {
-            // given
-            Activity activity = createActivity(ACTIVITY_NAME_1);
-            activity.activate();
-
-            // when
-            ActivityResponse response = activityService.deactivateActivity(activity.getId());
-
-            // then
-            // 반환값 검증
-            assertEquals(activity.getId(), response.activityId());
-            assertFalse(response.isActive());
-
-            // DB 상태 검증
-            Activity updatedActivity =
-                    activityRepository.findById(response.activityId()).get();
-            assertFalse(updatedActivity.getIsActive());
-        }
-
-        @Test
-        void 존재하지_않는_활동이면_실패한다() {
-            // given
-            Long nonExistentId = 999L;
-
-            // when & then
-            CustomException exception =
-                    assertThrows(CustomException.class, () -> activityService.deactivateActivity(nonExistentId));
-            assertEquals(ErrorCode.ACTIVITY_NOT_FOUND, exception.getErrorCode());
-        }
-
-        @Test
-        void 이미_비활성화된_활동이면_실패한다() {
-            // given
-            Activity inactiveActivity = createActivity(ACTIVITY_NAME_1);
-
-            // when & then
-            CustomException exception = assertThrows(
-                    CustomException.class, () -> activityService.deactivateActivity(inactiveActivity.getId()));
-            assertEquals(ErrorCode.ACTIVITY_ALREADY_INACTIVE, exception.getErrorCode());
         }
     }
 

@@ -70,36 +70,6 @@ public class AdminActivityController {
     }
 
     @Operation(
-            summary = "활동 활성화",
-            description = "지정된 ID의 활동을 활성화합니다.",
-            responses = {
-                @ApiResponse(responseCode = "200", description = "활동 활성화 성공"),
-                @ApiResponse(responseCode = "404", description = "존재하지 않는 활동", content = @Content),
-                @ApiResponse(responseCode = "409", description = "이미 활성화된 활동", content = @Content)
-            })
-    @PutMapping("/{activityId}/activate")
-    public ResponseEntity<ActivityResponse> activateActivity(
-            @Parameter(description = "활성화할 활동 ID") @PathVariable Long activityId) {
-        ActivityResponse response = activityService.activateActivity(activityId);
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(
-            summary = "활동 비활성화",
-            description = "지정된 ID의 활동을 비활성화합니다.",
-            responses = {
-                @ApiResponse(responseCode = "200", description = "활동 비활성화 성공"),
-                @ApiResponse(responseCode = "404", description = "존재하지 않는 활동", content = @Content),
-                @ApiResponse(responseCode = "409", description = "이미 비활성화된 활동", content = @Content)
-            })
-    @PutMapping("/{activityId}/deactivate")
-    public ResponseEntity<ActivityResponse> deactivateActivity(
-            @Parameter(description = "비활성화할 활동 ID") @PathVariable Long activityId) {
-        ActivityResponse response = activityService.deactivateActivity(activityId);
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(
             summary = "활동 삭제",
             description = "지정된 ID의 활동을 삭제합니다.",
             responses = {

@@ -1,8 +1,10 @@
 package aegis.server.domain.activity.dto.response;
 
-public record ActivityResponse(Long activityId, String name, Boolean isActive) {
+import aegis.server.domain.activity.domain.Activity;
 
-    public static ActivityResponse from(aegis.server.domain.activity.domain.Activity activity) {
-        return new ActivityResponse(activity.getId(), activity.getName(), activity.getIsActive());
+public record ActivityResponse(Long activityId, String name) {
+
+    public static ActivityResponse from(Activity activity) {
+        return new ActivityResponse(activity.getId(), activity.getName());
     }
 }

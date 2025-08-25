@@ -27,19 +27,8 @@ public class Activity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private YearSemester yearSemester;
 
-    @Builder.Default
-    private Boolean isActive = false;
-
     public static Activity create(String name) {
         return Activity.builder().name(name).yearSemester(CURRENT_YEAR_SEMESTER).build();
-    }
-
-    public void activate() {
-        this.isActive = true;
-    }
-
-    public void deactivate() {
-        this.isActive = false;
     }
 
     public void updateName(String name) {

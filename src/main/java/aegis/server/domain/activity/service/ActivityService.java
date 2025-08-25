@@ -38,34 +38,6 @@ public class ActivityService {
     }
 
     @Transactional
-    public ActivityResponse activateActivity(Long activityId) {
-        Activity activity = activityRepository
-                .findById(activityId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ACTIVITY_NOT_FOUND));
-
-        if (activity.getIsActive()) {
-            throw new CustomException(ErrorCode.ACTIVITY_ALREADY_ACTIVE);
-        }
-
-        activity.activate();
-        return ActivityResponse.from(activity);
-    }
-
-    @Transactional
-    public ActivityResponse deactivateActivity(Long activityId) {
-        Activity activity = activityRepository
-                .findById(activityId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ACTIVITY_NOT_FOUND));
-
-        if (!activity.getIsActive()) {
-            throw new CustomException(ErrorCode.ACTIVITY_ALREADY_INACTIVE);
-        }
-
-        activity.deactivate();
-        return ActivityResponse.from(activity);
-    }
-
-    @Transactional
     public ActivityResponse updateActivity(Long activityId, ActivityCreateUpdateRequest request) {
         Activity activity = activityRepository
                 .findById(activityId)
