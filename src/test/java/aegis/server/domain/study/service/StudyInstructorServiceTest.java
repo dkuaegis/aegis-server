@@ -428,8 +428,8 @@ class StudyInstructorServiceTest extends IntegrationTest {
                 StudyRecruitmentMethod.APPLICATION,
                 10,
                 "주 2회",
-                "테스트 커리큘럼",
-                "테스트 자격 요건");
+                List.of("테스트 커리큘럼 1", "테스트 커리큘럼 2"),
+                List.of("테스트 자격 요건 1", "테스트 자격 요건 2"));
         study = studyRepository.save(study);
 
         StudyMember studyMember = StudyMember.create(study, instructor, StudyRole.INSTRUCTOR);
@@ -447,8 +447,8 @@ class StudyInstructorServiceTest extends IntegrationTest {
                 StudyRecruitmentMethod.APPLICATION,
                 maxParticipants,
                 "주 2회",
-                "테스트 커리큘럼",
-                "테스트 자격 요건");
+                List.of("테스트 커리큘럼 1", "테스트 커리큘럼 2"),
+                List.of("테스트 자격 요건 1", "테스트 자격 요건 2"));
         study = studyRepository.save(study);
 
         StudyMember studyMember = StudyMember.create(study, instructor, StudyRole.INSTRUCTOR);
@@ -471,7 +471,7 @@ class StudyInstructorServiceTest extends IntegrationTest {
                 StudyRecruitmentMethod.FCFS,
                 20,
                 "주 3회",
-                "수정된 커리큘럼",
-                "수정된 자격 요건");
+                List.of("수정된 커리큘럼 1", "수정된 커리큘럼 2"),
+                List.of("수정된 자격 요건 1", "수정된 자격 요건 2"));
     }
 }

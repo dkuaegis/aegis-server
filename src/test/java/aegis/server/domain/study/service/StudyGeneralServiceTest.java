@@ -294,8 +294,8 @@ class StudyGeneralServiceTest extends IntegrationTest {
                 recruitmentMethod,
                 10,
                 "주 2회",
-                "테스트 커리큘럼",
-                "테스트 자격 요건");
+                List.of("테스트 커리큘럼 1", "테스트 커리큘럼 2"),
+                List.of("테스트 자격 요건 1", "테스트 자격 요건 2"));
         return studyRepository.save(study);
     }
 
@@ -308,8 +308,8 @@ class StudyGeneralServiceTest extends IntegrationTest {
                 recruitmentMethod,
                 maxParticipants,
                 "주 2회",
-                "테스트 커리큘럼",
-                "테스트 자격 요건");
+                List.of("테스트 커리큘럼 1", "테스트 커리큘럼 2"),
+                List.of("테스트 자격 요건 1", "테스트 자격 요건 2"));
         return studyRepository.save(study);
     }
 
@@ -332,7 +332,7 @@ class StudyGeneralServiceTest extends IntegrationTest {
                 StudyRecruitmentMethod.APPLICATION,
                 15,
                 "주 3회",
-                "AI 커리큘럼",
-                "AI 자격 요건");
+                List.of("AI 커리큘럼 1", "AI 커리큘럼 2"),
+                List.of("AI 자격 요건 1", "AI 자격 요건 2"));
     }
 }

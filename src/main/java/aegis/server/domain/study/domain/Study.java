@@ -1,9 +1,13 @@
 package aegis.server.domain.study.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
 
 import lombok.*;
 
+import aegis.server.domain.common.converter.StringListJsonConverter;
 import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.global.exception.CustomException;
@@ -47,11 +51,15 @@ public class Study extends BaseEntity {
 
     private String schedule;
 
+    @Builder.Default
     @Column(columnDefinition = "text")
-    private String curricula;
+    @Convert(converter = StringListJsonConverter.class)
+    private List<String> curricula = new ArrayList<>();
 
+    @Builder.Default
     @Column(columnDefinition = "text")
-    private String qualifications;
+    @Convert(converter = StringListJsonConverter.class)
+    private List<String> qualifications = new ArrayList<>();
 
     public static Study create(
             String title,
@@ -61,8 +69,8 @@ public class Study extends BaseEntity {
             StudyRecruitmentMethod recruitmentMethod,
             int maxParticipants,
             String schedule,
-            String curricula,
-            String qualifications) {
+            List<String> curricula,
+            List<String> qualifications) {
         return Study.builder()
                 .yearSemester(CURRENT_YEAR_SEMESTER)
                 .title(title)
@@ -85,8 +93,8 @@ public class Study extends BaseEntity {
             StudyRecruitmentMethod recruitmentMethod,
             int maxParticipants,
             String schedule,
-            String curricula,
-            String qualifications) {
+            List<String> curricula,
+            List<String> qualifications) {
         this.title = title;
         this.category = category;
         this.level = level;

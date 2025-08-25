@@ -1,7 +1,11 @@
 package aegis.server.domain.study.dto.request;
 
+import java.util.List;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import aegis.server.domain.study.domain.StudyCategory;
@@ -16,5 +20,5 @@ public record StudyCreateUpdateRequest(
         StudyRecruitmentMethod recruitmentMethod,
         @Min(0) @Max(100) int maxParticipants,
         @Size(max = 100) String schedule,
-        @Size(max = 1000) String curricula,
-        @Size(max = 1000) String qualifications) {}
+        @NotNull List<@NotBlank String> curricula,
+        @NotNull List<@NotBlank String> qualifications) {}

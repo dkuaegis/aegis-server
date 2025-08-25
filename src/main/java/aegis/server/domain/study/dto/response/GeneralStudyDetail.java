@@ -1,5 +1,7 @@
 package aegis.server.domain.study.dto.response;
 
+import java.util.List;
+
 import aegis.server.domain.study.domain.StudyCategory;
 import aegis.server.domain.study.domain.StudyLevel;
 import aegis.server.domain.study.domain.StudyRecruitmentMethod;
@@ -14,8 +16,8 @@ public record GeneralStudyDetail(
         long participantCount,
         int maxParticipants,
         String schedule,
-        String curricula,
-        String qualifications,
+        List<String> curricula,
+        List<String> qualifications,
         String instructor) {
 
     public static GeneralStudyDetail from(
@@ -28,8 +30,8 @@ public record GeneralStudyDetail(
             long participantCount,
             int maxParticipants,
             String schedule,
-            String curricula,
-            String qualifications,
+            List<String> curricula,
+            List<String> qualifications,
             String instructor) {
         return new GeneralStudyDetail(
                 id,
