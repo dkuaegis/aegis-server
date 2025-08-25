@@ -82,8 +82,8 @@ public class Study extends BaseEntity {
                 .recruitmentMethod(recruitmentMethod)
                 .maxParticipants(maxParticipants)
                 .schedule(schedule)
-                .curricula(curricula)
-                .qualifications(qualifications)
+                .curricula(new ArrayList<>(curricula))
+                .qualifications(new ArrayList<>(qualifications))
                 .build();
     }
 
@@ -104,8 +104,8 @@ public class Study extends BaseEntity {
         this.recruitmentMethod = recruitmentMethod;
         this.maxParticipants = maxParticipants;
         this.schedule = schedule;
-        this.curricula = curricula;
-        this.qualifications = qualifications;
+        this.curricula = new ArrayList<>(curricula);
+        this.qualifications = new ArrayList<>(qualifications);
     }
 
     public void increaseCurrentParticipant() {
