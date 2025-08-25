@@ -172,8 +172,8 @@ class StudyEnrollConcurrencyTest extends IntegrationTestWithoutTransactional {
                 recruitmentMethod,
                 maxParticipants,
                 "주 2회",
-                "테스트 커리큘럼",
-                "테스트 자격 요건");
+                List.of("테스트 커리큘럼 1", "테스트 커리큘럼 2"),
+                List.of("테스트 자격 요건 1", "테스트 자격 요건 2"));
         return studyRepository.save(study);
     }
 }
