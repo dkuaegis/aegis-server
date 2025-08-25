@@ -52,11 +52,13 @@ public class Study extends BaseEntity {
     private String schedule;
 
     @Builder.Default
+    @Getter(AccessLevel.NONE)
     @Column(columnDefinition = "text")
     @Convert(converter = StringListJsonConverter.class)
     private List<String> curricula = new ArrayList<>();
 
     @Builder.Default
+    @Getter(AccessLevel.NONE)
     @Column(columnDefinition = "text")
     @Convert(converter = StringListJsonConverter.class)
     private List<String> qualifications = new ArrayList<>();
