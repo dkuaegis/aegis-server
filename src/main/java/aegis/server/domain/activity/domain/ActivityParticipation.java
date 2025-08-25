@@ -31,7 +31,7 @@ public class ActivityParticipation extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    public static ActivityParticipation of(Activity activity, Member member) {
+    public static ActivityParticipation create(Activity activity, Member member) {
         return ActivityParticipation.builder().activity(activity).member(member).build();
     }
 }
