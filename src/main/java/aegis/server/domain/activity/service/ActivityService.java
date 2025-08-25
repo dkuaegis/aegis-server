@@ -28,7 +28,7 @@ public class ActivityService {
 
     @Transactional
     public ActivityResponse createActivity(ActivityCreateUpdateRequest request) {
-        Activity activity = Activity.create(request.name());
+        Activity activity = Activity.create(request.name(), request.pointAmount());
         if (activityRepository.existsByNameAndYearSemester(activity.getName(), activity.getYearSemester())) {
             throw new CustomException(ErrorCode.ACTIVITY_NAME_ALREADY_EXISTS);
         }
@@ -48,7 +48,7 @@ public class ActivityService {
             throw new CustomException(ErrorCode.ACTIVITY_NAME_ALREADY_EXISTS);
         }
 
-        activity.updateName(request.name());
+        activity.update(request.name(), request.pointAmount());
         return ActivityResponse.from(activity);
     }
 
