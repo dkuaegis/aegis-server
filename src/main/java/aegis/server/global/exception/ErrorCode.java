@@ -66,6 +66,7 @@ public enum ErrorCode {
 
     // QR Code
     QR_CODE_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR),
+    QR_CODE_NOT_FOUND(HttpStatus.NOT_FOUND),
 
     // Study
     STUDY_NOT_FOUND(HttpStatus.NOT_FOUND),
