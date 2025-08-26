@@ -2,7 +2,6 @@ package aegis.server.domain.qrcode.service;
 
 import java.util.Base64;
 
-import aegis.server.domain.qrcode.dto.response.QRCodeMemberResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.qrcode.domain.QRCode;
+import aegis.server.domain.qrcode.dto.response.QRCodeMemberResponse;
 import aegis.server.domain.qrcode.repository.QRCodeRepository;
 import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;

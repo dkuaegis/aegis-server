@@ -191,11 +191,6 @@ class ActivityServiceTest extends IntegrationTest {
         }
     }
 
-    private Activity createActivity(String name, BigDecimal pointAmount) {
-        Activity activity = Activity.create(name, pointAmount);
-        return activityRepository.save(activity);
-    }
-
     @Nested
     class 금액_유효성 {
         @Test
@@ -222,5 +217,10 @@ class ActivityServiceTest extends IntegrationTest {
                     assertThrows(CustomException.class, () -> activityService.updateActivity(activity.getId(), req0));
             assertEquals(ErrorCode.POINT_ACTION_AMOUNT_NOT_POSITIVE, exception.getErrorCode());
         }
+    }
+
+    private Activity createActivity(String name, BigDecimal pointAmount) {
+        Activity activity = Activity.create(name, pointAmount);
+        return activityRepository.save(activity);
     }
 }
