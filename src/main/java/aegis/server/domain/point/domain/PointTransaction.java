@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 
 import lombok.*;
 
+import aegis.server.domain.activity.domain.ActivityParticipation;
 import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.common.domain.YearSemester;
 
@@ -43,14 +44,23 @@ public class PointTransaction extends BaseEntity {
 
     private String reason;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "activity_participation_id")
+    private ActivityParticipation activityParticipation;
+
     public static PointTransaction create(
-            PointAccount pointAccount, PointTransactionType transactionType, BigDecimal amount, String reason) {
+            PointAccount pointAccount,
+            PointTransactionType transactionType,
+            BigDecimal amount,
+            String reason,
+            ActivityParticipation activityParticipation) {
         return PointTransaction.builder()
                 .pointAccount(pointAccount)
                 .yearSemester(CURRENT_YEAR_SEMESTER)
                 .transactionType(transactionType)
                 .amount(amount)
                 .reason(reason)
+                .activityParticipation(activityParticipation)
                 .build();
     }
 }

@@ -1,6 +1,7 @@
 package aegis.server.domain.activity.service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -13,6 +14,11 @@ import aegis.server.domain.activity.dto.response.ActivityParticipationResponse;
 import aegis.server.domain.activity.repository.ActivityParticipationRepository;
 import aegis.server.domain.activity.repository.ActivityRepository;
 import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.point.domain.PointAccount;
+import aegis.server.domain.point.domain.PointTransaction;
+import aegis.server.domain.point.domain.PointTransactionType;
+import aegis.server.domain.point.repository.PointAccountRepository;
+import aegis.server.domain.point.repository.PointTransactionRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.helper.IntegrationTest;
@@ -25,10 +31,16 @@ class ActivityParticipationServiceTest extends IntegrationTest {
     ActivityParticipationService activityParticipationService;
 
     @Autowired
+    PointAccountRepository pointAccountRepository;
+
+    @Autowired
     ActivityRepository activityRepository;
 
     @Autowired
     ActivityParticipationRepository activityParticipationRepository;
+
+    @Autowired
+    PointTransactionRepository pointTransactionRepository;
 
     @Nested
     class 활동참여_생성 {
@@ -37,6 +49,9 @@ class ActivityParticipationServiceTest extends IntegrationTest {
             // given
             Activity activity = createActivityParticipantionActivity();
             Member member = createMember();
+            PointAccount pointAccount = createPointAccount(member);
+            BigDecimal initialBalance = pointAccount.getBalance();
+            pointAccountRepository.save(PointAccount.create(member));
             ActivityParticipationCreateRequest request =
                     new ActivityParticipationCreateRequest(activity.getId(), member.getId());
 
@@ -50,12 +65,29 @@ class ActivityParticipationServiceTest extends IntegrationTest {
 
             // then DB 상태 검증
             assertTrue(activityParticipationRepository.existsById(response.activityParticipationId()));
+
+            // then 포인트 발급 검증
+            PointAccount account =
+                    pointAccountRepository.findByMemberId(member.getId()).orElseThrow();
+            assertEquals(initialBalance.add(activity.getPointAmount()), account.getBalance());
+
+            // then 포인트 거래 생성 검증
+            List<PointTransaction> pointTransactions =
+                    pointTransactionRepository.findAllByPointAccountId(account.getId());
+            assertFalse(pointTransactions.isEmpty());
+
+            PointTransaction pointTransaction = pointTransactions.get(0);
+            assertEquals(activity.getPointAmount(), pointTransaction.getAmount());
+            assertEquals(activity.getName() + " 활동 참여", pointTransaction.getReason());
+            assertEquals(account.getId(), pointTransaction.getPointAccount().getId());
+            assertEquals(PointTransactionType.EARN, pointTransaction.getTransactionType());
         }
 
         @Test
         void 활동이_없으면_실패한다() {
             // given
             Member member = createMember();
+            createPointAccount(member);
             ActivityParticipationCreateRequest request = new ActivityParticipationCreateRequest(999L, member.getId());
 
             // when & then
@@ -81,6 +113,8 @@ class ActivityParticipationServiceTest extends IntegrationTest {
             // given
             Activity activity = createActivityParticipantionActivity();
             Member member = createMember();
+            createPointAccount(member);
+            pointAccountRepository.save(PointAccount.create(member));
             ActivityParticipationCreateRequest request =
                     new ActivityParticipationCreateRequest(activity.getId(), member.getId());
 
