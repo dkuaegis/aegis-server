@@ -56,8 +56,6 @@ public enum ErrorCode {
     // Activity
     ACTIVITY_NOT_FOUND(HttpStatus.NOT_FOUND),
     ACTIVITY_NAME_ALREADY_EXISTS(HttpStatus.CONFLICT),
-    ACTIVITY_ALREADY_ACTIVE(HttpStatus.CONFLICT),
-    ACTIVITY_ALREADY_INACTIVE(HttpStatus.CONFLICT),
     ACTIVITY_HAS_ASSOCIATED_ENTITIES(HttpStatus.CONFLICT),
 
     // Point
@@ -67,6 +65,7 @@ public enum ErrorCode {
 
     // QR Code
     QR_CODE_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR),
+    QR_CODE_NOT_FOUND(HttpStatus.NOT_FOUND),
 
     // Study
     STUDY_NOT_FOUND(HttpStatus.NOT_FOUND),

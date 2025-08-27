@@ -16,7 +16,10 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 import lombok.RequiredArgsConstructor;
 
+import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.qrcode.domain.QRCode;
+import aegis.server.domain.qrcode.dto.response.QRCodeMemberResponse;
 import aegis.server.domain.qrcode.repository.QRCodeRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
@@ -28,6 +31,7 @@ import aegis.server.global.security.oidc.UserDetails;
 public class QRCodeService {
 
     private final QRCodeRepository qrCodeRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional
     public String issueQRCode(UserDetails userDetails) {
@@ -54,5 +58,23 @@ public class QRCodeService {
         } catch (WriterException | IOException e) {
             throw new CustomException(ErrorCode.QR_CODE_GENERATION_FAILED);
         }
+    }
+
+    public QRCodeMemberResponse findMemberByQrCodeUuid(String uuid) {
+        UUID id;
+        try {
+            id = UUID.fromString(uuid);
+        } catch (IllegalArgumentException e) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
+
+        QRCode qrCode =
+                qrCodeRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.QR_CODE_NOT_FOUND));
+
+        Long memberId = qrCode.getMemberId();
+        Member member =
+                memberRepository.findById(memberId).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        return QRCodeMemberResponse.from(member);
     }
 }
