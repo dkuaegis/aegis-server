@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -114,16 +115,15 @@ class ActivityParticipationServiceTest extends IntegrationTest {
             Activity activity = createActivityParticipantionActivity();
             Member member = createMember();
             createPointAccount(member);
-            pointAccountRepository.save(PointAccount.create(member));
             ActivityParticipationCreateRequest request =
                     new ActivityParticipationCreateRequest(activity.getId(), member.getId());
 
             activityParticipationService.createActivityParticipation(request);
 
             // when & then
-            CustomException exception = assertThrows(
-                    CustomException.class, () -> activityParticipationService.createActivityParticipation(request));
-            assertEquals(ErrorCode.ACTIVITY_PARTICIPATION_ALREADY_EXISTS, exception.getErrorCode());
+            DataIntegrityViolationException exception = assertThrows(
+                    DataIntegrityViolationException.class,
+                    () -> activityParticipationService.createActivityParticipation(request));
         }
     }
 

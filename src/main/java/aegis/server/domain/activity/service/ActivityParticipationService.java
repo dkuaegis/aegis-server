@@ -34,7 +34,6 @@ public class ActivityParticipationService {
 
     @Transactional
     public ActivityParticipationResponse createActivityParticipation(ActivityParticipationCreateRequest request) {
-        // 활동 내역 생성
         Activity activity = activityRepository
                 .findById(request.activityId())
                 .orElseThrow(() -> new CustomException(ErrorCode.ACTIVITY_NOT_FOUND));
@@ -43,13 +42,6 @@ public class ActivityParticipationService {
                 .findById(request.memberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        if (activityParticipationRepository.existsByActivityAndMember(activity, member)) {
-            throw new CustomException(ErrorCode.ACTIVITY_PARTICIPATION_ALREADY_EXISTS);
-        }
-
-        ActivityParticipation activityParticipation =
-                activityParticipationRepository.save(ActivityParticipation.create(activity, member));
-
         // 포인트 발급
         PointAccount pointAccount = pointAccountRepository
                 .findByMemberId(member.getId())
@@ -57,12 +49,12 @@ public class ActivityParticipationService {
         pointAccount.add(activity.getPointAmount());
 
         PointTransaction transaction = PointTransaction.create(
-                pointAccount,
-                PointTransactionType.EARN,
-                activity.getPointAmount(),
-                activity.getName() + " 활동 참여",
-                activityParticipation);
+                pointAccount, PointTransactionType.EARN, activity.getPointAmount(), activity.getName() + " 활동 참여");
         pointTransactionRepository.save(transaction);
+
+        // 활동 내역 생성
+        ActivityParticipation activityParticipation =
+                activityParticipationRepository.save(ActivityParticipation.create(activity, member, transaction));
 
         return ActivityParticipationResponse.from(activityParticipation);
     }

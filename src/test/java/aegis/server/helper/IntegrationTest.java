@@ -60,7 +60,7 @@ public class IntegrationTest {
 
     protected void createPointTransaction(
             PointAccount account, PointTransactionType type, BigDecimal amount, String reason) {
-        pointTransactionRepository.save(PointTransaction.create(account, type, amount, reason, null));
+        pointTransactionRepository.save(PointTransaction.create(account, type, amount, reason));
     }
 
     protected void createEarnPointTransaction(PointAccount account, BigDecimal amount, String reason) {
