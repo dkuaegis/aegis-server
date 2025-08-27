@@ -52,7 +52,7 @@ class ActivityParticipationServiceTest extends IntegrationTest {
             Member member = createMember();
             PointAccount pointAccount = createPointAccount(member);
             BigDecimal initialBalance = pointAccount.getBalance();
-            pointAccountRepository.save(PointAccount.create(member));
+
             ActivityParticipationCreateRequest request =
                     new ActivityParticipationCreateRequest(activity.getId(), member.getId());
 
