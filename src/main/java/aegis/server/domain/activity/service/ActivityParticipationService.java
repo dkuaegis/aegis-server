@@ -44,7 +44,7 @@ public class ActivityParticipationService {
 
         // 포인트 발급
         PointAccount pointAccount = pointAccountRepository
-                .findByMemberId(member.getId())
+                .findByIdWithLock(member.getId()) // memberId와 pointAccountId가 동일
                 .orElseThrow(() -> new CustomException(ErrorCode.POINT_ACCOUNT_NOT_FOUND));
         pointAccount.add(activity.getPointAmount());
 
