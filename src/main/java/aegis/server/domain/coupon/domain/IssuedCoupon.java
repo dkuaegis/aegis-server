@@ -48,6 +48,38 @@ public class IssuedCoupon extends BaseEntity {
                 .build();
     }
 
+    /**
+     * 결제에 쿠폰을 임시로 연결합니다. 사용처리는 하지 않습니다.
+     * 양방향 연관관계를 일관되게 유지합니다.
+     */
+    public void assignTo(Payment payment) {
+        if (this.payment == payment) {
+            return;
+        }
+        if (this.payment != null) {
+            this.payment.getUsedCoupons().remove(this);
+        }
+        this.payment = payment;
+        if (!payment.getUsedCoupons().contains(this)) {
+            payment.getUsedCoupons().add(this);
+        }
+    }
+
+    /**
+     * 결제와의 임시 연결을 해제합니다. 사용처리 상태는 변경하지 않습니다.
+     */
+    public void detachFromPayment() {
+        if (this.payment != null) {
+            this.payment.getUsedCoupons().remove(this);
+            this.payment = null;
+        }
+    }
+
+    /**
+     * 쿠폰을 실제로 사용 처리합니다.
+     * 양방향 연관관계를 일관되게 유지합니다.
+     * 이미 사용된 쿠폰은 사용할 수 없습니다.
+     */
     public void use(Payment payment) {
         if (!isValid) {
             throw new CustomException(ErrorCode.COUPON_ALREADY_USED);

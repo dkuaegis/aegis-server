@@ -9,6 +9,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import aegis.server.domain.coupon.domain.Coupon;
+import aegis.server.domain.coupon.domain.IssuedCoupon;
+import aegis.server.domain.coupon.repository.CouponRepository;
+import aegis.server.domain.coupon.repository.IssuedCouponRepository;
 import aegis.server.domain.member.domain.Department;
 import aegis.server.domain.member.domain.Gender;
 import aegis.server.domain.member.domain.Grade;
@@ -43,6 +47,12 @@ public class TransactionServiceTest extends IntegrationTestWithoutTransactional 
     @Autowired
     MemberRepository memberRepository;
 
+    @Autowired
+    CouponRepository couponRepository;
+
+    @Autowired
+    IssuedCouponRepository issuedCouponRepository;
+
     private final String DEPOSIT_TRANSACTION_LOG_FORMAT =
             """
             [입금] %s원 %s
@@ -76,6 +86,37 @@ public class TransactionServiceTest extends IntegrationTestWithoutTransactional 
             // then
             Payment payment =
                     paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
+        }
+
+        @Test
+        void 결제완료_시_적용된_쿠폰이_사용처리된다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = UserDetails.from(member);
+            Coupon coupon = couponRepository.save(Coupon.create("테스트쿠폰", BigDecimal.valueOf(5000L)));
+            IssuedCoupon issuedCoupon = issuedCouponRepository.save(IssuedCoupon.of(coupon, member));
+
+            paymentService.createPayment(new PaymentRequest(List.of(issuedCoupon.getId())), userDetails);
+
+            // 사전 상태 확인
+            IssuedCoupon before =
+                    issuedCouponRepository.findById(issuedCoupon.getId()).get();
+            assertEquals(true, before.getIsValid());
+
+            BigDecimal finalPrice = CLUB_DUES.subtract(coupon.getDiscountAmount());
+            String transactionLog = String.format(DEPOSIT_TRANSACTION_LOG_FORMAT, finalPrice, member.getName());
+
+            // when
+            transactionService.createTransaction(transactionLog);
+
+            // then
+            IssuedCoupon after =
+                    issuedCouponRepository.findById(issuedCoupon.getId()).get();
+            Payment payment =
+                    paymentRepository.findByMemberInCurrentYearSemester(member).get();
+            assertEquals(false, after.getIsValid());
+            assertEquals(payment.getId(), after.getPayment().getId());
             assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
         }
     }

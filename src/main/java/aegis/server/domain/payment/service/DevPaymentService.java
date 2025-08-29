@@ -97,6 +97,9 @@ public class DevPaymentService {
             throw new CustomException(ErrorCode.PAYMENT_ACCESS_DENIED);
         }
 
+        // 결제에 연결된 쿠폰이 있으면 우선 연결을 해제한다(FK 제약 회피, 데이터 정합성 유지)
+        issuedCouponRepository.findAllByPaymentId(paymentId).forEach(IssuedCoupon::detachFromPayment);
+
         paymentRepository.delete(payment);
     }
 
