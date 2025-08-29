@@ -20,4 +20,7 @@ public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long
 
     @Query("SELECT ic FROM IssuedCoupon ic WHERE ic.id IN :ids AND ic.member.id = :memberId AND ic.isValid = true")
     List<IssuedCoupon> findByIdInAndMemberIdAndValid(List<Long> ids, Long memberId);
+
+    @Query("SELECT ic FROM IssuedCoupon ic WHERE ic.payment.id = :paymentId")
+    List<IssuedCoupon> findAllByPaymentId(Long paymentId);
 }
