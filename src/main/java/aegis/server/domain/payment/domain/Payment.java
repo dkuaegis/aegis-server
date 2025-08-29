@@ -69,8 +69,18 @@ public class Payment extends BaseEntity {
     }
 
     public void applyCoupons(List<IssuedCoupon> issuedCoupons) {
-        this.usedCoupons.clear();
-        this.usedCoupons.addAll(issuedCoupons);
+        // 기존 연결 중 제거 대상 해제
+        List<IssuedCoupon> current = new ArrayList<>(this.usedCoupons);
+        for (IssuedCoupon coupon : current) {
+            if (!issuedCoupons.contains(coupon)) {
+                coupon.detachFromPayment();
+            }
+        }
+
+        // 신규(또는 유지) 대상 연결
+        for (IssuedCoupon coupon : issuedCoupons) {
+            coupon.assignTo(this);
+        }
 
         BigDecimal totalDiscountAmount = calculateTotalDiscountAmount(issuedCoupons);
 

@@ -3,6 +3,8 @@ package aegis.server.domain.payment.service;
 import java.math.BigDecimal;
 import java.util.List;
 
+import jakarta.persistence.EntityManager;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +46,9 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
 
     @Autowired
     CouponRepository couponRepository;
+
+    @Autowired
+    EntityManager entityManager;
 
     @Nested
     class 결제정보_생성 {
@@ -154,6 +159,8 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
 
             // when
             PaymentResponse response = paymentService.createPayment(request, userDetails);
+            entityManager.flush();
+            entityManager.clear();
 
             // then
             Payment payment = paymentRepository.findById(response.id()).get();

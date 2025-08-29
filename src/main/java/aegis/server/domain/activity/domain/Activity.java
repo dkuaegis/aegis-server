@@ -1,11 +1,15 @@
 package aegis.server.domain.activity.domain;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.*;
 
 import lombok.*;
 
 import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.common.domain.YearSemester;
+import aegis.server.global.exception.CustomException;
+import aegis.server.global.exception.ErrorCode;
 
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
@@ -27,22 +31,27 @@ public class Activity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private YearSemester yearSemester;
 
-    @Builder.Default
-    private Boolean isActive = false;
+    @Column(precision = 10, scale = 0)
+    private BigDecimal pointAmount;
 
-    public static Activity create(String name) {
-        return Activity.builder().name(name).yearSemester(CURRENT_YEAR_SEMESTER).build();
+    public static Activity create(String name, BigDecimal pointAmount) {
+        assertPositiveAmount(pointAmount);
+        return Activity.builder()
+                .name(name)
+                .yearSemester(CURRENT_YEAR_SEMESTER)
+                .pointAmount(pointAmount)
+                .build();
     }
 
-    public void activate() {
-        this.isActive = true;
-    }
-
-    public void deactivate() {
-        this.isActive = false;
-    }
-
-    public void updateName(String name) {
+    public void update(String name, BigDecimal pointAmount) {
+        assertPositiveAmount(pointAmount);
         this.name = name;
+        this.pointAmount = pointAmount;
+    }
+
+    private static void assertPositiveAmount(BigDecimal amount) {
+        if (amount == null || amount.signum() <= 0) {
+            throw new CustomException(ErrorCode.POINT_ACTION_AMOUNT_NOT_POSITIVE);
+        }
     }
 }
