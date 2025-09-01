@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
-import aegis.server.domain.discord.dto.response.DiscordDemoteResponse;
 import aegis.server.domain.discord.service.AdminDiscordService;
 
 @Tag(name = "Admin Discord", description = "관리자 디스코드 권한 관리 API")
@@ -25,15 +24,15 @@ public class AdminDiscordController {
 
     @Operation(
             summary = "디스코드 역할 강등",
-            description = "현재 학기 회비 미납 회원에게 부여된 디스코드 완료 역할을 제거합니다. 관리자(ROLE_ADMIN)는 강등 대상에서 제외됩니다.",
+            description = "현재 학기 회비 미납 회원에게 부여된 디스코드 `@회원` 역할을 제거합니다. 관리자(ROLE_ADMIN)는 강등 대상에서 제외됩니다.",
             responses = {
-                @ApiResponse(responseCode = "200", description = "디스코드 역할 강등 성공"),
+                @ApiResponse(responseCode = "202", description = "요청 접수(비동기 처리)"),
                 @ApiResponse(responseCode = "403", description = "관리자 권한 필요", content = @Content),
                 @ApiResponse(responseCode = "500", description = "디스코드 길드/역할/채널 설정 오류", content = @Content)
             })
     @PostMapping("/demote")
-    public ResponseEntity<DiscordDemoteResponse> demoteDiscordRolesForCurrentSemester() {
-        DiscordDemoteResponse response = adminDiscordService.demoteDiscordRolesForCurrentSemester();
-        return ResponseEntity.ok().body(response);
+    public ResponseEntity<Void> demoteDiscordRolesForCurrentSemester() {
+        adminDiscordService.demoteDiscordRolesForCurrentSemester();
+        return ResponseEntity.accepted().build();
     }
 }

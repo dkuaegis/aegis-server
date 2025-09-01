@@ -15,4 +15,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     @Query("SELECT m FROM Member m WHERE m.role != :role AND m.id NOT IN :excludedIds")
     List<Member> findAllByRoleNotAndIdNotIn(@Param("role") Role role, @Param("excludedIds") List<Long> excludedIds);
+
+    // 결제완료자 ID 목록이 비어 있는 경우를 위한 단순 조회
+    List<Member> findAllByRoleNot(Role role);
 }
