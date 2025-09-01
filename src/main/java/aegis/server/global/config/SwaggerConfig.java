@@ -30,6 +30,12 @@ public class SwaggerConfig {
     }
 
     @Bean
+    @Profile("prod")
+    public OpenAPI prodOpenAPI() {
+        return baseOpenAPI().addServersItem(new Server().url("https://api.dkuaegis.org"));
+    }
+
+    @Bean
     @Profile("staging")
     public OpenAPI stagingOpenAPI() {
         return baseOpenAPI().addServersItem(new Server().url("https://staging-api.dkuaegis.org"));
