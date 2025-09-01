@@ -16,6 +16,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import aegis.server.domain.discord.service.DiscordUtil;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.event.MismatchEvent;
@@ -63,6 +64,28 @@ public class DiscordEventListener {
         }
 
         guild.addRoleToMember(UserSnowflake.fromId(discordId), role).queue();
+
+        String nickname = DiscordUtil.formatNickname(member.get());
+        guild.retrieveMemberById(discordId)
+                .queue(
+                        m -> m.modifyNickname(nickname)
+                                .queue(
+                                        v -> log.info(
+                                                "[DiscordEventListener][PaymentCompletedEvent] 닉네임 변경 성공: memberId={}, discordId={}, nickname={}",
+                                                member.get().getId(),
+                                                discordId,
+                                                nickname),
+                                        e -> log.warn(
+                                                "[DiscordEventListener][PaymentCompletedEvent] 닉네임 변경 실패: memberId={}, discordId={}, nickname={}, reason={}",
+                                                member.get().getId(),
+                                                discordId,
+                                                nickname,
+                                                e.toString())),
+                        e -> log.warn(
+                                "[DiscordEventListener][PaymentCompletedEvent] 길드 멤버 조회 실패: memberId={}, discordId={}, reason={}",
+                                member.get().getId(),
+                                discordId,
+                                e.toString()));
 
         log.info(
                 "[DiscordEventListener][PaymentCompletedEvent] 디스코드 회원 역할 승급: paymentId={}, memberId={}, discordId={}",
