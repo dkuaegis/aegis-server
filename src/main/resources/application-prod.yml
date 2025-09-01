@@ -17,12 +17,6 @@ spring:
       username: ${REDIS_USER}
       password: ${REDIS_PASSWORD}
 
-springdoc:
-  api-docs:
-    enabled: false
-  swagger-ui:
-    enabled: false
-
 server:
   servlet:
     session:
