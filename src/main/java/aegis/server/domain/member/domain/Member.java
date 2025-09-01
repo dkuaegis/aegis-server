@@ -1,5 +1,7 @@
 package aegis.server.domain.member.domain;
 
+import java.util.Optional;
+
 import jakarta.persistence.*;
 
 import lombok.*;
@@ -97,5 +99,24 @@ public class Member extends BaseEntity {
 
     public void demoteToGuest() {
         this.role = Role.GUEST;
+    }
+
+    // 학번에서 입학년도(두 자리) 파생
+    public Optional<String> getEntranceYearYY() {
+        if (this.studentId == null) {
+            return Optional.empty();
+        }
+        String s = this.studentId;
+        if (s.length() < 4) {
+            return Optional.empty();
+        }
+        if (!s.startsWith("32")) {
+            return Optional.empty();
+        }
+        String yy = s.substring(2, 4);
+        if (!yy.chars().allMatch(Character::isDigit)) {
+            return Optional.empty();
+        }
+        return Optional.of(yy);
     }
 }
