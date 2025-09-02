@@ -23,4 +23,9 @@ public class CustomOidcUser extends DefaultOidcUser {
                 oidcUser.getUserInfo());
         this.userDetails = UserDetails.from(member);
     }
+
+    @Override
+    public String getName() {
+        return userDetails.getMemberId().toString();
+    }
 }
