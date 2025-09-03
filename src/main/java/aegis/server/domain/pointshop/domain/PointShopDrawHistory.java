@@ -30,6 +30,7 @@ public class PointShopDrawHistory extends BaseEntity {
     private Member member;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PointShopItem item;
 
     @OneToOne(fetch = FetchType.LAZY)
