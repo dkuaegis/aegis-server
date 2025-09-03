@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.study.domain.Study;
 import aegis.server.domain.study.domain.StudyMember;
@@ -22,4 +23,15 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
     boolean existsByStudyIdAndMemberIdAndRole(Long studyId, Long memberId, StudyRole role);
 
     boolean existsByStudyAndMember(Study study, Member member);
+
+    @Query(
+            """
+        SELECT s.id
+        FROM StudyMember sm
+        JOIN sm.study s
+        WHERE sm.member.id = :memberId
+          AND sm.role = :role
+          AND s.yearSemester = :yearSemester
+        """)
+    List<Long> findStudyIdsByMemberIdAndRoleAndYearSemester(Long memberId, StudyRole role, YearSemester yearSemester);
 }
