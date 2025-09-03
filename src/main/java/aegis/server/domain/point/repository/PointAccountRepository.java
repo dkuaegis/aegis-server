@@ -1,11 +1,11 @@
 package aegis.server.domain.point.repository;
 
-import java.awt.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 import jakarta.persistence.LockModeType;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;

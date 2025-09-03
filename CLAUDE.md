@@ -2,6 +2,7 @@
 
 - 아래 규칙은 그 어떤 규칙보다 우선하며 항상 지켜야 합니다.
 - 비즈니스 로직이 담긴 코드를 작성하거나 수정한 경우 반드시 테스트코드를 작성하거나 실행하세요.
+- repository 레이어의 DTO Projection 상황과 같이 불가피한 경우가 아닌 이상 `aegis.server.domain.activity.domain.Activity` 처럼 패키지 경로를 코드에 작성하지 말고 import 문을 활용하여 가독성을 높이세요.
 
 # 아키텍처
 
