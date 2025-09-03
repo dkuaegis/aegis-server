@@ -22,6 +22,8 @@ import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.event.MismatchEvent;
 import aegis.server.domain.payment.domain.event.NameConflictEvent;
 import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
+import aegis.server.domain.pointshop.domain.event.PointShopDrawnEvent;
+import aegis.server.domain.pointshop.dto.internal.PointShopDrawInfo;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 
@@ -114,6 +116,25 @@ public class DiscordEventListener {
                         event.transactionInfo().depositorName(),
                         event.transactionInfo().amount(),
                         event.memberIds()))
+                .queue();
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handlePointShopDrawnEvent(PointShopDrawnEvent event) {
+        PointShopDrawInfo info = event.pointShopDrawInfo();
+
+        Member member = memberRepository
+                .findById(info.memberId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        String name = member.getName();
+        String studentId = member.getStudentId() != null ? member.getStudentId() : "N/A";
+        String phoneNumber = member.getPhoneNumber() != null ? member.getPhoneNumber() : "N/A";
+
+        alarmChannel()
+                .sendMessage(String.format(
+                        "[POINT_SHOP_DRAW]\n상품: %s\n회원 ID: %s\n이름: %s\n학번: %s\n전화번호: %s",
+                        info.item(), info.memberId(), name, studentId, phoneNumber))
                 .queue();
     }
 

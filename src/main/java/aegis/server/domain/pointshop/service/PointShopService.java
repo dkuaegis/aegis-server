@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,8 @@ import aegis.server.domain.point.repository.PointAccountRepository;
 import aegis.server.domain.point.repository.PointTransactionRepository;
 import aegis.server.domain.pointshop.domain.PointShopDrawHistory;
 import aegis.server.domain.pointshop.domain.PointShopItem;
+import aegis.server.domain.pointshop.domain.event.PointShopDrawnEvent;
+import aegis.server.domain.pointshop.dto.internal.PointShopDrawInfo;
 import aegis.server.domain.pointshop.dto.response.PointShopDrawHistoryResponse;
 import aegis.server.domain.pointshop.dto.response.PointShopDrawResponse;
 import aegis.server.domain.pointshop.repository.PointShopDrawHistoryRepository;
@@ -34,6 +37,7 @@ public class PointShopService {
     private final PointAccountRepository pointAccountRepository;
     private final PointTransactionRepository pointTransactionRepository;
     private final PointShopDrawHistoryRepository pointShopDrawHistoryRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public List<PointShopDrawHistoryResponse> getMyDrawHistories(UserDetails userDetails) {
         List<PointShopDrawHistory> histories =
@@ -64,7 +68,10 @@ public class PointShopService {
         PointShopDrawHistory history = PointShopDrawHistory.create(account.getMember(), drawnItem, transaction);
         pointShopDrawHistoryRepository.save(history);
 
-        // 6. 응답 반환
+        // 6. 이벤트 발행
+        applicationEventPublisher.publishEvent(new PointShopDrawnEvent(PointShopDrawInfo.from(history)));
+
+        // 7. 응답 반환
         return PointShopDrawResponse.of(drawnItem, account.getBalance(), transaction.getId(), history.getId());
     }
 
