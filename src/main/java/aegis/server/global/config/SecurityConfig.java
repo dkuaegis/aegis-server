@@ -56,7 +56,7 @@ public class SecurityConfig {
                 .hasRole("ADMIN")
 
                 // 정회원 전용 API (개발용 포함)
-                .requestMatchers("/dev/**", "/mypage", "/studies/**", "/points/**", "/qrcode/**")
+                .requestMatchers("/dev/**", "/mypage", "/studies/**", "/points/**", "/qrcode/**", "/point-shop/**")
                 .hasRole("USER")
 
                 // 회원가입 과정 API (게스트 이상 접근 가능)

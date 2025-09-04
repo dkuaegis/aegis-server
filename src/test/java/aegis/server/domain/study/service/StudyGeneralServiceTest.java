@@ -13,6 +13,7 @@ import aegis.server.domain.study.domain.*;
 import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
 import aegis.server.domain.study.dto.request.StudyEnrollRequest;
 import aegis.server.domain.study.dto.response.GeneralStudyDetail;
+import aegis.server.domain.study.dto.response.GeneralStudyRolesIdsResponse;
 import aegis.server.domain.study.dto.response.GeneralStudySummary;
 import aegis.server.domain.study.repository.StudyApplicationRepository;
 import aegis.server.domain.study.repository.StudyMemberRepository;
@@ -70,6 +71,56 @@ class StudyGeneralServiceTest extends IntegrationTest {
 
             // then
             assertEquals(0, response.size());
+        }
+    }
+
+    @Nested
+    class 내_스터디_권한_조회 {
+
+        @Test
+        void 성공한다() {
+            // given
+            Member me = createMember();
+            UserDetails userDetails = createUserDetails(me);
+
+            // 내가 스터디장인 스터디
+            Study instructorStudy = createStudy("스터디장 스터디", StudyRecruitmentMethod.APPLICATION);
+            createStudyMember(instructorStudy, me, StudyRole.INSTRUCTOR);
+
+            // 내가 스터디원인 스터디
+            Member anotherInstructor = createMember();
+            Study participantStudy = createStudy("스터디원 스터디", StudyRecruitmentMethod.FCFS);
+            createStudyMember(participantStudy, anotherInstructor, StudyRole.INSTRUCTOR);
+            createStudyMember(participantStudy, me, StudyRole.PARTICIPANT);
+
+            // 내가 지원서를 제출한 스터디
+            Member thirdInstructor = createMember();
+            Study appliedStudy = createStudy("지원한 스터디", StudyRecruitmentMethod.APPLICATION);
+            createStudyMember(appliedStudy, thirdInstructor, StudyRole.INSTRUCTOR);
+            createStudyApplication(appliedStudy, me, "지원 사유");
+
+            // when
+            GeneralStudyRolesIdsResponse response = studyGeneralService.getMyStudyRoles(userDetails);
+
+            // then (반환값 검증: ID 목록)
+            assertTrue(response.instructorStudyIds().contains(instructorStudy.getId()));
+            assertTrue(response.participantStudyIds().contains(participantStudy.getId()));
+            assertTrue(response.appliedStudyIds().contains(appliedStudy.getId()));
+        }
+
+        @Test
+        void 관련_스터디가_없으면_모두_빈_리스트를_반환한다() {
+            // given
+            Member me = createMember();
+            UserDetails userDetails = createUserDetails(me);
+
+            // when
+            GeneralStudyRolesIdsResponse response = studyGeneralService.getMyStudyRoles(userDetails);
+
+            // then
+            assertEquals(0, response.instructorStudyIds().size());
+            assertEquals(0, response.participantStudyIds().size());
+            assertEquals(0, response.appliedStudyIds().size());
         }
     }
 

@@ -13,6 +13,7 @@ import aegis.server.domain.study.domain.*;
 import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
 import aegis.server.domain.study.dto.request.StudyEnrollRequest;
 import aegis.server.domain.study.dto.response.GeneralStudyDetail;
+import aegis.server.domain.study.dto.response.GeneralStudyRolesIdsResponse;
 import aegis.server.domain.study.dto.response.GeneralStudySummary;
 import aegis.server.domain.study.repository.StudyApplicationRepository;
 import aegis.server.domain.study.repository.StudyMemberRepository;
@@ -20,6 +21,8 @@ import aegis.server.domain.study.repository.StudyRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
+
+import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +42,19 @@ public class StudyGeneralService {
         return studyRepository
                 .findStudyDetailById(studyId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STUDY_NOT_FOUND));
+    }
+
+    public GeneralStudyRolesIdsResponse getMyStudyRoles(UserDetails userDetails) {
+        Member member = getMemberById(userDetails.getMemberId());
+
+        List<Long> instructorStudyIds = studyMemberRepository.findStudyIdsByMemberIdAndRoleAndYearSemester(
+                member.getId(), StudyRole.INSTRUCTOR, CURRENT_YEAR_SEMESTER);
+        List<Long> participantStudyIds = studyMemberRepository.findStudyIdsByMemberIdAndRoleAndYearSemester(
+                member.getId(), StudyRole.PARTICIPANT, CURRENT_YEAR_SEMESTER);
+        List<Long> appliedStudyIds = studyApplicationRepository.findAppliedStudyIdsByMemberIdAndStatusAndYearSemester(
+                member.getId(), StudyApplicationStatus.PENDING, CURRENT_YEAR_SEMESTER);
+
+        return GeneralStudyRolesIdsResponse.from(instructorStudyIds, participantStudyIds, appliedStudyIds);
     }
 
     @Transactional
