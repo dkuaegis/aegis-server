@@ -90,6 +90,16 @@ public class CouponService {
                 .toList();
     }
 
+    public List<IssuedCouponResponse> findMyAllValidIssuedCoupons(UserDetails userDetails) {
+        Member member = memberRepository
+                .findById(userDetails.getMemberId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        return issuedCouponRepository.findAllByMemberAndIsValidTrueWithCoupon(member).stream()
+                .map(IssuedCouponResponse::from)
+                .toList();
+    }
+
     @Transactional
     public List<IssuedCouponResponse> createIssuedCoupon(CouponIssueRequest request) {
         Coupon coupon = couponRepository
