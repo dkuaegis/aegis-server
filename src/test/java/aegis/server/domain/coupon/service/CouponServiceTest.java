@@ -22,6 +22,8 @@ import aegis.server.domain.coupon.repository.CouponCodeRepository;
 import aegis.server.domain.coupon.repository.CouponRepository;
 import aegis.server.domain.coupon.repository.IssuedCouponRepository;
 import aegis.server.domain.member.domain.*;
+import aegis.server.domain.payment.domain.Payment;
+import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
@@ -42,6 +44,9 @@ class CouponServiceTest extends IntegrationTest {
 
     @Autowired
     CouponCodeRepository couponCodeRepository;
+
+    @Autowired
+    PaymentRepository paymentRepository;
 
     private static final String COUPON_NAME = "쿠폰명";
 
@@ -130,6 +135,52 @@ class CouponServiceTest extends IntegrationTest {
 
             // when
             List<IssuedCouponResponse> responses = couponService.findMyAllIssuedCoupons(userDetails);
+
+            // then
+            assertEquals(0, responses.size());
+        }
+    }
+
+    @Nested
+    class 자신에게_발급된_유효_쿠폰_조회 {
+        @Test
+        void 성공한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Coupon coupon = createCoupon();
+            IssuedCoupon validIssuedCoupon = createIssuedCoupon(coupon, member);
+            IssuedCoupon willBeUsedIssuedCoupon = createIssuedCoupon(coupon, member);
+
+            // 하나는 사용 처리하여 유효하지 않게 함
+            Payment payment = paymentRepository.save(Payment.of(member));
+            willBeUsedIssuedCoupon.use(payment);
+
+            // when
+            List<IssuedCouponResponse> responses = couponService.findMyAllValidIssuedCoupons(userDetails);
+
+            // then
+            assertEquals(1, responses.size());
+            IssuedCouponResponse response = responses.getFirst();
+            assertEquals(member.getId(), response.memberId());
+            assertEquals(true, response.isValid());
+            assertEquals(validIssuedCoupon.getId(), response.issuedCouponId());
+        }
+
+        @Test
+        void 유효_쿠폰이_없는_경우_빈_리스트를_반환한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Coupon coupon = createCoupon();
+            IssuedCoupon issuedCoupon = createIssuedCoupon(coupon, member);
+
+            // 발급된 쿠폰 모두 사용 처리
+            Payment payment = paymentRepository.save(Payment.of(member));
+            issuedCoupon.use(payment);
+
+            // when
+            List<IssuedCouponResponse> responses = couponService.findMyAllValidIssuedCoupons(userDetails);
 
             // then
             assertEquals(0, responses.size());

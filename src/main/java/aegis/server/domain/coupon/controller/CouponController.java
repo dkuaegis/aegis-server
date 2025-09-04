@@ -45,6 +45,20 @@ public class CouponController {
     }
 
     @Operation(
+            summary = "내 유효한 쿠폰 조회",
+            description = "로그인한 사용자의 발급된 유효 쿠폰만 조회합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "쿠폰 조회 성공"),
+                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content)
+            })
+    @GetMapping("/me/valid")
+    public ResponseEntity<List<IssuedCouponResponse>> getMyAllValidIssuedCoupon(
+            @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
+        List<IssuedCouponResponse> responses = couponService.findMyAllValidIssuedCoupons(userDetails);
+        return ResponseEntity.ok().body(responses);
+    }
+
+    @Operation(
             summary = "쿠폰 코드 사용",
             description = "쿠폰 코드를 사용하여 쿠폰을 발급받습니다.",
             responses = {
