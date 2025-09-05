@@ -15,10 +15,22 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
+# Download Grafana OpenTelemetry Java agent
 RUN wget -O /app/grafana-opentelemetry-java.jar https://github.com/grafana/grafana-opentelemetry-java/releases/latest/download/grafana-opentelemetry-java.jar
+
+# Install Atlas CLI
+RUN arch=$(apk --print-arch) && \
+    if [ "$arch" = "x86_64" ]; then ATLAS_ARCH=amd64; \
+    elif [ "$arch" = "aarch64" ]; then ATLAS_ARCH=arm64; \
+    else echo "unsupported architecture: $arch" && exit 1; fi && \
+    wget -q -O /usr/local/bin/atlas https://release.ariga.io/atlas/atlas-linux-${ATLAS_ARCH}-latest && \
+    chmod +x /usr/local/bin/atlas
 
 COPY --from=builder /tmp/build/version.txt /app/version.txt
 COPY --from=builder /tmp/build/libs/*-*.jar /app/app.jar
+COPY migrations /app/migrations
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 8080
 
@@ -27,4 +39,4 @@ ENV OTEL_SERVICE_NAME=aegis-server
 ENV OTEL_SERVICE_NAMESPACE=aegis-web
 ENV OTEL_DEPLOYMENT_ENVIRONMENT=prod
 
-ENTRYPOINT ["sh", "-c", "export OTEL_RESOURCE_ATTRIBUTES=\"deployment.environment=${OTEL_DEPLOYMENT_ENVIRONMENT},service.namespace=${OTEL_SERVICE_NAMESPACE},service.version=$(cat /app/version.txt)\" && exec java -javaagent:/app/grafana-opentelemetry-java.jar -jar /app/app.jar"]
+ENTRYPOINT ["/app/entrypoint.sh"]
