@@ -52,6 +52,7 @@ class MemberServiceTest extends IntegrationTest {
             assertEquals(member.getDepartment(), response.department());
             assertEquals(member.getGrade(), response.grade());
             assertEquals(member.getProfileIcon(), response.profileIcon());
+            assertEquals(member.getRole(), response.role());
         }
 
         @Test
@@ -91,6 +92,7 @@ class MemberServiceTest extends IntegrationTest {
             assertEquals(personalInfoUpdateRequest.grade(), response.grade());
             assertEquals(personalInfoUpdateRequest.birthDate(), response.birthDate());
             assertEquals(personalInfoUpdateRequest.gender(), response.gender());
+            assertEquals(member.getRole(), response.role());
 
             // DB 상태 검증
             Member updatedMember = memberRepository.findById(member.getId()).get();
@@ -138,6 +140,7 @@ class MemberServiceTest extends IntegrationTest {
             assertEquals(member.getStudentId(), response.studentId());
             assertEquals(member.getDepartment(), response.department());
             assertEquals(profileIconUpdateRequest.profileIcon(), response.profileIcon());
+            assertEquals(member.getRole(), response.role());
 
             // DB 상태 검증
             Member updatedMember = memberRepository.findById(member.getId()).get();
