@@ -109,7 +109,8 @@ public class Study extends BaseEntity {
     }
 
     public void increaseCurrentParticipant() {
-        if (this.currentParticipants >= this.maxParticipants) {
+        // maxParticipants가 0이면 무제한으로 간주하여 정원 체크를 건너뜁니다.
+        if (this.maxParticipants != 0 && this.currentParticipants >= this.maxParticipants) {
             throw new CustomException(ErrorCode.STUDY_FULL);
         }
         this.currentParticipants++;
