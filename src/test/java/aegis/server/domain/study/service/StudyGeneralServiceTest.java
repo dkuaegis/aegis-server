@@ -263,6 +263,25 @@ class StudyGeneralServiceTest extends IntegrationTest {
                     () -> studyGeneralService.enrollInStudy(nonExistentStudyId, request, userDetails));
             assertEquals(ErrorCode.STUDY_NOT_FOUND, exception.getErrorCode());
         }
+
+        @Test
+        void 정원이_무제한인_스터디는_선착순_신청을_무제한으로_허용한다() {
+            // given
+            int applicantCount = 5;
+            Study study = createStudyWithMaxParticipants(0, StudyRecruitmentMethod.FCFS);
+
+            // when
+            for (int i = 0; i < applicantCount; i++) {
+                Member applicant = createMember();
+                UserDetails userDetails = createUserDetails(applicant);
+                StudyEnrollRequest request = new StudyEnrollRequest("무제한 테스트 신청");
+                studyGeneralService.enrollInStudy(study.getId(), request, userDetails);
+            }
+
+            // then
+            Study updatedStudy = studyRepository.findById(study.getId()).get();
+            assertEquals(applicantCount, updatedStudy.getCurrentParticipants());
+        }
     }
 
     @Nested
