@@ -148,6 +148,89 @@ class StudyEnrollConcurrencyTest extends IntegrationTestWithoutTransactional {
                 maxParticipants, applicantCount, successCount.get(), failCount.get());
     }
 
+    @Test
+    void 동시_신청_테스트_무제한() throws InterruptedException {
+        // 테스트 변수 설정
+        int maxParticipants = 0; // 0 = 무제한
+        int applicantCount = 1000; // 신청자 수
+
+        // given
+        Study study = createStudyWithMaxParticipants(maxParticipants, StudyRecruitmentMethod.FCFS);
+
+        // 미리 멤버들을 생성하여 동시성 문제 방지
+        List<Member> members = new ArrayList<>();
+        for (int i = 0; i < applicantCount; i++) {
+            members.add(createUniqueTestMember(i));
+        }
+
+        ExecutorService executorService = Executors.newFixedThreadPool(applicantCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch endLatch = new CountDownLatch(applicantCount);
+
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failCount = new AtomicInteger(0);
+
+        // when
+        List<CompletableFuture<Void>> futures = IntStream.range(0, applicantCount)
+                .mapToObj(i -> CompletableFuture.runAsync(
+                        () -> {
+                            try {
+                                startLatch.await();
+
+                                Member member = members.get(i);
+                                UserDetails userDetails = createUserDetails(member);
+                                StudyEnrollRequest request = new StudyEnrollRequest("동시성 무제한 테스트 신청");
+
+                                studyGeneralService.enrollInStudy(study.getId(), request, userDetails);
+                                successCount.incrementAndGet();
+
+                            } catch (CustomException e) {
+                                if (e.getErrorCode() == ErrorCode.STUDY_FULL) {
+                                    failCount.incrementAndGet();
+                                } else {
+                                    throw new RuntimeException("예상하지 못한 예외 발생: " + e.getErrorCode());
+                                }
+                            } catch (Exception e) {
+                                throw new RuntimeException("예상하지 못한 예외 발생", e);
+                            } finally {
+                                endLatch.countDown();
+                            }
+                        },
+                        executorService))
+                .toList();
+
+        // 모든 스레드가 동시에 시작되도록 신호 전송
+        startLatch.countDown();
+
+        // 모든 스레드가 완료될 때까지 대기
+        endLatch.await();
+
+        // CompletableFuture 완료 대기
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+        executorService.shutdown();
+
+        // then
+        Study updatedStudy = studyRepository.findById(study.getId()).get();
+        List<StudyMember> studyMembers = studyMemberRepository.findByStudy(study);
+
+        // 무제한: 현재 참가자 수는 신청자 수와 동일
+        assertEquals(applicantCount, updatedStudy.getCurrentParticipants(), "무제한에서는 모든 신청이 성공해야 합니다");
+        // 성공 수와 현재 참가자 수 일치
+        assertEquals(updatedStudy.getCurrentParticipants(), successCount.get());
+        // DB에 저장된 StudyMember 수가 현재 참가자 수와 일치
+        assertEquals(updatedStudy.getCurrentParticipants(), studyMembers.size());
+        // 총 요청 수 = 성공 수 + 실패 수
+        assertEquals(applicantCount, successCount.get() + failCount.get());
+        // 무제한에서는 실패 수 0
+        assertEquals(0, failCount.get(), "무제한에서는 실패가 없어야 합니다");
+
+        // 결과 출력
+        System.out.printf(
+                "무제한 테스트 결과 - 정원: %d(무제한), 신청자: %d명, 성공: %d명, 실패: %d명%n",
+                maxParticipants, applicantCount, successCount.get(), failCount.get());
+    }
+
     private Member createUniqueTestMember(int index) {
         String uniqueId = "test_user_" + System.currentTimeMillis() + "_" + index;
         Member member = Member.create(uniqueId, uniqueId + "@dankook.ac.kr", "테스트사용자" + index);

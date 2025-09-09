@@ -28,12 +28,20 @@ public class DiscordService {
 
     private final DiscordVerificationRepository discordVerificationRepository;
     private final MemberRepository memberRepository;
+    private final DiscordMembershipChecker discordMembershipChecker;
 
     public DiscordIdResponse getDiscordId(UserDetails userDetails) {
         Member member = memberRepository
                 .findById(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-        return DiscordIdResponse.of(member.getDiscordId());
+
+        String discordId = member.getDiscordId();
+        if (discordId == null || discordId.isBlank()) {
+            return DiscordIdResponse.of(null);
+        }
+
+        boolean isMember = discordMembershipChecker.isMember(discordId);
+        return DiscordIdResponse.of(isMember ? discordId : null);
     }
 
     @Transactional

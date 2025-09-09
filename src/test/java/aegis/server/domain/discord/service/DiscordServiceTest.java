@@ -21,6 +21,7 @@ import aegis.server.helper.IntegrationTest;
 import aegis.server.helper.RedisCleaner;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 class DiscordServiceTest extends IntegrationTest {
 
@@ -35,6 +36,9 @@ class DiscordServiceTest extends IntegrationTest {
 
     @Autowired
     RedisCleaner redisCleaner;
+
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    DiscordMembershipChecker discordMembershipChecker;
 
     @BeforeEach
     void setUp() {
@@ -52,12 +56,29 @@ class DiscordServiceTest extends IntegrationTest {
             member.updateDiscordId(DISCORD_ID);
             memberRepository.save(member);
             UserDetails userDetails = createUserDetails(member);
+            when(discordMembershipChecker.isMember(DISCORD_ID)).thenReturn(true);
 
             // when
             DiscordIdResponse response = discordService.getDiscordId(userDetails);
 
             // then
             assertEquals(DISCORD_ID, response.discordId());
+        }
+
+        @Test
+        void 서버_미가입이면_null을_반환한다() {
+            // given
+            Member member = createMember();
+            member.updateDiscordId(DISCORD_ID);
+            memberRepository.save(member);
+            UserDetails userDetails = createUserDetails(member);
+            when(discordMembershipChecker.isMember(DISCORD_ID)).thenReturn(false);
+
+            // when
+            DiscordIdResponse response = discordService.getDiscordId(userDetails);
+
+            // then
+            assertNull(response.discordId());
         }
 
         @Test

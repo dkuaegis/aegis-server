@@ -338,6 +338,32 @@ class StudyInstructorServiceTest extends IntegrationTest {
                             study.getId(), application.getId(), instructorDetails));
             assertEquals(ErrorCode.STUDY_FULL, exception.getErrorCode());
         }
+
+        @Test
+        void 정원이_무제한인_스터디는_승인을_무제한으로_허용한다() {
+            // given
+            Member instructor = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+
+            int approveCount = 4;
+            Study study = createStudyWithMaxParticipants(instructor, 0);
+
+            // 신청서 생성
+            Member[] applicants = new Member[approveCount];
+            for (int i = 0; i < approveCount; i++) {
+                applicants[i] = createMember();
+                createStudyApplication(study, applicants[i], "무제한 승인 테스트" + i);
+            }
+
+            // when
+            var applications = studyApplicationRepository.findAllByStudyIdWithMember(study.getId());
+            applications.forEach(app ->
+                    studyInstructorService.approveStudyApplication(study.getId(), app.getId(), instructorDetails));
+
+            // then
+            Study updated = studyRepository.findById(study.getId()).get();
+            assertEquals(approveCount, updated.getCurrentParticipants());
+        }
     }
 
     @Nested
