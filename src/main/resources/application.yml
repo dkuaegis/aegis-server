@@ -30,6 +30,7 @@ springdoc:
     disable-swagger-default-url: true
     tags-sorter: alpha
     operations-sorter: alpha
+    doc-expansion: none
   api-docs:
     path: /docs/api
   default-produces-media-type: application/json
