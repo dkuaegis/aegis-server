@@ -11,8 +11,6 @@ import org.springframework.context.annotation.Configuration;
 
 import lombok.RequiredArgsConstructor;
 
-import aegis.server.domain.discord.service.listener.DiscordSlashCommandListener;
-
 @Configuration
 @RequiredArgsConstructor
 public class DiscordConfig {
@@ -20,13 +18,10 @@ public class DiscordConfig {
     @Value("${discord.token}")
     private String token;
 
-    private final DiscordSlashCommandListener discordSlashCommandListener;
-
     @Bean
     public JDA jda() {
         JDA jda = JDABuilder.createDefault(token)
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
-                .addEventListeners(discordSlashCommandListener)
                 .build();
 
         jda.upsertCommand("join", "디스코드 연동 인증코드를 입력해주세요!")
