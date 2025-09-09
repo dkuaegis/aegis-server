@@ -33,7 +33,7 @@ public class DiscordController {
 
     @Operation(
             summary = "내 디스코드 ID 조회",
-            description = "로그인한 사용자의 연동된 디스코드 ID를 조회합니다.",
+            description = "로그인한 사용자의 연동된 디스코드 ID를 조회합니다. 현재 디스코드 서버 미가입(탈퇴 포함)인 경우 null을 반환합니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "디스코드 ID 조회 성공"),
                 @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
