@@ -1,5 +1,8 @@
 package aegis.server.domain.discord.service.listener;
 
+import jakarta.annotation.PostConstruct;
+
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -17,6 +20,13 @@ import aegis.server.domain.discord.service.DiscordService;
 public class DiscordSlashCommandListener extends ListenerAdapter {
 
     private final DiscordService discordService;
+    private final JDA jda;
+
+    @PostConstruct
+    void register() {
+        // JDA 초기화 후 리스너 자기 등록
+        jda.addEventListener(this);
+    }
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
