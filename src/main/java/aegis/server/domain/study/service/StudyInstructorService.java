@@ -15,6 +15,7 @@ import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
 import aegis.server.domain.study.dto.response.GeneralStudyDetail;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationReason;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationSummary;
+import aegis.server.domain.study.dto.response.InstructorStudyMemberResponse;
 import aegis.server.domain.study.repository.StudyApplicationRepository;
 import aegis.server.domain.study.repository.StudyMemberRepository;
 import aegis.server.domain.study.repository.StudyRepository;
@@ -37,6 +38,16 @@ public class StudyInstructorService {
         List<StudyApplication> studyApplications = studyApplicationRepository.findAllByStudyIdWithMember(studyId);
         return studyApplications.stream()
                 .map(InstructorStudyApplicationSummary::from)
+                .toList();
+    }
+
+    public List<InstructorStudyMemberResponse> findAllStudyMembers(Long studyId, UserDetails userDetails) {
+        validateIsStudyInstructorByStudyId(studyId, userDetails.getMemberId());
+
+        List<StudyMember> members =
+                studyMemberRepository.findByStudyIdAndRoleWithMember(studyId, StudyRole.PARTICIPANT);
+        return members.stream()
+                .map(sm -> InstructorStudyMemberResponse.from(sm.getMember()))
                 .toList();
     }
 

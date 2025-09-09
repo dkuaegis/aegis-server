@@ -19,6 +19,7 @@ import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
 import aegis.server.domain.study.dto.response.GeneralStudyDetail;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationReason;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationSummary;
+import aegis.server.domain.study.dto.response.InstructorStudyMemberResponse;
 import aegis.server.domain.study.service.StudyInstructorService;
 import aegis.server.global.security.annotation.LoginUser;
 import aegis.server.global.security.oidc.UserDetails;
@@ -43,6 +44,21 @@ public class StudyInstructorController {
             @PathVariable Long studyId, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
         List<InstructorStudyApplicationSummary> response =
                 studyInstructorService.findAllStudyApplications(studyId, userDetails);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "스터디원 목록 조회",
+            description = "스터디장이 자신의 스터디의 스터디원 목록을 조회합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "스터디원 목록 조회 성공"),
+                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
+            })
+    @GetMapping("/studies/{studyId}/members-instructor")
+    public ResponseEntity<List<InstructorStudyMemberResponse>> getStudyMembers(
+            @PathVariable Long studyId, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
+        List<InstructorStudyMemberResponse> response = studyInstructorService.findAllStudyMembers(studyId, userDetails);
         return ResponseEntity.ok(response);
     }
 

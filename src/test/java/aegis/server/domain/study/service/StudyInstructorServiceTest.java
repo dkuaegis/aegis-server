@@ -94,6 +94,64 @@ class StudyInstructorServiceTest extends IntegrationTest {
     }
 
     @Nested
+    class 스터디원_목록_조회 {
+
+        @Test
+        void 강사가_자신의_스터디원_목록을_조회할_수_있다() {
+            // given
+            Member instructor = createMember();
+            Member participant1 = createMember();
+            Member participant2 = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+
+            Study study = createStudyWithInstructor(instructor);
+
+            // 참여자 등록
+            studyMemberRepository.save(StudyMember.create(study, participant1, StudyRole.PARTICIPANT));
+            studyMemberRepository.save(StudyMember.create(study, participant2, StudyRole.PARTICIPANT));
+
+            // when
+            var response = studyInstructorService.findAllStudyMembers(study.getId(), instructorDetails);
+
+            // then
+            assertEquals(2, response.size());
+            assertTrue(response.stream().anyMatch(r -> r.name().equals(participant1.getName())));
+            assertTrue(response.stream().anyMatch(r -> r.name().equals(participant2.getName())));
+            assertTrue(response.stream().allMatch(r -> r.phoneNumber() != null));
+            assertTrue(response.stream().allMatch(r -> r.studentId() != null));
+        }
+
+        @Test
+        void 스터디원이_없으면_빈_리스트를_반환한다() {
+            // given
+            Member instructor = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+
+            // when
+            var response = studyInstructorService.findAllStudyMembers(study.getId(), instructorDetails);
+
+            // then
+            assertEquals(0, response.size());
+        }
+
+        @Test
+        void 강사가_아닌_사용자가_조회하면_예외가_발생한다() {
+            // given
+            Member instructor = createMember();
+            Member nonInstructor = createMember();
+            UserDetails nonInstructorDetails = createUserDetails(nonInstructor);
+            Study study = createStudyWithInstructor(instructor);
+
+            // when & then
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> studyInstructorService.findAllStudyMembers(study.getId(), nonInstructorDetails));
+            assertEquals(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR, exception.getErrorCode());
+        }
+    }
+
+    @Nested
     class 스터디_신청_상세_조회 {
 
         @Test
