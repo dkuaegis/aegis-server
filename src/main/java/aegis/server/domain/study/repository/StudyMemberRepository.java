@@ -26,6 +26,17 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
 
     @Query(
             """
+        SELECT sm
+        FROM StudyMember sm
+        JOIN FETCH sm.member m
+        WHERE sm.study.id = :studyId
+          AND sm.role = :role
+        ORDER BY m.name ASC
+        """)
+    List<StudyMember> findByStudyIdAndRoleWithMember(Long studyId, StudyRole role);
+
+    @Query(
+            """
         SELECT s.id
         FROM StudyMember sm
         JOIN sm.study s
