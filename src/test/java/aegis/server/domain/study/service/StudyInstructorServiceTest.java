@@ -133,7 +133,7 @@ class StudyInstructorServiceTest extends IntegrationTest {
             // 반환값 검증
             assertNotNull(response);
             assertNotNull(response.code());
-            assertEquals(6, response.code().length());
+            assertEquals(4, response.code().length());
             assertNotNull(response.sessionId());
 
             // DB 상태 검증
