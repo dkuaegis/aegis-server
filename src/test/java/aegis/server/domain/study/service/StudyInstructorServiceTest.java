@@ -22,7 +22,6 @@ import aegis.server.domain.study.dto.response.InstructorStudyApplicationReason;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationSummary;
 import aegis.server.domain.study.dto.response.InstructorStudyMemberResponse;
 import aegis.server.domain.study.repository.StudyApplicationRepository;
-import aegis.server.domain.study.repository.StudyAttendanceCodeRepository;
 import aegis.server.domain.study.repository.StudyMemberRepository;
 import aegis.server.domain.study.repository.StudyRepository;
 import aegis.server.domain.study.repository.StudySessionRepository;
@@ -30,7 +29,6 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
-import aegis.server.helper.RedisCleaner;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
@@ -52,18 +50,11 @@ class StudyInstructorServiceTest extends IntegrationTest {
     @Autowired
     StudySessionRepository studySessionRepository;
 
-    @Autowired
-    StudyAttendanceCodeRepository studyAttendanceCodeRepository;
-
-    @Autowired
-    RedisCleaner redisCleaner;
-
     @MockitoBean
     Clock clock;
 
     @BeforeEach
-    void cleanRedis() {
-        redisCleaner.clean();
+    void setupClock() {
         given(clock.getZone()).willReturn(ZoneId.of("Asia/Seoul"));
         given(clock.instant()).willReturn(Instant.parse("2025-09-11T01:00:00Z"));
     }
@@ -139,24 +130,22 @@ class StudyInstructorServiceTest extends IntegrationTest {
                     studyInstructorService.issueAttendanceCode(study.getId(), instructorDetails);
 
             // then
+            // 반환값 검증
             assertNotNull(response);
             assertNotNull(response.code());
             assertEquals(6, response.code().length());
             assertNotNull(response.sessionId());
 
-            // 세션은 하루 1개 생성 (서비스에서 사용하는 Clock 기준)
-            assertTrue(studySessionRepository
-                    .findByStudyIdAndSessionDate(study.getId(), LocalDate.now(clock))
-                    .isPresent());
-
-            // 세션당 코드 1개만 유지
-            assertTrue(studyAttendanceCodeRepository
-                    .findBySessionId(response.sessionId())
-                    .isPresent());
+            // DB 상태 검증
+            StudySession session =
+                    studySessionRepository.findById(response.sessionId()).get();
+            assertNotNull(session);
+            assertEquals(LocalDate.now(clock), session.getSessionDate());
+            assertEquals(response.code(), session.getAttendanceCode());
         }
 
         @Test
-        void 같은_날_재발급하면_세션은_같고_코드는_바뀐다() {
+        void 같은_날_재발급하면_세션과_코드는_유지된다() {
             // given
             Member instructor = createMember();
             UserDetails instructorDetails = createUserDetails(instructor);
@@ -170,13 +159,15 @@ class StudyInstructorServiceTest extends IntegrationTest {
                     studyInstructorService.issueAttendanceCode(study.getId(), instructorDetails);
 
             // then
+            // 반환값 검증
             assertEquals(first.sessionId(), second.sessionId());
-            assertNotEquals(first.code(), second.code());
+            assertEquals(first.code(), second.code());
 
-            // 세션당 코드 1개 유지(이전 코드는 삭제됨)
-            assertTrue(studyAttendanceCodeRepository
-                    .findBySessionId(first.sessionId())
-                    .isPresent());
+            // DB 상태 검증
+            StudySession session =
+                    studySessionRepository.findById(first.sessionId()).get();
+            assertEquals(first.code(), session.getAttendanceCode());
+            assertEquals(second.code(), session.getAttendanceCode());
         }
 
         @Test

@@ -135,7 +135,7 @@ public class StudyInstructorController {
 
     @Operation(
             summary = "출석 코드 발급",
-            description = "오늘 날짜의 세션에 대한 출석 코드를 발급합니다. 같은 날 재발급 시 기존 세션을 재사용합니다.",
+            description = "오늘 날짜의 세션에 대한 출석 코드를 발급합니다. 같은 날 재발급 시 동일 코드를 반환합니다.",
             responses = {
                 @ApiResponse(responseCode = "201", description = "출석 코드 발급 성공"),
                 @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),

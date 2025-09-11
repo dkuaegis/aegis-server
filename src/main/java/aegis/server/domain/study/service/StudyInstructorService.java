@@ -4,6 +4,7 @@ import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.study.domain.Study;
 import aegis.server.domain.study.domain.StudyApplication;
-import aegis.server.domain.study.domain.StudyAttendanceCode;
 import aegis.server.domain.study.domain.StudyMember;
 import aegis.server.domain.study.domain.StudyRole;
 import aegis.server.domain.study.domain.StudySession;
@@ -23,7 +23,6 @@ import aegis.server.domain.study.dto.response.InstructorStudyApplicationReason;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationSummary;
 import aegis.server.domain.study.dto.response.InstructorStudyMemberResponse;
 import aegis.server.domain.study.repository.StudyApplicationRepository;
-import aegis.server.domain.study.repository.StudyAttendanceCodeRepository;
 import aegis.server.domain.study.repository.StudyMemberRepository;
 import aegis.server.domain.study.repository.StudyRepository;
 import aegis.server.domain.study.repository.StudySessionRepository;
@@ -40,7 +39,6 @@ public class StudyInstructorService {
     private final StudyApplicationRepository studyApplicationRepository;
     private final StudyMemberRepository studyMemberRepository;
     private final StudySessionRepository studySessionRepository;
-    private final StudyAttendanceCodeRepository studyAttendanceCodeRepository;
     private final Clock clock;
 
     private static final char[] CODE_CHARS = "123456789".toCharArray();
@@ -156,39 +154,22 @@ public class StudyInstructorService {
 
         LocalDate today = LocalDate.now(clock);
 
-        StudySession session = studySessionRepository
-                .findByStudyIdAndSessionDate(study.getId(), today)
-                .orElseGet(() -> {
-                    StudySession created = StudySession.create(study, today);
-                    return studySessionRepository.save(created);
-                });
+        Optional<StudySession> optionalSession =
+                studySessionRepository.findByStudyIdAndSessionDate(study.getId(), today);
 
-        studyAttendanceCodeRepository.findBySessionId(session.getId()).ifPresent(studyAttendanceCodeRepository::delete);
-
-        String code = generateUniqueCode();
-
-        StudyAttendanceCode attendanceCode = StudyAttendanceCode.of(code, session.getId(), requesterId);
-        studyAttendanceCodeRepository.save(attendanceCode);
-
-        return AttendanceCodeIssueResponse.from(code, session.getId());
-    }
-
-    private String generateUniqueCode() {
-        String code;
-        int attempts = 0;
-        int maxAttempts = 100;
-        do {
-            if (attempts++ >= maxAttempts) {
-                throw new CustomException(ErrorCode.STUDY_ATTENDANCE_CODE_CANNOT_ISSUE);
-            }
-            code = generateCode();
-        } while (studyAttendanceCodeRepository.existsById(code));
-        return code;
+        if (optionalSession.isPresent()) {
+            StudySession existing = optionalSession.get();
+            return AttendanceCodeIssueResponse.from(existing.getAttendanceCode(), existing.getId());
+        } else {
+            String code = generateCode();
+            StudySession saved = studySessionRepository.save(StudySession.create(study, today, code));
+            return AttendanceCodeIssueResponse.from(code, saved.getId());
+        }
     }
 
     private String generateCode() {
-        StringBuilder sb = new StringBuilder(6);
-        for (int i = 0; i < 6; i++) {
+        StringBuilder sb = new StringBuilder(4);
+        for (int i = 0; i < 4; i++) {
             sb.append(CODE_CHARS[RANDOM.nextInt(CODE_CHARS.length)]);
         }
         return sb.toString();

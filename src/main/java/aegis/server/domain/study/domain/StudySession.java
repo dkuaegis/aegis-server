@@ -25,10 +25,17 @@ public class StudySession extends BaseEntity {
     @JoinColumn(name = "study_id")
     private Study study;
 
-    @Column(name = "session_date", nullable = false)
+    @Column(nullable = false)
     private LocalDate sessionDate;
 
-    public static StudySession create(Study study, LocalDate sessionDate) {
-        return StudySession.builder().study(study).sessionDate(sessionDate).build();
+    @Column(nullable = false)
+    private String attendanceCode;
+
+    public static StudySession create(Study study, LocalDate sessionDate, String attendanceCode) {
+        return StudySession.builder()
+                .study(study)
+                .sessionDate(sessionDate)
+                .attendanceCode(attendanceCode)
+                .build();
     }
 }
