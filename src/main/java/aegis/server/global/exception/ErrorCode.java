@@ -76,7 +76,9 @@ public enum ErrorCode {
     STUDY_APPLICATION_ALREADY_APPROVED(HttpStatus.CONFLICT),
     STUDY_APPLICATION_ACCESS_DENIED(HttpStatus.FORBIDDEN),
 
-    STUDY_FULL(HttpStatus.CONFLICT);
+    STUDY_FULL(HttpStatus.CONFLICT),
+
+    STUDY_ATTENDANCE_CODE_CANNOT_ISSUE(HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final HttpStatus httpStatus;
 }
