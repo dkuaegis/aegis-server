@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
+import aegis.server.domain.study.dto.response.AttendanceCodeIssueResponse;
 import aegis.server.domain.study.dto.response.GeneralStudyDetail;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationReason;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationSummary;
@@ -130,5 +131,20 @@ public class StudyInstructorController {
             @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
         studyInstructorService.rejectStudyApplication(studyId, studyApplicationId, userDetails);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(
+            summary = "출석 코드 발급",
+            description = "오늘 날짜의 세션에 대한 출석 코드를 발급합니다. 같은 날 재발급 시 기존 세션을 재사용합니다.",
+            responses = {
+                @ApiResponse(responseCode = "201", description = "출석 코드 발급 성공"),
+                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
+            })
+    @PostMapping("/studies/{studyId}/attendance-code")
+    public ResponseEntity<AttendanceCodeIssueResponse> issueAttendanceCode(
+            @PathVariable Long studyId, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
+        AttendanceCodeIssueResponse response = studyInstructorService.issueAttendanceCode(studyId, userDetails);
+        return ResponseEntity.status(201).body(response);
     }
 }

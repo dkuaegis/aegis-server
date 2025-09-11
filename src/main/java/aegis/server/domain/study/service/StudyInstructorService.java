@@ -1,5 +1,8 @@
 package aegis.server.domain.study.service;
 
+import java.security.SecureRandom;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -9,16 +12,21 @@ import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.study.domain.Study;
 import aegis.server.domain.study.domain.StudyApplication;
+import aegis.server.domain.study.domain.StudyAttendanceCode;
 import aegis.server.domain.study.domain.StudyMember;
 import aegis.server.domain.study.domain.StudyRole;
+import aegis.server.domain.study.domain.StudySession;
 import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
+import aegis.server.domain.study.dto.response.AttendanceCodeIssueResponse;
 import aegis.server.domain.study.dto.response.GeneralStudyDetail;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationReason;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationSummary;
 import aegis.server.domain.study.dto.response.InstructorStudyMemberResponse;
 import aegis.server.domain.study.repository.StudyApplicationRepository;
+import aegis.server.domain.study.repository.StudyAttendanceCodeRepository;
 import aegis.server.domain.study.repository.StudyMemberRepository;
 import aegis.server.domain.study.repository.StudyRepository;
+import aegis.server.domain.study.repository.StudySessionRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
@@ -31,6 +39,12 @@ public class StudyInstructorService {
     private final StudyRepository studyRepository;
     private final StudyApplicationRepository studyApplicationRepository;
     private final StudyMemberRepository studyMemberRepository;
+    private final StudySessionRepository studySessionRepository;
+    private final StudyAttendanceCodeRepository studyAttendanceCodeRepository;
+    private final Clock clock;
+
+    private static final char[] CODE_CHARS = "123456789".toCharArray();
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     public List<InstructorStudyApplicationSummary> findAllStudyApplications(Long studyId, UserDetails userDetails) {
         validateIsStudyInstructorByStudyId(studyId, userDetails.getMemberId());
@@ -129,5 +143,54 @@ public class StudyInstructorService {
         if (!studyMemberRepository.existsByStudyIdAndMemberIdAndRole(studyId, memberId, StudyRole.INSTRUCTOR)) {
             throw new CustomException(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR);
         }
+    }
+
+    @Transactional
+    public AttendanceCodeIssueResponse issueAttendanceCode(Long studyId, UserDetails userDetails) {
+        Long requesterId = userDetails.getMemberId();
+        validateIsStudyInstructorByStudyId(studyId, requesterId);
+
+        Study study = studyRepository
+                .findByIdWithLock(studyId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_NOT_FOUND));
+
+        LocalDate today = LocalDate.now(clock);
+
+        StudySession session = studySessionRepository
+                .findByStudyIdAndSessionDate(study.getId(), today)
+                .orElseGet(() -> {
+                    StudySession created = StudySession.create(study, today);
+                    return studySessionRepository.save(created);
+                });
+
+        studyAttendanceCodeRepository.findBySessionId(session.getId()).ifPresent(studyAttendanceCodeRepository::delete);
+
+        String code = generateUniqueCode();
+
+        StudyAttendanceCode attendanceCode = StudyAttendanceCode.of(code, session.getId(), requesterId);
+        studyAttendanceCodeRepository.save(attendanceCode);
+
+        return AttendanceCodeIssueResponse.from(code, session.getId());
+    }
+
+    private String generateUniqueCode() {
+        String code;
+        int attempts = 0;
+        int maxAttempts = 100;
+        do {
+            if (attempts++ >= maxAttempts) {
+                throw new CustomException(ErrorCode.STUDY_ATTENDANCE_CODE_CANNOT_ISSUE);
+            }
+            code = generateCode();
+        } while (studyAttendanceCodeRepository.existsById(code));
+        return code;
+    }
+
+    private String generateCode() {
+        StringBuilder sb = new StringBuilder(6);
+        for (int i = 0; i < 6; i++) {
+            sb.append(CODE_CHARS[RANDOM.nextInt(CODE_CHARS.length)]);
+        }
+        return sb.toString();
     }
 }
