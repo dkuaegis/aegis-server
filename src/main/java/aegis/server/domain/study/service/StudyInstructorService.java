@@ -137,12 +137,6 @@ public class StudyInstructorService {
         studyApplication.reject();
     }
 
-    private void validateIsStudyInstructorByStudyId(Long studyId, Long memberId) {
-        if (!studyMemberRepository.existsByStudyIdAndMemberIdAndRole(studyId, memberId, StudyRole.INSTRUCTOR)) {
-            throw new CustomException(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR);
-        }
-    }
-
     @Transactional
     public AttendanceCodeIssueResponse issueAttendanceCode(Long studyId, UserDetails userDetails) {
         Long requesterId = userDetails.getMemberId();
@@ -164,6 +158,12 @@ public class StudyInstructorService {
             String code = generateCode();
             StudySession saved = studySessionRepository.save(StudySession.create(study, today, code));
             return AttendanceCodeIssueResponse.from(code, saved.getId());
+        }
+    }
+
+    private void validateIsStudyInstructorByStudyId(Long studyId, Long memberId) {
+        if (!studyMemberRepository.existsByStudyIdAndMemberIdAndRole(studyId, memberId, StudyRole.INSTRUCTOR)) {
+            throw new CustomException(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR);
         }
     }
 
