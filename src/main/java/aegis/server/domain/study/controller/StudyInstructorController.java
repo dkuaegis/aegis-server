@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
+import aegis.server.domain.study.dto.response.AttendanceCodeIssueResponse;
 import aegis.server.domain.study.dto.response.GeneralStudyDetail;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationReason;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationSummary;
+import aegis.server.domain.study.dto.response.InstructorStudyMemberResponse;
 import aegis.server.domain.study.service.StudyInstructorService;
 import aegis.server.global.security.annotation.LoginUser;
 import aegis.server.global.security.oidc.UserDetails;
@@ -43,6 +45,21 @@ public class StudyInstructorController {
             @PathVariable Long studyId, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
         List<InstructorStudyApplicationSummary> response =
                 studyInstructorService.findAllStudyApplications(studyId, userDetails);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "스터디원 목록 조회",
+            description = "스터디장이 자신의 스터디의 스터디원 목록을 조회합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "스터디원 목록 조회 성공"),
+                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
+            })
+    @GetMapping("/studies/{studyId}/members-instructor")
+    public ResponseEntity<List<InstructorStudyMemberResponse>> getStudyMembers(
+            @PathVariable Long studyId, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
+        List<InstructorStudyMemberResponse> response = studyInstructorService.findAllStudyMembers(studyId, userDetails);
         return ResponseEntity.ok(response);
     }
 
@@ -114,5 +131,20 @@ public class StudyInstructorController {
             @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
         studyInstructorService.rejectStudyApplication(studyId, studyApplicationId, userDetails);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(
+            summary = "출석 코드 발급",
+            description = "오늘 날짜의 세션에 대한 출석 코드를 발급합니다. 같은 날 재발급 시 동일 코드를 반환합니다.",
+            responses = {
+                @ApiResponse(responseCode = "201", description = "출석 코드 발급 성공"),
+                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
+            })
+    @PostMapping("/studies/{studyId}/attendance-code")
+    public ResponseEntity<AttendanceCodeIssueResponse> issueAttendanceCode(
+            @PathVariable Long studyId, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
+        AttendanceCodeIssueResponse response = studyInstructorService.issueAttendanceCode(studyId, userDetails);
+        return ResponseEntity.status(201).body(response);
     }
 }

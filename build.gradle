@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'aegis'
-version = '2025.09.09-1'
+version = '2025.09.13-1'
 
 java {
     toolchain {
