@@ -57,6 +57,7 @@ public class PaymentService {
 
         if (payment.getFinalPrice().compareTo(BigDecimal.ZERO) == 0) {
             payment.completePayment();
+            paymentRepository.saveAndFlush(payment);
             applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
         }
 
@@ -74,6 +75,7 @@ public class PaymentService {
 
         if (payment.getFinalPrice().compareTo(BigDecimal.ZERO) == 0) {
             payment.completePayment();
+            paymentRepository.saveAndFlush(payment);
             applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
         }
 
