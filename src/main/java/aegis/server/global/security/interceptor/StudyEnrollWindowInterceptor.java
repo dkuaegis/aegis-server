@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -35,6 +36,41 @@ public class StudyEnrollWindowInterceptor implements HandlerInterceptor {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
 
+    private volatile boolean enabled = false;
+    private LocalDateTime openAt;
+    private LocalDateTime closeAt;
+
+    @PostConstruct
+    void init() {
+        if (isBlank(openAtProp) || isBlank(closeAtProp)) {
+            log.warn("study.enroll-window.* 설정이 비어 있습니다. 인터셉터를 비활성화합니다.");
+            this.enabled = false;
+            return;
+        }
+
+        LocalDateTime parsedOpen = parseLocalDateTime(openAtProp);
+        LocalDateTime parsedClose = parseLocalDateTime(closeAtProp);
+
+        if (parsedOpen == null || parsedClose == null) {
+            log.warn("study.enroll-window.* 설정 형식이 올바르지 않습니다. 인터셉터를 비활성화합니다. open='{}', close='{}'", openAtProp, closeAtProp);
+            this.enabled = false;
+            return;
+        }
+
+        if (!parsedClose.isAfter(parsedOpen)) {
+            log.warn("study.enroll-window.close-at 이 open-at 보다 이후여야 합니다. 인터셉터를 비활성화합니다. open='{}', close='{}'", openAtProp, closeAtProp);
+            this.enabled = false;
+            return;
+        }
+
+        this.openAt = parsedOpen;
+        this.closeAt = parsedClose;
+        this.enabled = true;
+
+        ZoneId zone = clock.getZone();
+        log.info("스터디 참여 허용 시간 활성화: {} ~ {} (zone={})", openAt, closeAt, zone);
+    }
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
@@ -43,21 +79,8 @@ public class StudyEnrollWindowInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // 프로퍼티가 비어있으면 통과
-        if (isBlank(openAtProp) || isBlank(closeAtProp)) {
-            if (log.isWarnEnabled()) {
-                log.warn("스터디 참여 허용 시간이 설정되지 않았습니다. 요청을 허용합니다.");
-            }
-            return true;
-        }
-
-        LocalDateTime openAt = parseLocalDateTime(openAtProp);
-        LocalDateTime closeAt = parseLocalDateTime(closeAtProp);
-
-        if (openAt == null || closeAt == null) {
-            if (log.isWarnEnabled()) {
-                log.warn("스터디 참여 허용 시간이 올바르지 않은 형식으로 설정되었습니다. 요청을 허용합니다.");
-            }
+        // 설정 누락/오류 시 무소음 통과
+        if (!enabled) {
             return true;
         }
 
