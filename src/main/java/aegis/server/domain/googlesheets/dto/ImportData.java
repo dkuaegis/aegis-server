@@ -2,8 +2,6 @@ package aegis.server.domain.googlesheets.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 import aegis.server.domain.member.domain.*;
@@ -26,9 +24,7 @@ public record ImportData(
     public List<Object> toRowData() {
         String formattedDateTime = "";
         if (joinDateTime != null) {
-            ZonedDateTime utcTime = joinDateTime.atZone(ZoneId.of("UTC"));
-            ZonedDateTime koreaTime = utcTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
-            formattedDateTime = koreaTime.toLocalDateTime().toString();
+            formattedDateTime = joinDateTime.toString();
         }
 
         return List.of(
