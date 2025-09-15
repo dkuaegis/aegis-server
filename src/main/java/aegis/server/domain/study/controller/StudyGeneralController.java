@@ -77,6 +77,7 @@ public class StudyGeneralController {
             responses = {
                 @ApiResponse(responseCode = "201", description = "스터디 참여 신청 성공"),
                 @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+                @ApiResponse(responseCode = "403", description = "스터디 신청 차단됨", content = @Content),
                 @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
             })
     @PostMapping("/studies/{studyId}/enrollment")
