@@ -17,6 +17,8 @@ import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
 import aegis.server.domain.payment.dto.internal.PaymentInfo;
+import aegis.server.domain.pointshop.domain.event.PointShopDrawnEvent;
+import aegis.server.domain.pointshop.dto.internal.PointShopDrawInfo;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 
@@ -62,6 +64,42 @@ public class GoogleSheetsListener {
             log.error(
                     "[GoogleSheetsSyncListener][PaymentCompletedEvent] 예상치 못한 오류 발생: paymentId={}, error={}",
                     paymentInfo.id(),
+                    e.getMessage(),
+                    e);
+        }
+    }
+
+    @Async("googleSheetsTaskExecutor")
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = REQUIRES_NEW, readOnly = true)
+    public void handlePointShopDrawnEvent(PointShopDrawnEvent event) {
+        PointShopDrawInfo info = event.pointShopDrawInfo();
+
+        log.info(
+                "[GoogleSheetsSyncListener][PointShopDrawnEvent] Google Sheets 뽑기 기록 추가 시작: drawHistoryId={}",
+                info.drawHistoryId());
+
+        try {
+            Member member = memberRepository
+                    .findById(info.memberId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+            googleSheetsService.addPointShopDraw(member, info);
+
+            log.info(
+                    "[GoogleSheetsSyncListener][PointShopDrawnEvent] Google Sheets 뽑기 기록 추가 완료: drawHistoryId={}, memberId={}, name={}",
+                    info.drawHistoryId(),
+                    info.memberId(),
+                    member.getName());
+        } catch (IOException e) {
+            log.error(
+                    "[GoogleSheetsSyncListener][PointShopDrawnEvent] Google Sheets 뽑기 기록 추가 실패: drawHistoryId={}, error={}",
+                    info.drawHistoryId(),
+                    e.getMessage());
+        } catch (Exception e) {
+            log.error(
+                    "[GoogleSheetsSyncListener][PointShopDrawnEvent] 예상치 못한 오류 발생: drawHistoryId={}, error={}",
+                    info.drawHistoryId(),
                     e.getMessage(),
                     e);
         }
