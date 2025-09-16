@@ -73,4 +73,7 @@ google:
   credentials:
     json: ${GOOGLE_CREDENTIALS_JSON}
   spreadsheets:
-    id: ${GOOGLE_SPREADSHEET_ID}
+    registration:
+      id: ${REGISTRATION_GOOGLE_SPREADSHEET_ID}
+    pointshop:
+      id: ${POINTSHOP_GOOGLE_SPREADSHEET_ID}

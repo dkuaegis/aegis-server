@@ -52,13 +52,19 @@ public class StudyEnrollWindowInterceptor implements HandlerInterceptor {
         LocalDateTime parsedClose = parseLocalDateTime(closeAtProp);
 
         if (parsedOpen == null || parsedClose == null) {
-            log.warn("study.enroll-window.* 설정 형식이 올바르지 않습니다. 인터셉터를 비활성화합니다. open='{}', close='{}'", openAtProp, closeAtProp);
+            log.warn(
+                    "study.enroll-window.* 설정 형식이 올바르지 않습니다. 인터셉터를 비활성화합니다. open='{}', close='{}'",
+                    openAtProp,
+                    closeAtProp);
             this.enabled = false;
             return;
         }
 
         if (!parsedClose.isAfter(parsedOpen)) {
-            log.warn("study.enroll-window.close-at 이 open-at 보다 이후여야 합니다. 인터셉터를 비활성화합니다. open='{}', close='{}'", openAtProp, closeAtProp);
+            log.warn(
+                    "study.enroll-window.close-at 이 open-at 보다 이후여야 합니다. 인터셉터를 비활성화합니다. open='{}', close='{}'",
+                    openAtProp,
+                    closeAtProp);
             this.enabled = false;
             return;
         }
