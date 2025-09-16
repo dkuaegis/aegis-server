@@ -47,6 +47,7 @@ public class PaymentEventListener {
     private void processPayment(Payment payment) {
         logCompleted(payment);
         payment.completePayment();
+        paymentRepository.saveAndFlush(payment);
         applicationEventPublisher.publishEvent(new PaymentCompletedEvent(PaymentInfo.from(payment)));
     }
 
