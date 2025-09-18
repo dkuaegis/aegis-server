@@ -3,7 +3,10 @@ package aegis.server.domain.study.service;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -18,11 +21,16 @@ import aegis.server.domain.study.domain.StudyRole;
 import aegis.server.domain.study.domain.StudySession;
 import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
 import aegis.server.domain.study.dto.response.AttendanceCodeIssueResponse;
+import aegis.server.domain.study.dto.response.AttendanceMatrixResponse;
+import aegis.server.domain.study.dto.response.AttendanceMemberRow;
+import aegis.server.domain.study.dto.response.AttendanceSessionHeader;
 import aegis.server.domain.study.dto.response.GeneralStudyDetail;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationReason;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationSummary;
 import aegis.server.domain.study.dto.response.InstructorStudyMemberResponse;
+import aegis.server.domain.study.repository.AttendanceMemberSessionPair;
 import aegis.server.domain.study.repository.StudyApplicationRepository;
+import aegis.server.domain.study.repository.StudyAttendanceRepository;
 import aegis.server.domain.study.repository.StudyMemberRepository;
 import aegis.server.domain.study.repository.StudyRepository;
 import aegis.server.domain.study.repository.StudySessionRepository;
@@ -39,6 +47,7 @@ public class StudyInstructorService {
     private final StudyApplicationRepository studyApplicationRepository;
     private final StudyMemberRepository studyMemberRepository;
     private final StudySessionRepository studySessionRepository;
+    private final StudyAttendanceRepository studyAttendanceRepository;
     private final Clock clock;
 
     private static final char[] CODE_CHARS = "123456789".toCharArray();
@@ -173,5 +182,55 @@ public class StudyInstructorService {
             sb.append(CODE_CHARS[RANDOM.nextInt(CODE_CHARS.length)]);
         }
         return sb.toString();
+    }
+
+    public AttendanceMatrixResponse findAttendanceMatrix(Long studyId, UserDetails userDetails) {
+        validateIsStudyInstructorByStudyId(studyId, userDetails.getMemberId());
+
+        // 세션 목록 조회
+        List<StudySession> sessions = studySessionRepository.findAllByStudyIdOrderBySessionDateAsc(studyId);
+        int n = sessions.size();
+
+        // 세션 ID -> 열 인덱스 맵, 세션 헤더 목록 생성
+        Map<Long, Integer> sessionIndexMap = new HashMap<>();
+        List<AttendanceSessionHeader> sessionHeaders = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            StudySession ss = sessions.get(i);
+            sessionIndexMap.put(ss.getId(), i);
+            sessionHeaders.add(AttendanceSessionHeader.from(ss.getId(), ss.getSessionDate()));
+        }
+
+        // 참가자 목록 조회
+        List<StudyMember> participants =
+                studyMemberRepository.findByStudyIdAndRoleWithMember(studyId, StudyRole.PARTICIPANT);
+
+        // 참가자 ID -> 출석 배열 맵 초기화
+        Map<Long, boolean[]> attendanceMap = new HashMap<>();
+        for (StudyMember sm : participants) {
+            attendanceMap.put(sm.getMember().getId(), new boolean[n]);
+        }
+
+        // 출석 페어 적용
+        List<AttendanceMemberSessionPair> pairs = studyAttendanceRepository.findMemberSessionPairsByStudyId(studyId);
+        for (AttendanceMemberSessionPair pair : pairs) {
+            Integer col = sessionIndexMap.get(pair.getSessionId());
+            boolean[] row = attendanceMap.get(pair.getMemberId());
+            if (col != null && row != null) {
+                row[col] = true;
+            }
+        }
+
+        // 출석 행렬 생성
+        List<AttendanceMemberRow> memberRows = new ArrayList<>(participants.size());
+        for (StudyMember sm : participants) {
+            Long memberId = sm.getMember().getId();
+            String name = sm.getMember().getName();
+            boolean[] row = attendanceMap.get(memberId);
+            List<Boolean> list = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) list.add(row != null && row[i]);
+            memberRows.add(AttendanceMemberRow.from(memberId, name, list));
+        }
+
+        return AttendanceMatrixResponse.from(sessionHeaders, memberRows);
     }
 }
