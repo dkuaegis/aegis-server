@@ -7,4 +7,8 @@ public record ApplicantStudyApplicationStatus(Long studyApplicationId, StudyAppl
     public static ApplicantStudyApplicationStatus from(StudyApplication studyApplication) {
         return new ApplicantStudyApplicationStatus(studyApplication.getId(), studyApplication.getStatus());
     }
+
+    public static ApplicantStudyApplicationStatus none() {
+        return new ApplicantStudyApplicationStatus(null, StudyApplicationStatus.NONE);
+    }
 }

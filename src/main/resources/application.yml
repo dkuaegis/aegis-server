@@ -23,6 +23,12 @@ spring:
       save-mode: always
     timeout: ${SESSION_TIMEOUT}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'startup'
+
 springdoc:
   swagger-ui:
     path: /docs/swagger-ui.html
@@ -73,4 +79,7 @@ google:
   credentials:
     json: ${GOOGLE_CREDENTIALS_JSON}
   spreadsheets:
-    id: ${GOOGLE_SPREADSHEET_ID}
+    registration:
+      id: ${REGISTRATION_GOOGLE_SPREADSHEET_ID}
+    pointshop:
+      id: ${POINTSHOP_GOOGLE_SPREADSHEET_ID}

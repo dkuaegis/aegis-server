@@ -53,17 +53,33 @@ class StudyApplicantServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 신청하지_않은_스터디를_조회하면_예외가_발생한다() {
+        void 신청하지_않은_스터디는_NONE으로_응답한다() {
             // given
             Member member = createMember();
             UserDetails userDetails = createUserDetails(member);
             Study study = createStudy();
 
+            // when
+            ApplicantStudyApplicationStatus response =
+                    studyApplicantService.getStudyApplicationStatus(study.getId(), userDetails);
+
+            // then
+            assertNull(response.studyApplicationId());
+            assertEquals(StudyApplicationStatus.NONE, response.status());
+        }
+
+        @Test
+        void 선착순_스터디에서는_API_미지원_에러를_반환한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Study study = createFCFSStudy();
+
             // when & then
             CustomException exception = assertThrows(
                     CustomException.class,
                     () -> studyApplicantService.getStudyApplicationStatus(study.getId(), userDetails));
-            assertEquals(ErrorCode.STUDY_APPLICATION_NOT_FOUND, exception.getErrorCode());
+            assertEquals(ErrorCode.STUDY_APPLICATION_STATUS_NOT_SUPPORTED, exception.getErrorCode());
         }
     }
 
@@ -102,6 +118,20 @@ class StudyApplicantServiceTest extends IntegrationTest {
                     CustomException.class,
                     () -> studyApplicantService.getStudyApplicationDetail(study.getId(), userDetails));
             assertEquals(ErrorCode.STUDY_APPLICATION_NOT_FOUND, exception.getErrorCode());
+        }
+
+        @Test
+        void 선착순_스터디에서는_API_미지원_에러를_반환한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Study study = createFCFSStudy();
+
+            // when & then
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> studyApplicantService.getStudyApplicationDetail(study.getId(), userDetails));
+            assertEquals(ErrorCode.STUDY_APPLICATION_STATUS_NOT_SUPPORTED, exception.getErrorCode());
         }
     }
 
@@ -166,6 +196,21 @@ class StudyApplicantServiceTest extends IntegrationTest {
                     () -> studyApplicantService.updateStudyApplicationReason(study.getId(), request, userDetails));
             assertEquals(ErrorCode.STUDY_APPLICATION_ALREADY_APPROVED, exception.getErrorCode());
         }
+
+        @Test
+        void 선착순_스터디에서는_API_미지원_에러를_반환한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Study study = createFCFSStudy();
+            StudyEnrollRequest request = new StudyEnrollRequest("사유");
+
+            // when & then
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> studyApplicantService.updateStudyApplicationReason(study.getId(), request, userDetails));
+            assertEquals(ErrorCode.STUDY_APPLICATION_STATUS_NOT_SUPPORTED, exception.getErrorCode());
+        }
     }
 
     private Study createStudy() {
@@ -179,6 +224,20 @@ class StudyApplicantServiceTest extends IntegrationTest {
                 "주 2회",
                 List.of("테스트 커리큘럼 1", "테스트 커리큘럼 2"),
                 List.of("테스트 자격 요건 1", "테스트 자격 요건 2"));
+        return studyRepository.save(study);
+    }
+
+    private Study createFCFSStudy() {
+        Study study = Study.create(
+                "FCFS 스터디",
+                StudyCategory.WEB,
+                StudyLevel.INTERMEDIATE,
+                "선착순 스터디 설명",
+                StudyRecruitmentMethod.FCFS,
+                10,
+                "주 1회",
+                List.of("A", "B"),
+                List.of("C"));
         return studyRepository.save(study);
     }
 
