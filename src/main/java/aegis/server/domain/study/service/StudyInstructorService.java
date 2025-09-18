@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import aegis.server.domain.study.domain.Study;
 import aegis.server.domain.study.domain.StudyApplication;
@@ -38,6 +39,7 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -110,6 +112,7 @@ public class StudyInstructorService {
 
     @Transactional
     public void approveStudyApplication(Long studyId, Long studyApplicationId, UserDetails userDetails) {
+        Long instructorId = userDetails.getMemberId();
         StudyApplication studyApplication = studyApplicationRepository
                 .findByIdWithStudy(studyApplicationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STUDY_APPLICATION_NOT_FOUND));
@@ -118,7 +121,7 @@ public class StudyInstructorService {
             throw new CustomException(ErrorCode.STUDY_APPLICATION_ACCESS_DENIED);
         }
 
-        validateIsStudyInstructorByStudyId(studyApplication.getStudy().getId(), userDetails.getMemberId());
+        validateIsStudyInstructorByStudyId(studyApplication.getStudy().getId(), instructorId);
 
         Study study = studyRepository
                 .findByIdWithLock(studyApplication.getStudy().getId())
@@ -129,10 +132,24 @@ public class StudyInstructorService {
 
         StudyMember studyMember = StudyMember.create(study, studyApplication.getMember(), StudyRole.PARTICIPANT);
         studyMemberRepository.save(studyMember);
+
+        String instructorName = userDetails.getName();
+        log.info(
+                "[Study][Application] 승인: studyId={}, applicationId={}, applicantId={}, applicantName={}, instructorId={}, instructorName={}, studyMemberId={}, currentParticipants={}, maxParticipants={}",
+                study.getId(),
+                studyApplication.getId(),
+                studyApplication.getMember().getId(),
+                studyApplication.getMember().getName(),
+                instructorId,
+                instructorName,
+                studyMember.getId(),
+                study.getCurrentParticipants(),
+                study.getMaxParticipants());
     }
 
     @Transactional
     public void rejectStudyApplication(Long studyId, Long studyApplicationId, UserDetails userDetails) {
+        Long instructorId = userDetails.getMemberId();
         StudyApplication studyApplication = studyApplicationRepository
                 .findByIdWithStudy(studyApplicationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STUDY_APPLICATION_NOT_FOUND));
@@ -141,15 +158,25 @@ public class StudyInstructorService {
             throw new CustomException(ErrorCode.STUDY_APPLICATION_ACCESS_DENIED);
         }
 
-        validateIsStudyInstructorByStudyId(studyApplication.getStudy().getId(), userDetails.getMemberId());
+        validateIsStudyInstructorByStudyId(studyApplication.getStudy().getId(), instructorId);
 
         studyApplication.reject();
+
+        String instructorName = userDetails.getName();
+        log.info(
+                "[Study][Application] 거절: studyId={}, applicationId={}, applicantId={}, applicantName={}, instructorId={}, instructorName={}",
+                studyApplication.getStudy().getId(),
+                studyApplication.getId(),
+                studyApplication.getMember().getId(),
+                studyApplication.getMember().getName(),
+                instructorId,
+                instructorName);
     }
 
     @Transactional
     public AttendanceCodeIssueResponse issueAttendanceCode(Long studyId, UserDetails userDetails) {
-        Long requesterId = userDetails.getMemberId();
-        validateIsStudyInstructorByStudyId(studyId, requesterId);
+        Long instructorId = userDetails.getMemberId();
+        validateIsStudyInstructorByStudyId(studyId, instructorId);
 
         Study study = studyRepository
                 .findByIdWithLock(studyId)
@@ -166,7 +193,15 @@ public class StudyInstructorService {
         } else {
             String code = generateCode();
             StudySession saved = studySessionRepository.save(StudySession.create(study, today, code));
-            return AttendanceCodeIssueResponse.from(code, saved.getId());
+            AttendanceCodeIssueResponse response = AttendanceCodeIssueResponse.from(code, saved.getId());
+            log.info(
+                    "[Study][Attendance] 코드 발급: studyId={}, sessionId={}, instructorId={}, instructorName={}, code={}",
+                    study.getId(),
+                    saved.getId(),
+                    instructorId,
+                    userDetails.getName(),
+                    code);
+            return response;
         }
     }
 
