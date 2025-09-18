@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
 import aegis.server.domain.study.dto.response.AttendanceCodeIssueResponse;
+import aegis.server.domain.study.dto.response.AttendanceMatrixResponse;
 import aegis.server.domain.study.dto.response.GeneralStudyDetail;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationReason;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationSummary;
@@ -146,5 +147,20 @@ public class StudyInstructorController {
             @PathVariable Long studyId, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
         AttendanceCodeIssueResponse response = studyInstructorService.issueAttendanceCode(studyId, userDetails);
         return ResponseEntity.status(201).body(response);
+    }
+
+    @Operation(
+            summary = "회차별 출석 현황 조회",
+            description = "이름 기준 행, 회차 기준 열의 매트릭스를 반환합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "출석 현황 조회 성공"),
+                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
+            })
+    @GetMapping("/studies/{studyId}/attendance-instructor")
+    public ResponseEntity<AttendanceMatrixResponse> getAttendanceMatrix(
+            @PathVariable Long studyId, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
+        AttendanceMatrixResponse response = studyInstructorService.findAttendanceMatrix(studyId, userDetails);
+        return ResponseEntity.ok(response);
     }
 }

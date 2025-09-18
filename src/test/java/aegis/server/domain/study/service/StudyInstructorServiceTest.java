@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -17,6 +18,8 @@ import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.study.domain.*;
 import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
 import aegis.server.domain.study.dto.response.AttendanceCodeIssueResponse;
+import aegis.server.domain.study.dto.response.AttendanceMatrixResponse;
+import aegis.server.domain.study.dto.response.AttendanceMemberRow;
 import aegis.server.domain.study.dto.response.GeneralStudyDetail;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationReason;
 import aegis.server.domain.study.dto.response.InstructorStudyApplicationSummary;
@@ -49,6 +52,9 @@ class StudyInstructorServiceTest extends IntegrationTest {
 
     @Autowired
     StudySessionRepository studySessionRepository;
+
+    @Autowired
+    aegis.server.domain.study.repository.StudyAttendanceRepository studyAttendanceRepository;
 
     @MockitoBean
     Clock clock;
@@ -264,6 +270,343 @@ class StudyInstructorServiceTest extends IntegrationTest {
                     CustomException.class,
                     () -> studyInstructorService.findAllStudyMembers(study.getId(), nonInstructorDetails));
             assertEquals(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR, exception.getErrorCode());
+        }
+    }
+
+    @Nested
+    class 출석_현황_조회 {
+
+        @Test
+        void 강사가_출석_매트릭스를_조회할_수_있다() {
+            // given
+            Member instructor = createMember();
+            Member p1 = createMember();
+            Member p2 = createMember();
+            Member p3 = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+
+            Study study = createStudyWithInstructor(instructor);
+
+            // 참여자 등록
+            studyMemberRepository.save(StudyMember.create(study, p1, StudyRole.PARTICIPANT));
+            studyMemberRepository.save(StudyMember.create(study, p2, StudyRole.PARTICIPANT));
+            studyMemberRepository.save(StudyMember.create(study, p3, StudyRole.PARTICIPANT));
+
+            // 세션 2개 생성 (날짜 오름차순)
+            StudySession s1 =
+                    studySessionRepository.save(StudySession.create(study, LocalDate.of(2025, 9, 10), "1111"));
+            StudySession s2 =
+                    studySessionRepository.save(StudySession.create(study, LocalDate.of(2025, 9, 17), "2222"));
+
+            // 출석: p1 -> s1, s2 / p2 -> s2 / p3 -> 없음
+            studyAttendanceRepository.save(StudyAttendance.create(s1, p1));
+            studyAttendanceRepository.save(StudyAttendance.create(s2, p1));
+            studyAttendanceRepository.save(StudyAttendance.create(s2, p2));
+
+            // when
+            AttendanceMatrixResponse response =
+                    studyInstructorService.findAttendanceMatrix(study.getId(), instructorDetails);
+
+            // then
+            assertEquals(2, response.sessions().size());
+            assertEquals(LocalDate.of(2025, 9, 10), response.sessions().get(0).date());
+            assertEquals(LocalDate.of(2025, 9, 17), response.sessions().get(1).date());
+
+            // 멤버별 검증 (memberId 매칭)
+            Map<Long, AttendanceMemberRow> byId = response.members().stream()
+                    .collect(java.util.stream.Collectors.toMap(AttendanceMemberRow::memberId, m -> m));
+
+            List<Boolean> p1Row = byId.get(p1.getId()).attendance();
+            List<Boolean> p2Row = byId.get(p2.getId()).attendance();
+            List<Boolean> p3Row = byId.get(p3.getId()).attendance();
+
+            assertEquals(List.of(true, true), p1Row);
+            assertEquals(List.of(false, true), p2Row);
+            assertEquals(List.of(false, false), p3Row);
+        }
+
+        @Test
+        void 세션이_없으면_빈_컬럼을_반환한다() {
+            // given
+            Member instructor = createMember();
+            Member p1 = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+            studyMemberRepository.save(StudyMember.create(study, p1, StudyRole.PARTICIPANT));
+
+            // when
+            AttendanceMatrixResponse response =
+                    studyInstructorService.findAttendanceMatrix(study.getId(), instructorDetails);
+
+            // then
+            assertEquals(0, response.sessions().size());
+            assertEquals(1, response.members().size());
+            assertEquals(0, response.members().get(0).attendance().size());
+        }
+
+        @Test
+        void 강사가_아니면_조회할_수_없다() {
+            // given
+            Member instructor = createMember();
+            Member notInstructor = createMember();
+            UserDetails notInstructorDetails = createUserDetails(notInstructor);
+            Study study = createStudyWithInstructor(instructor);
+
+            // when & then
+            CustomException e = assertThrows(
+                    CustomException.class,
+                    () -> studyInstructorService.findAttendanceMatrix(study.getId(), notInstructorDetails));
+            assertEquals(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR, e.getErrorCode());
+        }
+
+        @Test
+        void 참여자가_없으면_members_빈_리스트() {
+            // given
+            Member instructor = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+
+            // 세션만 생성
+            studySessionRepository.save(StudySession.create(study, LocalDate.of(2025, 9, 3), "1111"));
+
+            // when
+            AttendanceMatrixResponse response =
+                    studyInstructorService.findAttendanceMatrix(study.getId(), instructorDetails);
+
+            // then
+            assertEquals(1, response.sessions().size());
+            assertEquals(0, response.members().size());
+        }
+
+        @Test
+        void 멤버_이름_오름차순으로_정렬된다() {
+            // given
+            Member instructor = createMember();
+            Member a = createMember();
+            Member b = createMember();
+            Member c = createMember();
+            a.updateName("이지수");
+            b.updateName("강다연");
+            c.updateName("박서준");
+
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+
+            studyMemberRepository.save(StudyMember.create(study, a, StudyRole.PARTICIPANT));
+            studyMemberRepository.save(StudyMember.create(study, b, StudyRole.PARTICIPANT));
+            studyMemberRepository.save(StudyMember.create(study, c, StudyRole.PARTICIPANT));
+
+            // 세션 1개(정렬 무관)
+            StudySession s1 = studySessionRepository.save(StudySession.create(study, LocalDate.of(2025, 9, 3), "1111"));
+            // 출석은 일부만 체크
+            studyAttendanceRepository.save(StudyAttendance.create(s1, a));
+
+            // when
+            AttendanceMatrixResponse response =
+                    studyInstructorService.findAttendanceMatrix(study.getId(), instructorDetails);
+
+            // then: 이름 오름차순: 강다연, 박서준, 이지수
+            assertEquals("강다연", response.members().get(0).name());
+            assertEquals("박서준", response.members().get(1).name());
+            assertEquals("이지수", response.members().get(2).name());
+        }
+
+        @Test
+        void 참여자_아닌_멤버의_출석은_무시된다() {
+            // given
+            Member instructor = createMember();
+            Member participant = createMember();
+            Member outsider = createMember(); // 스터디 참여자가 아님
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+
+            studyMemberRepository.save(StudyMember.create(study, participant, StudyRole.PARTICIPANT));
+
+            StudySession s1 = studySessionRepository.save(StudySession.create(study, LocalDate.of(2025, 9, 3), "1111"));
+
+            // 출석: outsider의 출석도 넣어보지만 결과에는 반영되면 안 됨
+            studyAttendanceRepository.save(StudyAttendance.create(s1, outsider));
+
+            // when
+            AttendanceMatrixResponse response =
+                    studyInstructorService.findAttendanceMatrix(study.getId(), instructorDetails);
+
+            // then
+            assertEquals(1, response.sessions().size());
+            assertEquals(1, response.members().size());
+            // 유일한 멤버는 participant여야 함
+            assertEquals(participant.getId(), response.members().get(0).memberId());
+            // outsider 출석은 무시되므로 false
+            assertEquals(java.util.List.of(false), response.members().get(0).attendance());
+        }
+
+        @Test
+        void 다른_스터디_데이터_혼입되지_않는다() {
+            // given: study1, study2 각각 세션/참여자/출석 생성
+            Member instructor1 = createMember();
+            Member instructor2 = createMember();
+            UserDetails instructor1Details = createUserDetails(instructor1);
+
+            Study study1 = createStudyWithInstructor(instructor1);
+            Study study2 = createStudyWithInstructor(instructor2);
+
+            Member s1p = createMember();
+            Member s2p = createMember();
+            studyMemberRepository.save(StudyMember.create(study1, s1p, StudyRole.PARTICIPANT));
+            studyMemberRepository.save(StudyMember.create(study2, s2p, StudyRole.PARTICIPANT));
+
+            StudySession s1 =
+                    studySessionRepository.save(StudySession.create(study1, LocalDate.of(2025, 9, 3), "1111"));
+            StudySession s2 =
+                    studySessionRepository.save(StudySession.create(study2, LocalDate.of(2025, 9, 4), "2222"));
+
+            studyAttendanceRepository.save(StudyAttendance.create(s2, s2p)); // study2 출석만 체크
+
+            // when: study1 조회
+            AttendanceMatrixResponse response =
+                    studyInstructorService.findAttendanceMatrix(study1.getId(), instructor1Details);
+
+            // then: study2 데이터는 포함되면 안 됨
+            assertEquals(1, response.sessions().size());
+            assertEquals(LocalDate.of(2025, 9, 3), response.sessions().get(0).date());
+            assertEquals(1, response.members().size());
+            assertEquals(s1p.getId(), response.members().get(0).memberId());
+            assertEquals(java.util.List.of(false), response.members().get(0).attendance());
+        }
+
+        @Test
+        void attendance_배열_길이는_sessions_길이와_같다() {
+            // given
+            Member instructor = createMember();
+            Member p1 = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+
+            studyMemberRepository.save(StudyMember.create(study, p1, StudyRole.PARTICIPANT));
+
+            // 세션 3개 생성 (역순으로 insert)
+            studySessionRepository.save(StudySession.create(study, LocalDate.of(2025, 9, 17), "3333"));
+            studySessionRepository.save(StudySession.create(study, LocalDate.of(2025, 9, 3), "1111"));
+            studySessionRepository.save(StudySession.create(study, LocalDate.of(2025, 9, 10), "2222"));
+
+            // when
+            AttendanceMatrixResponse response =
+                    studyInstructorService.findAttendanceMatrix(study.getId(), instructorDetails);
+
+            // then
+            assertEquals(3, response.sessions().size());
+            assertEquals(3, response.members().get(0).attendance().size());
+        }
+
+        @Test
+        void 대량_세션_대량_참여자_패턴_검증() {
+            // given
+            Member instructor = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+
+            // 세션 40개 생성 (2025-01-01 부터 연속)
+            int sessionCount = 40;
+            List<StudySession> sessions = new java.util.ArrayList<>();
+            for (int s = 0; s < sessionCount; s++) {
+                sessions.add(studySessionRepository.save(
+                        StudySession.create(study, LocalDate.of(2025, 1, 1).plusDays(s), String.format("%04d", s))));
+            }
+
+            // 멤버 60명 생성 및 등록
+            int memberCount = 60;
+            List<Member> members = new java.util.ArrayList<>();
+            for (int m = 0; m < memberCount; m++) {
+                Member mem = createMember();
+                members.add(mem);
+                studyMemberRepository.save(StudyMember.create(study, mem, StudyRole.PARTICIPANT));
+            }
+
+            // 출석 패턴: 세션 s, 멤버 m에 대해 (s % 7 == m % 5)면 출석
+            for (int m = 0; m < memberCount; m++) {
+                Member mem = members.get(m);
+                for (int s = 0; s < sessionCount; s++) {
+                    if (s % 7 == m % 5) {
+                        studyAttendanceRepository.save(StudyAttendance.create(sessions.get(s), mem));
+                    }
+                }
+            }
+
+            // when
+            AttendanceMatrixResponse response =
+                    studyInstructorService.findAttendanceMatrix(study.getId(), instructorDetails);
+
+            // then: 크기 검증
+            assertEquals(sessionCount, response.sessions().size());
+            assertEquals(memberCount, response.members().size());
+
+            // 샘플 멤버 3명에 대해 패턴 검증 (memberId 매핑 사용)
+            var byId = response.members().stream()
+                    .collect(java.util.stream.Collectors.toMap(AttendanceMemberRow::memberId, m -> m));
+
+            int[] sampleIdx = {0, 13, 47};
+            for (int idx : sampleIdx) {
+                Member mem = members.get(idx);
+                List<Boolean> actual = byId.get(mem.getId()).attendance();
+                for (int s = 0; s < sessionCount; s++) {
+                    boolean expected = (s % 7 == idx % 5);
+                    assertEquals(expected, actual.get(s), "member:" + idx + ", session:" + s);
+                }
+            }
+        }
+
+        @Test
+        void 모두_출석하면_모든값_true() {
+            // given
+            Member instructor = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+
+            int sessionCount = 30;
+            int memberCount = 30;
+            List<StudySession> sessions = new java.util.ArrayList<>();
+            for (int s = 0; s < sessionCount; s++) {
+                sessions.add(studySessionRepository.save(
+                        StudySession.create(study, LocalDate.of(2025, 2, 1).plusDays(s), String.format("%04d", s))));
+            }
+            List<Member> members = new java.util.ArrayList<>();
+            for (int m = 0; m < memberCount; m++) {
+                Member mem = createMember();
+                members.add(mem);
+                studyMemberRepository.save(StudyMember.create(study, mem, StudyRole.PARTICIPANT));
+            }
+            for (Member mem : members) {
+                for (StudySession ss : sessions) {
+                    studyAttendanceRepository.save(StudyAttendance.create(ss, mem));
+                }
+            }
+
+            // when
+            AttendanceMatrixResponse response =
+                    studyInstructorService.findAttendanceMatrix(study.getId(), instructorDetails);
+
+            // then
+            assertEquals(sessionCount, response.sessions().size());
+            assertEquals(memberCount, response.members().size());
+            for (var row : response.members()) {
+                assertTrue(row.attendance().stream().allMatch(Boolean::booleanValue));
+            }
+        }
+
+        @Test
+        void 세션0_참여자0_완전빈_결과() {
+            // given
+            Member instructor = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+
+            // when
+            AttendanceMatrixResponse response =
+                    studyInstructorService.findAttendanceMatrix(study.getId(), instructorDetails);
+
+            // then
+            assertEquals(0, response.sessions().size());
+            assertEquals(0, response.members().size());
         }
     }
 
