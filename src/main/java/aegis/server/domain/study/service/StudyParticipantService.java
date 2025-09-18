@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
@@ -23,6 +24,7 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -61,6 +63,13 @@ public class StudyParticipantService {
 
         try {
             StudyAttendance saved = studyAttendanceRepository.save(StudyAttendance.create(session, member));
+            log.info(
+                    "[Study][Attendance] 출석 완료: studyId={}, sessionId={}, attendanceId={}, memberId={}, memberName={}",
+                    studyId,
+                    session.getId(),
+                    saved.getId(),
+                    member.getId(),
+                    member.getName());
             return AttendanceMarkResponse.from(saved.getId(), session.getId());
         } catch (DataIntegrityViolationException e) {
             // 경쟁 조건으로 인한 중복 방지

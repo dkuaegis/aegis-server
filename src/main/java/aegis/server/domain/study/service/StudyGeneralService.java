@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
@@ -24,6 +25,7 @@ import aegis.server.global.security.oidc.UserDetails;
 
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -87,8 +89,23 @@ public class StudyGeneralService {
 
         if (study.getRecruitmentMethod() == StudyRecruitmentMethod.FCFS) {
             processFCFS(study, member);
+            log.info(
+                    "[Study][Enroll][FCFS] 가입 완료: studyId={}, memberId={}, memberName={}, currentParticipants={}, maxParticipants={}",
+                    study.getId(),
+                    member.getId(),
+                    member.getName(),
+                    study.getCurrentParticipants(),
+                    study.getMaxParticipants());
         } else if (study.getRecruitmentMethod() == StudyRecruitmentMethod.APPLICATION) {
             processApplication(study, member, request.applicationReason());
+            studyApplicationRepository
+                    .findByStudyAndMember(study, member)
+                    .ifPresent(sa -> log.info(
+                            "[Study][Enroll][APPLICATION] 신청 접수: studyId={}, applicationId={}, applicantId={}, applicantName={}",
+                            study.getId(),
+                            sa.getId(),
+                            member.getId(),
+                            member.getName()));
         } else {
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
