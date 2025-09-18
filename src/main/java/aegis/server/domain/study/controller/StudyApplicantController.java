@@ -26,13 +26,15 @@ public class StudyApplicantController {
     private final StudyApplicantService studyApplicantService;
 
     @Operation(
-            summary = "스터디 지원 상태 조회",
-            description = "지원서 스터디에 대해 본인의 지원 상태를 조회합니다.",
+            summary = "스터디 지원서 상태 조회",
+            description =
+                    "지원서 스터디에 대해 본인의 지원서 상태를 조회합니다. 지원서를 제출하지 않았다면 200과 함께 status=NONE, id=null을 반환합니다. 선착순 스터디는 이 API를 지원하지 않습니다.",
             responses = {
-                @ApiResponse(responseCode = "200", description = "지원 상태 조회 성공"),
-                @ApiResponse(responseCode = "404", description = "스터디 또는 지원서를 찾을 수 없음", content = @Content)
+                @ApiResponse(responseCode = "200", description = "지원서 상태 조회 성공"),
+                @ApiResponse(responseCode = "400", description = "선착순 스터디에서는 지원하지 않음", content = @Content),
+                @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
             })
-    @GetMapping("/studies/{studyId}/status")
+    @GetMapping("/studies/{studyId}/applications/status")
     public ResponseEntity<ApplicantStudyApplicationStatus> getStudyApplicationStatus(
             @PathVariable Long studyId, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
         ApplicantStudyApplicationStatus response =
@@ -42,9 +44,10 @@ public class StudyApplicantController {
 
     @Operation(
             summary = "스터디 지원서 상세 조회",
-            description = "본인이 제출한 스터디 지원서의 상세 내용을 조회합니다.",
+            description = "본인이 제출한 스터디 지원서의 상세 내용을 조회합니다. 선착순 스터디는 이 API를 지원하지 않습니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "지원서 상세 조회 성공"),
+                @ApiResponse(responseCode = "400", description = "선착순 스터디에서는 지원하지 않음", content = @Content),
                 @ApiResponse(responseCode = "404", description = "스터디 또는 지원서를 찾을 수 없음", content = @Content)
             })
     @GetMapping("/studies/{studyId}/applications")
@@ -57,9 +60,10 @@ public class StudyApplicantController {
 
     @Operation(
             summary = "스터디 지원서 수정",
-            description = "본인이 제출한 스터디 지원서를 수정합니다.",
+            description = "본인이 제출한 스터디 지원서를 수정합니다. 선착순 스터디는 이 API를 지원하지 않습니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "지원서 수정 성공"),
+                @ApiResponse(responseCode = "400", description = "선착순 스터디에서는 지원하지 않음", content = @Content),
                 @ApiResponse(responseCode = "404", description = "스터디 또는 지원서를 찾을 수 없음", content = @Content)
             })
     @PutMapping("/studies/{studyId}/applications")
