@@ -32,10 +32,12 @@ public class GoogleSheetsService {
 
     @Value("${google.spreadsheets.registration.id}")
     private String registrationSpreadsheetId;
+
     private static final String REGISTRATION_SHEET_RANGE = "database!A2:O";
 
     @Value("${google.spreadsheets.pointshop.id}")
     private String pointShopDrawSpreadsheetId;
+
     private static final String POINT_SHOP_DRAW_SHEET_RANGE = "record!A2:F";
 
     public void addMemberRegistration(Member member, PaymentInfo paymentInfo) throws IOException {

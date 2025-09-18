@@ -21,13 +21,6 @@ public record PointShopDrawData(
 
     public List<Object> toRowData() {
         String formattedDateTime = drawDateTime != null ? drawDateTime.toString() : "";
-        return List.of(
-                formattedDateTime,
-                drawHistoryId,
-                memberId,
-                name,
-                phoneNumber,
-                item
-                );
+        return List.of(formattedDateTime, drawHistoryId, memberId, name, phoneNumber, item);
     }
 }
