@@ -23,6 +23,12 @@ spring:
       save-mode: always
     timeout: ${SESSION_TIMEOUT}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'startup'
+
 springdoc:
   swagger-ui:
     path: /docs/swagger-ui.html
