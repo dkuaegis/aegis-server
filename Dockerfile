@@ -9,7 +9,7 @@ RUN gradle --no-daemon dependencies
 
 COPY . .
 
-RUN gradle clean build --no-daemon -x check -x test
+RUN gradle build --no-daemon -x check -x test -x spotlessApply -x spotlessCheck
 
 FROM eclipse-temurin:21-jre-alpine
 

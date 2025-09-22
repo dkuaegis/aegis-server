@@ -6,7 +6,6 @@ plugins {
 }
 
 group = 'aegis'
-version = '2025.09.18-2'
 
 java {
     toolchain {
@@ -93,10 +92,25 @@ test {
             configurations.testRuntimeClasspath.find { it.name.contains("byte-buddy-agent") }.absolutePath
 }
 
-tasks.register('writeVersionFile') {
-    doLast {
-        new File(layout.buildDirectory.get().asFile, 'version.txt').text = project.version
+// 버전 정보를 담은 파일을 생성하는 커스텀 태스크
+abstract class WriteVersionFile extends DefaultTask {
+    @Input
+    abstract Property<String> getVersionText()
+
+    @OutputFile
+    abstract RegularFileProperty getOutputFile()
+
+    @TaskAction
+    void write() {
+        def f = outputFile.get().asFile
+        f.parentFile.mkdirs()
+        f.text = versionText.get()
     }
+}
+
+tasks.register('writeVersionFile', WriteVersionFile) {
+    versionText.set(providers.provider { version.toString() })
+    outputFile.set(layout.buildDirectory.file('version.txt'))
 }
 
 jar.dependsOn writeVersionFile

@@ -6,11 +6,11 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum PointShopItem {
-    ENERGY_DRINK(610),
-    COFFEE_LOW(320),
-    CLUB_DUES_DISCOUNT_COUPON(55),
-    COFFEE_HIGH(10),
-    CHICKEN(5);
+    ENERGY_DRINK(420),
+    COFFEE_LOW(330),
+    CLUB_DUES_DISCOUNT_COUPON(150),
+    COFFEE_HIGH(75),
+    CHICKEN(25);
 
     private final Integer weight;
 }
