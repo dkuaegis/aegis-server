@@ -33,6 +33,7 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
         FROM Study s
         JOIN StudyMember sm ON s.id = sm.study.id
         WHERE s.yearSemester = :yearSemester AND sm.role = :instructorRole
+        ORDER BY s.id DESC
         """)
     List<GeneralStudySummary> findStudySummariesByYearSemester(YearSemester yearSemester, StudyRole instructorRole);
 

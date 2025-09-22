@@ -27,7 +27,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: 'startup'
+        include: 'startup, health'
 
 springdoc:
   swagger-ui:
