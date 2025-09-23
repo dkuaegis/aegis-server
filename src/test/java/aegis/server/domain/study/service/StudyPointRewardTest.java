@@ -112,7 +112,7 @@ class StudyPointRewardTest extends IntegrationTestWithoutTransactional {
 
         PointAccount refreshed =
                 pointAccountRepository.findByMemberId(instructor.getId()).orElseThrow();
-        assertEquals(30, refreshed.getBalance().intValue());
+        assertEquals(BigDecimal.valueOf(30), refreshed.getBalance());
     }
 
     @Test
