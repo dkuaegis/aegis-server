@@ -3,6 +3,7 @@ package aegis.server.domain.study.service;
 import java.time.Clock;
 import java.time.LocalDate;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.study.domain.StudyAttendance;
 import aegis.server.domain.study.domain.StudyRole;
 import aegis.server.domain.study.domain.StudySession;
+import aegis.server.domain.study.domain.event.StudyAttendanceMarkedEvent;
 import aegis.server.domain.study.dto.request.AttendanceMarkRequest;
 import aegis.server.domain.study.dto.response.AttendanceMarkResponse;
 import aegis.server.domain.study.repository.StudyAttendanceRepository;
@@ -35,6 +37,7 @@ public class StudyParticipantService {
     private final StudySessionRepository studySessionRepository;
     private final StudyAttendanceRepository studyAttendanceRepository;
     private final Clock clock;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public AttendanceMarkResponse markAttendance(Long studyId, AttendanceMarkRequest request, UserDetails userDetails) {
@@ -70,6 +73,8 @@ public class StudyParticipantService {
                     saved.getId(),
                     member.getId(),
                     member.getName());
+            applicationEventPublisher.publishEvent(
+                    new StudyAttendanceMarkedEvent(studyId, session.getId(), member.getId()));
             return AttendanceMarkResponse.from(saved.getId(), session.getId());
         } catch (DataIntegrityViolationException e) {
             // 경쟁 조건으로 인한 중복 방지
