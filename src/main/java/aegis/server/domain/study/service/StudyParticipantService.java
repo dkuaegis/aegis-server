@@ -1,9 +1,9 @@
 package aegis.server.domain.study.service;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,12 +11,18 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import aegis.server.domain.common.idempotency.IdempotencyKeys;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
+import aegis.server.domain.point.domain.PointAccount;
+import aegis.server.domain.point.domain.PointTransaction;
+import aegis.server.domain.point.domain.PointTransactionType;
+import aegis.server.domain.point.repository.PointAccountRepository;
+import aegis.server.domain.point.repository.PointTransactionRepository;
 import aegis.server.domain.study.domain.StudyAttendance;
+import aegis.server.domain.study.domain.StudyMember;
 import aegis.server.domain.study.domain.StudyRole;
 import aegis.server.domain.study.domain.StudySession;
-import aegis.server.domain.study.domain.event.StudyAttendanceMarkedEvent;
 import aegis.server.domain.study.dto.request.AttendanceMarkRequest;
 import aegis.server.domain.study.dto.response.AttendanceMarkResponse;
 import aegis.server.domain.study.repository.StudyAttendanceRepository;
@@ -36,8 +42,9 @@ public class StudyParticipantService {
     private final StudyMemberRepository studyMemberRepository;
     private final StudySessionRepository studySessionRepository;
     private final StudyAttendanceRepository studyAttendanceRepository;
+    private final PointAccountRepository pointAccountRepository;
+    private final PointTransactionRepository pointTransactionRepository;
     private final Clock clock;
-    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public AttendanceMarkResponse markAttendance(Long studyId, AttendanceMarkRequest request, UserDetails userDetails) {
@@ -59,25 +66,22 @@ public class StudyParticipantService {
             throw new CustomException(ErrorCode.STUDY_ATTENDANCE_CODE_INVALID);
         }
 
-        // 중복 방지 선검증
-        if (studyAttendanceRepository.existsByStudySessionIdAndMemberId(session.getId(), memberId)) {
-            throw new CustomException(ErrorCode.STUDY_ATTENDANCE_ALREADY_MARKED);
-        }
-
         try {
             StudyAttendance saved = studyAttendanceRepository.save(StudyAttendance.create(session, member));
             log.info(
-                    "[Study][Attendance] 출석 완료: studyId={}, sessionId={}, attendanceId={}, memberId={}, memberName={}",
+                    "[StudyParticipantService] 출석 완료: studyId={}, sessionId={}, attendanceId={}, memberId={}, memberName={}",
                     studyId,
                     session.getId(),
                     saved.getId(),
                     member.getId(),
                     member.getName());
-            applicationEventPublisher.publishEvent(
-                    new StudyAttendanceMarkedEvent(studyId, session.getId(), member.getId()));
+
+            // 포인트 보상: 참가자 + 스터디장
+            rewardParticipant(session, memberId);
+            rewardInstructor(session);
+
             return AttendanceMarkResponse.from(saved.getId(), session.getId());
         } catch (DataIntegrityViolationException e) {
-            // 경쟁 조건으로 인한 중복 방지
             throw new CustomException(ErrorCode.STUDY_ATTENDANCE_ALREADY_MARKED);
         }
     }
@@ -86,5 +90,57 @@ public class StudyParticipantService {
         if (!studyMemberRepository.existsByStudyIdAndMemberIdAndRole(studyId, memberId, StudyRole.PARTICIPANT)) {
             throw new CustomException(ErrorCode.STUDY_MEMBER_NOT_PARTICIPANT);
         }
+    }
+
+    private void rewardParticipant(StudySession session, Long participantId) {
+        // 1. 계좌 잔고 증가
+        PointAccount account = pointAccountRepository
+                .findByIdWithLock(participantId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POINT_ACCOUNT_NOT_FOUND));
+        String idempotencyKey = IdempotencyKeys.forStudyAttendance(session.getId(), participantId);
+        if (pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)) return;
+        account.add(BigDecimal.valueOf(10));
+
+        // 2. 트랜잭션 기록
+        String reason = String.format("%s 스터디 출석", session.getStudy().getTitle());
+        PointTransaction pointTransaction = PointTransaction.create(
+                account, PointTransactionType.EARN, BigDecimal.valueOf(10), reason, idempotencyKey);
+        pointTransactionRepository.save(pointTransaction);
+
+        log.info(
+                "[StudyParticipantService] 스터디원 포인트 지급: studyId={}, sessionId={}, participantId={}, amount={}",
+                session.getStudy().getId(),
+                session.getId(),
+                participantId,
+                BigDecimal.valueOf(10));
+    }
+
+    private void rewardInstructor(StudySession session) {
+        StudyMember instructorMember = studyMemberRepository
+                .findFirstByStudyIdAndRole(session.getStudy().getId(), StudyRole.INSTRUCTOR)
+                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_INSTRUCTOR_NOT_FOUND));
+        Member instructor = instructorMember.getMember();
+
+        // 1. 계좌 잔고 증가
+        PointAccount account = pointAccountRepository
+                .findByIdWithLock(instructor.getId())
+                .orElseThrow(() -> new CustomException(ErrorCode.POINT_ACCOUNT_NOT_FOUND));
+        String idempotencyKey = IdempotencyKeys.forStudyInstructor(session.getId(), instructor.getId());
+        if (pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)) return;
+        account.add(BigDecimal.valueOf(30));
+
+        // 2. 트랜잭션 기록
+        String reason = String.format("%s 스터디 진행", session.getStudy().getTitle());
+        PointTransaction pointTransaction = PointTransaction.create(
+                account, PointTransactionType.EARN, BigDecimal.valueOf(30), reason, idempotencyKey);
+        pointTransactionRepository.save(pointTransaction);
+
+        log.info(
+                "[StudyParticipantService] 스터디장 포인트 지급: studyId={}, sessionId={}, instructorId={}, name={}, amount={}",
+                session.getStudy().getId(),
+                session.getId(),
+                instructor.getId(),
+                instructor.getName(),
+                BigDecimal.valueOf(30));
     }
 }

@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.member.domain.Member;
-import aegis.server.domain.point.domain.PointTransaction;
 
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"activity_id", "member_id"}))
@@ -32,15 +31,7 @@ public class ActivityParticipation extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "point_transaction_id")
-    private PointTransaction pointTransaction;
-
-    public static ActivityParticipation create(Activity activity, Member member, PointTransaction pointTransaction) {
-        return ActivityParticipation.builder()
-                .activity(activity)
-                .member(member)
-                .pointTransaction(pointTransaction)
-                .build();
+    public static ActivityParticipation create(Activity activity, Member member) {
+        return ActivityParticipation.builder().activity(activity).member(member).build();
     }
 }

@@ -71,6 +71,7 @@ public enum ErrorCode {
     // Study
     STUDY_NOT_FOUND(HttpStatus.NOT_FOUND),
     STUDY_MEMBER_NOT_INSTRUCTOR(HttpStatus.FORBIDDEN),
+    STUDY_INSTRUCTOR_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR), // 스터디장은 스터디 생성 시 자동으로 생성되므로 일반적으로는 발생하지 않음
 
     STUDY_APPLICATION_NOT_FOUND(HttpStatus.NOT_FOUND),
     STUDY_APPLICATION_ALREADY_EXISTS(HttpStatus.CONFLICT),
