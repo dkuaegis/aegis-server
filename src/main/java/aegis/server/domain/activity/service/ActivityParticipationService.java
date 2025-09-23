@@ -1,5 +1,6 @@
 package aegis.server.domain.activity.service;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,11 @@ public class ActivityParticipationService {
                 .findById(request.memberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
+        // 중복 참여 사전 차단
+        if (activityParticipationRepository.existsByActivityAndMember(activity, member)) {
+            throw new CustomException(ErrorCode.ACTIVITY_PARTICIPATION_ALREADY_EXISTS);
+        }
+
         // 포인트 발급
         PointAccount pointAccount = pointAccountRepository
                 .findByIdWithLock(member.getId()) // memberId와 pointAccountId가 동일
@@ -53,8 +59,13 @@ public class ActivityParticipationService {
         pointTransactionRepository.save(transaction);
 
         // 활동 내역 생성
-        ActivityParticipation activityParticipation =
-                activityParticipationRepository.save(ActivityParticipation.create(activity, member, transaction));
+        ActivityParticipation activityParticipation;
+        try {
+            activityParticipation =
+                    activityParticipationRepository.save(ActivityParticipation.create(activity, member, transaction));
+        } catch (DataIntegrityViolationException e) {
+            throw new CustomException(ErrorCode.ACTIVITY_PARTICIPATION_ALREADY_EXISTS);
+        }
 
         return ActivityParticipationResponse.from(activityParticipation);
     }
