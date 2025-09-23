@@ -35,6 +35,9 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
         """)
     List<StudyMember> findByStudyIdAndRoleWithMember(Long studyId, StudyRole role);
 
+    @Query("SELECT sm FROM StudyMember sm WHERE sm.study.id = :studyId AND sm.role = :role")
+    Optional<StudyMember> findFirstByStudyIdAndRole(Long studyId, StudyRole role);
+
     @Query(
             """
         SELECT s.id
