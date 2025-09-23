@@ -11,16 +11,16 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import aegis.server.domain.common.idempotency.IdempotencyKeys;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.point.domain.PointAccount;
 import aegis.server.domain.point.repository.PointAccountRepository;
+import aegis.server.domain.point.repository.PointTransactionRepository;
 import aegis.server.domain.study.domain.*;
 import aegis.server.domain.study.dto.request.AttendanceMarkRequest;
 import aegis.server.domain.study.dto.response.AttendanceCodeIssueResponse;
-import aegis.server.domain.study.repository.StudyAttendanceRewardRepository;
 import aegis.server.domain.study.repository.StudyMemberRepository;
 import aegis.server.domain.study.repository.StudyRepository;
-import aegis.server.domain.study.repository.StudySessionInstructorRewardRepository;
 import aegis.server.helper.IntegrationTestWithoutTransactional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,10 +41,7 @@ class StudyPointRewardTest extends IntegrationTestWithoutTransactional {
     StudyMemberRepository studyMemberRepository;
 
     @Autowired
-    StudySessionInstructorRewardRepository sessionRewardRepository;
-
-    @Autowired
-    StudyAttendanceRewardRepository attendanceRewardRepository;
+    PointTransactionRepository pointTransactionRepository;
 
     @Autowired
     PointAccountRepository pointAccountRepository;
@@ -82,8 +79,8 @@ class StudyPointRewardTest extends IntegrationTestWithoutTransactional {
         PointAccount refreshed =
                 pointAccountRepository.findByMemberId(instructor.getId()).orElseThrow();
         assertEquals(before.add(BigDecimal.valueOf(30)), refreshed.getBalance());
-        assertTrue(
-                sessionRewardRepository.existsByStudySessionIdAndInstructorId(issued.sessionId(), instructor.getId()));
+        String key = IdempotencyKeys.forStudyInstructor(issued.sessionId(), instructor.getId());
+        assertTrue(pointTransactionRepository.existsByIdempotencyKey(key));
     }
 
     @Test
@@ -110,12 +107,12 @@ class StudyPointRewardTest extends IntegrationTestWithoutTransactional {
                 study.getId(), AttendanceMarkRequest.of(issued.code()), createUserDetails(p2));
 
         // then: 보상은 1건만
-        assertTrue(
-                sessionRewardRepository.existsByStudySessionIdAndInstructorId(issued.sessionId(), instructor.getId()));
-        long rewardCount = sessionRewardRepository.findAll().stream()
-                .filter(r -> r.getStudySession().getId().equals(issued.sessionId()))
-                .count();
-        assertEquals(1L, rewardCount);
+        String key = IdempotencyKeys.forStudyInstructor(issued.sessionId(), instructor.getId());
+        assertTrue(pointTransactionRepository.existsByIdempotencyKey(key));
+
+        PointAccount refreshed =
+                pointAccountRepository.findByMemberId(instructor.getId()).orElseThrow();
+        assertEquals(BigDecimal.valueOf(30), refreshed.getBalance());
     }
 
     @Test
@@ -141,8 +138,8 @@ class StudyPointRewardTest extends IntegrationTestWithoutTransactional {
         PointAccount refreshed =
                 pointAccountRepository.findByMemberId(participant.getId()).orElseThrow();
         assertEquals(before.add(BigDecimal.valueOf(10)), refreshed.getBalance());
-        assertTrue(attendanceRewardRepository.existsByStudySessionIdAndParticipantId(
-                issued.sessionId(), participant.getId()));
+        String key = IdempotencyKeys.forStudyAttendance(issued.sessionId(), participant.getId());
+        assertTrue(pointTransactionRepository.existsByIdempotencyKey(key));
     }
 
     private Study createStudyWithInstructor(Member instructor) {

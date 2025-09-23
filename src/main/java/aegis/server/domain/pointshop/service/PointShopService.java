@@ -11,11 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import aegis.server.domain.point.domain.PointAccount;
+import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.point.domain.PointTransaction;
-import aegis.server.domain.point.domain.PointTransactionType;
-import aegis.server.domain.point.repository.PointAccountRepository;
+import aegis.server.domain.point.dto.response.PointActionResult;
 import aegis.server.domain.point.repository.PointTransactionRepository;
+import aegis.server.domain.point.service.PointLedger;
 import aegis.server.domain.pointshop.domain.PointShopDrawHistory;
 import aegis.server.domain.pointshop.domain.PointShopItem;
 import aegis.server.domain.pointshop.domain.event.PointShopDrawnEvent;
@@ -34,10 +35,11 @@ public class PointShopService {
 
     private static final BigDecimal DRAW_COST = BigDecimal.valueOf(100L);
 
-    private final PointAccountRepository pointAccountRepository;
+    private final PointLedger pointLedger;
     private final PointTransactionRepository pointTransactionRepository;
     private final PointShopDrawHistoryRepository pointShopDrawHistoryRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final MemberRepository memberRepository;
 
     public List<PointShopDrawHistoryResponse> getMyDrawHistories(UserDetails userDetails) {
         List<PointShopDrawHistory> histories =
@@ -47,32 +49,30 @@ public class PointShopService {
 
     @Transactional
     public PointShopDrawResponse draw(UserDetails userDetails) {
-        // 1. 비관적 락과 함께 포인트 계좌 조회
-        PointAccount account = pointAccountRepository
-                .findByIdWithLock(userDetails.getMemberId())
-                .orElseThrow(() -> new CustomException(ErrorCode.POINT_ACCOUNT_NOT_FOUND));
+        // 1. 포인트 차감
+        Long memberId = userDetails.getMemberId();
+        PointActionResult pointActionResult = pointLedger.spend(memberId, DRAW_COST, "포인트샵 뽑기");
 
-        // 2. 잔액 차감
-        account.deduct(DRAW_COST);
-        pointAccountRepository.save(account);
-
-        // 3. 포인트 트랜잭션 생성
-        PointTransaction transaction =
-                PointTransaction.create(account, PointTransactionType.SPEND, DRAW_COST, "포인트샵 뽑기");
-        pointTransactionRepository.save(transaction);
-
-        // 4. 가중치 기반 추첨
+        // 2. 가중치 기반 추첨
         PointShopItem drawnItem = drawItem();
 
-        // 5. 뽑은 상품 이력 저장
-        PointShopDrawHistory history = PointShopDrawHistory.create(account.getMember(), drawnItem, transaction);
+        // 3. 뽑은 상품 이력 저장
+        PointTransaction transaction = pointTransactionRepository
+                .findById(pointActionResult.transactionId())
+                .orElseThrow(() -> new CustomException(ErrorCode.POINT_TRANSACTION_NOT_FOUND));
+        Member member = memberRepository
+                .findById(userDetails.getMemberId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        PointShopDrawHistory history = PointShopDrawHistory.create(member, drawnItem, transaction);
         pointShopDrawHistoryRepository.save(history);
 
-        // 6. 이벤트 발행
+        // 4. 이벤트 발행
         applicationEventPublisher.publishEvent(new PointShopDrawnEvent(PointShopDrawInfo.from(history)));
 
-        // 7. 응답 반환
-        return PointShopDrawResponse.of(drawnItem, account.getBalance(), transaction.getId(), history.getId());
+        // 5. 응답 반환
+        return PointShopDrawResponse.of(
+                drawnItem, pointActionResult.accountBalance(), pointActionResult.transactionId(), history.getId());
     }
 
     private PointShopItem drawItem() {

@@ -43,6 +43,9 @@ public class PointTransaction extends BaseEntity {
 
     private String reason;
 
+    @Column(unique = true)
+    private String idempotencyKey;
+
     public static PointTransaction create(
             PointAccount pointAccount, PointTransactionType transactionType, BigDecimal amount, String reason) {
         return PointTransaction.builder()
@@ -51,6 +54,22 @@ public class PointTransaction extends BaseEntity {
                 .transactionType(transactionType)
                 .amount(amount)
                 .reason(reason)
+                .build();
+    }
+
+    public static PointTransaction create(
+            PointAccount pointAccount,
+            PointTransactionType transactionType,
+            BigDecimal amount,
+            String reason,
+            String idempotencyKey) {
+        return PointTransaction.builder()
+                .pointAccount(pointAccount)
+                .yearSemester(CURRENT_YEAR_SEMESTER)
+                .transactionType(transactionType)
+                .amount(amount)
+                .reason(reason)
+                .idempotencyKey(idempotencyKey)
                 .build();
     }
 }

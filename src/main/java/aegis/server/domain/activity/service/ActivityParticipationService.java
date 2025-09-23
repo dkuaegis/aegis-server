@@ -12,13 +12,10 @@ import aegis.server.domain.activity.dto.request.ActivityParticipationCreateReque
 import aegis.server.domain.activity.dto.response.ActivityParticipationResponse;
 import aegis.server.domain.activity.repository.ActivityParticipationRepository;
 import aegis.server.domain.activity.repository.ActivityRepository;
+import aegis.server.domain.common.idempotency.IdempotencyKeys;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
-import aegis.server.domain.point.domain.PointAccount;
-import aegis.server.domain.point.domain.PointTransaction;
-import aegis.server.domain.point.domain.PointTransactionType;
-import aegis.server.domain.point.repository.PointAccountRepository;
-import aegis.server.domain.point.repository.PointTransactionRepository;
+import aegis.server.domain.point.service.PointLedger;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 
@@ -30,8 +27,7 @@ public class ActivityParticipationService {
     private final ActivityParticipationRepository activityParticipationRepository;
     private final ActivityRepository activityRepository;
     private final MemberRepository memberRepository;
-    private final PointAccountRepository pointAccountRepository;
-    private final PointTransactionRepository pointTransactionRepository;
+    private final PointLedger pointLedger;
 
     @Transactional
     public ActivityParticipationResponse createActivityParticipation(ActivityParticipationCreateRequest request) {
@@ -43,29 +39,18 @@ public class ActivityParticipationService {
                 .findById(request.memberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // 중복 참여 사전 차단
-        if (activityParticipationRepository.existsByActivityAndMember(activity, member)) {
-            throw new CustomException(ErrorCode.ACTIVITY_PARTICIPATION_ALREADY_EXISTS);
-        }
-
-        // 포인트 발급
-        PointAccount pointAccount = pointAccountRepository
-                .findByIdWithLock(member.getId()) // memberId와 pointAccountId가 동일
-                .orElseThrow(() -> new CustomException(ErrorCode.POINT_ACCOUNT_NOT_FOUND));
-        pointAccount.add(activity.getPointAmount());
-
-        PointTransaction transaction = PointTransaction.create(
-                pointAccount, PointTransactionType.EARN, activity.getPointAmount(), activity.getName() + " 활동 참여");
-        pointTransactionRepository.save(transaction);
-
         // 활동 내역 생성
         ActivityParticipation activityParticipation;
         try {
             activityParticipation =
-                    activityParticipationRepository.save(ActivityParticipation.create(activity, member, transaction));
+                    activityParticipationRepository.save(ActivityParticipation.create(activity, member));
         } catch (DataIntegrityViolationException e) {
             throw new CustomException(ErrorCode.ACTIVITY_PARTICIPATION_ALREADY_EXISTS);
         }
+
+        // 포인트 발급
+        String idempotencyKey = IdempotencyKeys.forActivity(activity.getId(), member.getId());
+        pointLedger.earn(member.getId(), activity.getPointAmount(), activity.getName() + " 활동 참여", idempotencyKey);
 
         return ActivityParticipationResponse.from(activityParticipation);
     }

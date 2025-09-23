@@ -60,6 +60,8 @@ class StudyParticipantServiceTest extends IntegrationTest {
             // given
             Member instructor = createMember();
             Member participant = createMember();
+            createPointAccount(instructor);
+            createPointAccount(participant);
             UserDetails participantDetails = createUserDetails(participant);
 
             Study study = createStudyWithInstructor(instructor);
@@ -148,6 +150,8 @@ class StudyParticipantServiceTest extends IntegrationTest {
             // given
             Member instructor = createMember();
             Member participant = createMember();
+            createPointAccount(instructor);
+            createPointAccount(participant);
             UserDetails participantDetails = createUserDetails(participant);
 
             Study study = createStudyWithInstructor(instructor);
