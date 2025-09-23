@@ -11,4 +11,6 @@ public interface PointTransactionRepository extends JpaRepository<PointTransacti
 
     @Query("SELECT pt FROM PointTransaction pt WHERE pt.pointAccount.id = :pointAccountId ORDER BY pt.id DESC")
     List<PointTransaction> findAllByPointAccountId(Long pointAccountId);
+
+    boolean existsByIdempotencyKey(String idempotencyKey);
 }
