@@ -14,11 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import aegis.server.domain.common.idempotency.IdempotencyKeys;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
-import aegis.server.domain.point.domain.PointAccount;
-import aegis.server.domain.point.domain.PointTransaction;
-import aegis.server.domain.point.domain.PointTransactionType;
-import aegis.server.domain.point.repository.PointAccountRepository;
-import aegis.server.domain.point.repository.PointTransactionRepository;
+import aegis.server.domain.point.service.PointLedger;
 import aegis.server.domain.study.domain.StudyAttendance;
 import aegis.server.domain.study.domain.StudyMember;
 import aegis.server.domain.study.domain.StudyRole;
@@ -42,8 +38,7 @@ public class StudyParticipantService {
     private final StudyMemberRepository studyMemberRepository;
     private final StudySessionRepository studySessionRepository;
     private final StudyAttendanceRepository studyAttendanceRepository;
-    private final PointAccountRepository pointAccountRepository;
-    private final PointTransactionRepository pointTransactionRepository;
+    private final PointLedger pointLedger;
     private final Clock clock;
 
     @Transactional
@@ -93,19 +88,9 @@ public class StudyParticipantService {
     }
 
     private void rewardParticipant(StudySession session, Long participantId) {
-        // 1. 계좌 잔고 증가
-        PointAccount account = pointAccountRepository
-                .findByIdWithLock(participantId)
-                .orElseThrow(() -> new CustomException(ErrorCode.POINT_ACCOUNT_NOT_FOUND));
         String idempotencyKey = IdempotencyKeys.forStudyAttendance(session.getId(), participantId);
-        if (pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)) return;
-        account.add(BigDecimal.valueOf(10));
-
-        // 2. 트랜잭션 기록
         String reason = String.format("%s 스터디 출석", session.getStudy().getTitle());
-        PointTransaction pointTransaction = PointTransaction.create(
-                account, PointTransactionType.EARN, BigDecimal.valueOf(10), reason, idempotencyKey);
-        pointTransactionRepository.save(pointTransaction);
+        pointLedger.earn(participantId, BigDecimal.valueOf(10), reason, idempotencyKey);
 
         log.info(
                 "[StudyParticipantService] 스터디원 포인트 지급: studyId={}, sessionId={}, participantId={}, amount={}",
@@ -116,31 +101,20 @@ public class StudyParticipantService {
     }
 
     private void rewardInstructor(StudySession session) {
-        StudyMember instructorMember = studyMemberRepository
+        StudyMember instructor = studyMemberRepository
                 .findFirstByStudyIdAndRole(session.getStudy().getId(), StudyRole.INSTRUCTOR)
                 .orElseThrow(() -> new CustomException(ErrorCode.STUDY_INSTRUCTOR_NOT_FOUND));
-        Member instructor = instructorMember.getMember();
+        Member instructorMember = instructor.getMember();
 
-        // 1. 계좌 잔고 증가
-        PointAccount account = pointAccountRepository
-                .findByIdWithLock(instructor.getId())
-                .orElseThrow(() -> new CustomException(ErrorCode.POINT_ACCOUNT_NOT_FOUND));
-        String idempotencyKey = IdempotencyKeys.forStudyInstructor(session.getId(), instructor.getId());
-        if (pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)) return;
-        account.add(BigDecimal.valueOf(30));
-
-        // 2. 트랜잭션 기록
+        String idempotencyKey = IdempotencyKeys.forStudyInstructor(session.getId(), instructorMember.getId());
         String reason = String.format("%s 스터디 진행", session.getStudy().getTitle());
-        PointTransaction pointTransaction = PointTransaction.create(
-                account, PointTransactionType.EARN, BigDecimal.valueOf(30), reason, idempotencyKey);
-        pointTransactionRepository.save(pointTransaction);
+        pointLedger.earn(instructorMember.getId(), BigDecimal.valueOf(30), reason, idempotencyKey);
 
         log.info(
-                "[StudyParticipantService] 스터디장 포인트 지급: studyId={}, sessionId={}, instructorId={}, name={}, amount={}",
+                "[StudyParticipantService] 스터디장 포인트 지급: studyId={}, sessionId={}, instructorId={}, amount={}",
                 session.getStudy().getId(),
                 session.getId(),
-                instructor.getId(),
-                instructor.getName(),
+                instructorMember.getId(),
                 BigDecimal.valueOf(30));
     }
 }
