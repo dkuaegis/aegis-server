@@ -78,11 +78,11 @@ public class StudyPointEventListener {
     }
 
     private void rewardParticipant(StudySession session, Long participantId) {
-        String idempotencyKey = IdempotencyKeys.forStudyAttendance(session.getId(), participantId);
-        if (pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)) return;
         PointAccount account = pointAccountRepository
                 .findByIdWithLock(participantId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POINT_ACCOUNT_NOT_FOUND));
+        String idempotencyKey = IdempotencyKeys.forStudyAttendance(session.getId(), participantId);
+        if (pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)) return;
         account.add(PARTICIPANT_REWARD_POINT);
 
         String reason = String.format("%s 스터디 출석", session.getStudy().getTitle());
@@ -99,11 +99,11 @@ public class StudyPointEventListener {
     }
 
     private void rewardInstructor(StudySession session, Member instructor) {
-        String idempotencyKey = IdempotencyKeys.forStudyInstructor(session.getId(), instructor.getId());
-        if (pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)) return;
         PointAccount account = pointAccountRepository
                 .findByIdWithLock(instructor.getId())
                 .orElseThrow(() -> new CustomException(ErrorCode.POINT_ACCOUNT_NOT_FOUND));
+        String idempotencyKey = IdempotencyKeys.forStudyInstructor(session.getId(), instructor.getId());
+        if (pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)) return;
         account.add(INSTRUCTOR_REWARD_POINT);
 
         String reason = String.format("%s 스터디 진행", session.getStudy().getTitle());
