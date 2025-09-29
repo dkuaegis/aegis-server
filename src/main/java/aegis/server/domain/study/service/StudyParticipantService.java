@@ -61,6 +61,12 @@ public class StudyParticipantService {
             throw new CustomException(ErrorCode.STUDY_ATTENDANCE_CODE_INVALID);
         }
 
+        // 출석 여부 사전 검증: 동시성 이슈까지는 막아주진 못함
+        if (studyAttendanceRepository.existsByStudySessionIdAndMemberId(session.getId(), memberId)) {
+            throw new CustomException(ErrorCode.STUDY_ATTENDANCE_ALREADY_MARKED);
+        }
+
+        // 출석 저장: DB의 unique 제약조건에 의해 동시성 이슈까지도 막아줌
         try {
             StudyAttendance saved = studyAttendanceRepository.save(StudyAttendance.create(session, member));
             log.info(
@@ -77,6 +83,13 @@ public class StudyParticipantService {
 
             return AttendanceMarkResponse.from(saved.getId(), session.getId());
         } catch (DataIntegrityViolationException e) {
+            // save 단에서 unique 제약조건에 걸리면 catch 절과는 무관하게
+            // SQL Error: 0, SQLState: 23505 / ERROR: duplicate key value violates unique constraint 예외가 발생한다
+            // 근본적으로 해결하려면 Upsert 쿼리가 필요하지만 JPA에서는 Native Query로 직접 작성해야 하므로 일단은 이렇게 처리한다
+            // 따라서 총 3개의 로그가 남게된다
+            // - SqlExceptionHelper     : SQL Error: 0, SQLState: 23505
+            // - SqlExceptionHelper     : ERROR: duplicate key value violates unique constraint
+            // - GlobalExceptionHandler : CustomException: STUDY_ATTENDANCE_ALREADY_MARKED
             throw new CustomException(ErrorCode.STUDY_ATTENDANCE_ALREADY_MARKED);
         }
     }
