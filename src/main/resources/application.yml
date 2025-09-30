@@ -21,6 +21,7 @@ spring:
       namespace: aegis
       flush-mode: on_save
       save-mode: always
+      repository-type: indexed
     timeout: ${SESSION_TIMEOUT}
 
 management:
