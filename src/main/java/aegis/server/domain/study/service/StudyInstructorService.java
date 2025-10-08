@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import aegis.server.domain.member.domain.Role;
 import aegis.server.domain.study.domain.Study;
 import aegis.server.domain.study.domain.StudyApplication;
 import aegis.server.domain.study.domain.StudyMember;
@@ -56,7 +57,7 @@ public class StudyInstructorService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     public List<InstructorStudyApplicationSummary> findAllStudyApplications(Long studyId, UserDetails userDetails) {
-        validateIsStudyInstructorByStudyId(studyId, userDetails.getMemberId());
+        validateIsStudyInstructorByStudyId(studyId, userDetails);
 
         List<StudyApplication> studyApplications = studyApplicationRepository.findAllByStudyIdWithMember(studyId);
         return studyApplications.stream()
@@ -65,7 +66,7 @@ public class StudyInstructorService {
     }
 
     public List<InstructorStudyMemberResponse> findAllStudyMembers(Long studyId, UserDetails userDetails) {
-        validateIsStudyInstructorByStudyId(studyId, userDetails.getMemberId());
+        validateIsStudyInstructorByStudyId(studyId, userDetails);
 
         List<StudyMember> members =
                 studyMemberRepository.findByStudyIdAndRoleWithMember(studyId, StudyRole.PARTICIPANT);
@@ -76,7 +77,7 @@ public class StudyInstructorService {
 
     public InstructorStudyApplicationReason findStudyApplicationById(
             Long studyId, Long studyApplicationId, UserDetails userDetails) {
-        validateIsStudyInstructorByStudyId(studyId, userDetails.getMemberId());
+        validateIsStudyInstructorByStudyId(studyId, userDetails);
 
         StudyApplication studyApplication = studyApplicationRepository
                 .findById(studyApplicationId)
@@ -91,7 +92,7 @@ public class StudyInstructorService {
 
     @Transactional
     public GeneralStudyDetail updateStudy(Long studyId, StudyCreateUpdateRequest request, UserDetails userDetails) {
-        validateIsStudyInstructorByStudyId(studyId, userDetails.getMemberId());
+        validateIsStudyInstructorByStudyId(studyId, userDetails);
 
         Study study =
                 studyRepository.findById(studyId).orElseThrow(() -> new CustomException(ErrorCode.STUDY_NOT_FOUND));
@@ -121,7 +122,7 @@ public class StudyInstructorService {
             throw new CustomException(ErrorCode.STUDY_APPLICATION_ACCESS_DENIED);
         }
 
-        validateIsStudyInstructorByStudyId(studyApplication.getStudy().getId(), instructorId);
+        validateIsStudyInstructorByStudyId(studyApplication.getStudy().getId(), userDetails);
 
         Study study = studyRepository
                 .findByIdWithLock(studyApplication.getStudy().getId())
@@ -158,7 +159,7 @@ public class StudyInstructorService {
             throw new CustomException(ErrorCode.STUDY_APPLICATION_ACCESS_DENIED);
         }
 
-        validateIsStudyInstructorByStudyId(studyApplication.getStudy().getId(), instructorId);
+        validateIsStudyInstructorByStudyId(studyApplication.getStudy().getId(), userDetails);
 
         studyApplication.reject();
 
@@ -176,7 +177,7 @@ public class StudyInstructorService {
     @Transactional
     public AttendanceCodeIssueResponse issueAttendanceCode(Long studyId, UserDetails userDetails) {
         Long instructorId = userDetails.getMemberId();
-        validateIsStudyInstructorByStudyId(studyId, instructorId);
+        validateIsStudyInstructorByStudyId(studyId, userDetails);
 
         Study study = studyRepository
                 .findByIdWithLock(studyId)
@@ -205,22 +206,8 @@ public class StudyInstructorService {
         }
     }
 
-    private void validateIsStudyInstructorByStudyId(Long studyId, Long memberId) {
-        if (!studyMemberRepository.existsByStudyIdAndMemberIdAndRole(studyId, memberId, StudyRole.INSTRUCTOR)) {
-            throw new CustomException(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR);
-        }
-    }
-
-    private String generateCode() {
-        StringBuilder sb = new StringBuilder(4);
-        for (int i = 0; i < 4; i++) {
-            sb.append(CODE_CHARS[RANDOM.nextInt(CODE_CHARS.length)]);
-        }
-        return sb.toString();
-    }
-
     public AttendanceMatrixResponse findAttendanceMatrix(Long studyId, UserDetails userDetails) {
-        validateIsStudyInstructorByStudyId(studyId, userDetails.getMemberId());
+        validateIsStudyInstructorByStudyId(studyId, userDetails);
 
         // 세션 목록 조회
         List<StudySession> sessions = studySessionRepository.findAllByStudyIdOrderBySessionDateAsc(studyId);
@@ -267,5 +254,23 @@ public class StudyInstructorService {
         }
 
         return AttendanceMatrixResponse.from(sessionHeaders, memberRows);
+    }
+
+    private void validateIsStudyInstructorByStudyId(Long studyId, UserDetails userDetails) {
+        if (userDetails.getRole() == Role.ADMIN) {
+            return; // 관리자는 모든 스터디에 대한 권한 보유
+        }
+        Long memberId = userDetails.getMemberId();
+        if (!studyMemberRepository.existsByStudyIdAndMemberIdAndRole(studyId, memberId, StudyRole.INSTRUCTOR)) {
+            throw new CustomException(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR);
+        }
+    }
+
+    private String generateCode() {
+        StringBuilder sb = new StringBuilder(4);
+        for (int i = 0; i < 4; i++) {
+            sb.append(CODE_CHARS[RANDOM.nextInt(CODE_CHARS.length)]);
+        }
+        return sb.toString();
     }
 }

@@ -35,10 +35,10 @@ public class StudyInstructorController {
 
     @Operation(
             summary = "스터디 지원서 목록 조회",
-            description = "스터디장이 자신의 스터디에 대한 모든 지원서 목록을 조회합니다.",
+            description = "스터디장 또는 관리자가 스터디의 모든 지원서 목록을 조회합니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "지원서 목록 조회 성공"),
-                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "403", description = "스터디장/관리자 권한 아님", content = @Content),
                 @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
             })
     @GetMapping("/studies/{studyId}/applications-instructor")
@@ -51,10 +51,10 @@ public class StudyInstructorController {
 
     @Operation(
             summary = "스터디원 목록 조회",
-            description = "스터디장이 자신의 스터디의 스터디원 목록을 조회합니다.",
+            description = "스터디장 또는 관리자가 스터디의 스터디원 목록을 조회합니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "스터디원 목록 조회 성공"),
-                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "403", description = "스터디장/관리자 권한 아님", content = @Content),
                 @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
             })
     @GetMapping("/studies/{studyId}/members-instructor")
@@ -66,10 +66,10 @@ public class StudyInstructorController {
 
     @Operation(
             summary = "스터디 지원서 상세 조회",
-            description = "스터디장이 특정 지원서의 상세 내용을 조회합니다.",
+            description = "스터디장 또는 관리자가 특정 지원서의 상세 내용을 조회합니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "지원서 상세 조회 성공"),
-                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "403", description = "스터디장/관리자 권한 아님", content = @Content),
                 @ApiResponse(responseCode = "404", description = "지원서를 찾을 수 없음", content = @Content)
             })
     @GetMapping("/studies/{studyId}/applications/{studyApplicationId}")
@@ -84,11 +84,11 @@ public class StudyInstructorController {
 
     @Operation(
             summary = "스터디 정보 수정",
-            description = "스터디장이 자신의 스터디 정보를 수정합니다.",
+            description = "스터디장 또는 관리자가 스터디 정보를 수정합니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "스터디 수정 성공"),
                 @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
-                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "403", description = "스터디장/관리자 권한 아님", content = @Content),
                 @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
             })
     @PutMapping("/studies/{studyId}")
@@ -102,10 +102,10 @@ public class StudyInstructorController {
 
     @Operation(
             summary = "스터디 지원서 승인",
-            description = "스터디장이 지원서를 승인하여 지원자를 스터디 멤버로 추가합니다.",
+            description = "스터디장 또는 관리자가 지원서를 승인하여 지원자를 스터디 멤버로 추가합니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "지원서 승인 성공"),
-                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "403", description = "스터디장/관리자 권한 아님", content = @Content),
                 @ApiResponse(responseCode = "404", description = "지원서를 찾을 수 없음", content = @Content)
             })
     @PutMapping("/studies/{studyId}/applications/{studyApplicationId}/approve")
@@ -119,10 +119,10 @@ public class StudyInstructorController {
 
     @Operation(
             summary = "스터디 지원서 거절",
-            description = "스터디장이 지원서를 거절합니다.",
+            description = "스터디장 또는 관리자가 지원서를 거절합니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "지원서 거절 성공"),
-                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "403", description = "스터디장/관리자 권한 아님", content = @Content),
                 @ApiResponse(responseCode = "404", description = "지원서를 찾을 수 없음", content = @Content)
             })
     @PutMapping("/studies/{studyId}/applications/{studyApplicationId}/reject")
@@ -136,10 +136,10 @@ public class StudyInstructorController {
 
     @Operation(
             summary = "출석 코드 발급",
-            description = "오늘 날짜의 세션에 대한 출석 코드를 발급합니다. 같은 날 재발급 시 동일 코드를 반환합니다.",
+            description = "스터디장 또는 관리자가 오늘 날짜의 세션에 대한 출석 코드를 발급합니다. 같은 날 재발급 시 동일 코드를 반환합니다.",
             responses = {
                 @ApiResponse(responseCode = "201", description = "출석 코드 발급 성공"),
-                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "403", description = "스터디장/관리자 권한 아님", content = @Content),
                 @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
             })
     @PostMapping("/studies/{studyId}/attendance-code")
@@ -151,10 +151,10 @@ public class StudyInstructorController {
 
     @Operation(
             summary = "회차별 출석 현황 조회",
-            description = "이름 기준 행, 회차 기준 열의 매트릭스를 반환합니다.",
+            description = "스터디장 또는 관리자가 이름 기준 행, 회차 기준 열의 매트릭스를 조회합니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "출석 현황 조회 성공"),
-                @ApiResponse(responseCode = "403", description = "스터디장이 아님", content = @Content),
+                @ApiResponse(responseCode = "403", description = "스터디장/관리자 권한 아님", content = @Content),
                 @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
             })
     @GetMapping("/studies/{studyId}/attendance-instructor")

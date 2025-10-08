@@ -57,4 +57,11 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
     default Optional<GeneralStudyDetail> findStudyDetailById(Long studyId) {
         return findStudyDetailByIdInternal(studyId, StudyRole.INSTRUCTOR);
     }
+
+    @Query("SELECT s.id FROM Study s WHERE s.yearSemester = :yearSemester")
+    List<Long> findStudyIdsByYearSemester(YearSemester yearSemester);
+
+    default List<Long> findStudyIdsByCurrentYearSemester() {
+        return findStudyIdsByYearSemester(CURRENT_YEAR_SEMESTER);
+    }
 }
