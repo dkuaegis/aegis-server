@@ -3,6 +3,8 @@ package aegis.server.domain.payment.service;
 import java.math.BigDecimal;
 import java.util.List;
 
+import aegis.server.domain.payment.domain.PaymentStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +36,14 @@ public class PaymentService {
     private final MemberRepository memberRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    @Value("${email-restriction.admin-email}")
+    private String adminEmail;
+
     public PaymentStatusResponse checkPaymentStatus(UserDetails userDetails) {
+        if (userDetails.getEmail().equals(adminEmail)) {
+            return new PaymentStatusResponse(PaymentStatus.COMPLETED, BigDecimal.ZERO);
+        }
+
         Payment payment = paymentRepository
                 .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,9 @@ public class AuthController {
 
     private final PaymentRepository paymentRepository;
 
+    @Value("${email-restriction.admin-email}")
+    private String adminEmail;
+
     @Operation(
             summary = "인증 상태 확인",
             description = "사용자의 인증 상태와 결제 상태를 확인합니다.",
@@ -44,6 +48,10 @@ public class AuthController {
     public ResponseEntity<AuthCheckResponse> check(@Parameter(hidden = true) @LoginUser UserDetails userDetails) {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        if (userDetails.getEmail().equals(adminEmail)) {
+            return ResponseEntity.status(HttpStatus.OK).body(new AuthCheckResponse(PaymentStatus.COMPLETED));
         }
 
         Optional<Payment> optionalPayment =
