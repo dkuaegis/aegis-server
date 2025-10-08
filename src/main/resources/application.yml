@@ -48,6 +48,7 @@ exception:
 
 email-restriction:
   enabled: ${EMAIL_RESTRICTION_ENABLED}
+  admin-email: dankook.aegis@gmail.com
 
 server:
   forward-headers-strategy: framework

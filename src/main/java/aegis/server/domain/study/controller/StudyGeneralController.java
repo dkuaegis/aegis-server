@@ -91,7 +91,7 @@ public class StudyGeneralController {
 
     @Operation(
             summary = "내 스터디 권한 조회",
-            description = "본인이 스터디장/스터디원/지원자인 스터디 목록을 조회합니다.",
+            description = "본인이 스터디장/스터디원/지원자인 스터디 목록을 조회합니다. 관리자는 현재 학기의 모든 스터디를 스터디장 권한으로 반환합니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "조회 성공"),
                 @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음", content = @Content)

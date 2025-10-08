@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.domain.Role;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.study.domain.*;
 import aegis.server.domain.study.dto.request.StudyCreateUpdateRequest;
@@ -49,8 +50,14 @@ public class StudyGeneralService {
     public GeneralStudyRolesIdsResponse getMyStudyRoles(UserDetails userDetails) {
         Member member = getMemberById(userDetails.getMemberId());
 
-        List<Long> instructorStudyIds = studyMemberRepository.findStudyIdsByMemberIdAndRoleAndYearSemester(
-                member.getId(), StudyRole.INSTRUCTOR, CURRENT_YEAR_SEMESTER);
+        List<Long> instructorStudyIds;
+        if (userDetails.getRole() == Role.ADMIN) {
+            // 관리자는 현재 학기의 모든 스터디에 대해 스터디장 권한으로 간주
+            instructorStudyIds = studyRepository.findStudyIdsByCurrentYearSemester();
+        } else {
+            instructorStudyIds = studyMemberRepository.findStudyIdsByMemberIdAndRoleAndYearSemester(
+                    member.getId(), StudyRole.INSTRUCTOR, CURRENT_YEAR_SEMESTER);
+        }
         List<Long> participantStudyIds = studyMemberRepository.findStudyIdsByMemberIdAndRoleAndYearSemester(
                 member.getId(), StudyRole.PARTICIPANT, CURRENT_YEAR_SEMESTER);
         List<Long> appliedStudyIds = studyApplicationRepository.findAppliedStudyIdsByMemberIdAndStatusAndYearSemester(

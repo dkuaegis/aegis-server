@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,9 @@ public class AuthController {
 
     private final PaymentRepository paymentRepository;
 
+    @Value("${email-restriction.admin-email}")
+    private String adminEmail;
+
     @Operation(
             summary = "인증 상태 확인",
             description = "사용자의 인증 상태와 결제 상태를 확인합니다.",
@@ -44,6 +48,10 @@ public class AuthController {
     public ResponseEntity<AuthCheckResponse> check(@Parameter(hidden = true) @LoginUser UserDetails userDetails) {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        if (userDetails.getEmail().equals(adminEmail)) {
+            return ResponseEntity.status(HttpStatus.OK).body(new AuthCheckResponse(PaymentStatus.COMPLETED));
         }
 
         Optional<Payment> optionalPayment =
@@ -65,52 +73,61 @@ public class AuthController {
     public ResponseEntity<String> notDku() {
         String html =
                 """
-                <!DOCTYPE html>
-                  <html lang="ko">
-                    <head>
-                      <meta charset="UTF-8" />
-                      <meta name="viewport" content="width=device-width, initial-scale=1" />
-                      <title>인증 실패</title>
-                      <link rel="stylesheet" href="https://unpkg.com/mvp.css" />
-                      <style>
-                        .container {
-                          max-width: 600px;
-                          margin: 2rem auto;
-                          padding: 0 1rem;
-                          word-break: keep-all;
-                        }
-                        .button-container {
-                          text-align: center;
-                        }
-                        .button {
-                          display: inline-block;
-                          background: #007bff;
-                          color: #fff;
-                          padding: 0.75em 1.5em;
-                          border-radius: 4px;
-                          text-decoration: none;
-                        }
-                        .button:hover {
-                          background: #0056b3;
-                        }
-                      </style>
-                    </head>
-                    <body>
-                      <main class="container">
-                        <header>
-                          <h1>단국대학교 이메일로만 가입이 가능합니다</h1>
-                          <p>@dankook.ac.kr 이메일로 다시 시도해주세요.</p>
-                        </header>
-                        <section class="button-container">
-                          <p>
-                            <a href="https://join.dkuaegis.org" class="button"
-                              >메인으로 돌아가기</a
-                            >
-                          </p>
-                        </section>
-                      </main>
-                    </body>
-                  </html>
+               <!DOCTYPE html>
+               <html lang="ko">
+                 <head>
+                   <meta charset="UTF-8" />
+                   <meta name="viewport" content="width=device-width, initial-scale=1" />
+                   <title>인증 실패</title>
+                   <link rel="stylesheet" href="https://unpkg.com/mvp.css" />
+                   <style>
+                     header {
+                       padding: 1rem 1rem;
+                     }
+                     .container {
+                       max-width: 640px;
+                       margin: 2rem auto;
+                       padding: 0 1rem;
+                       word-break: keep-all;
+                     }
+                     .button-container {
+                       text-align: center;
+                     }
+                     .buttons {
+                       display: flex;
+                       gap: 0.75rem;
+                       justify-content: center;
+                       flex-wrap: wrap;
+                     }
+                     .button {
+                       display: inline-block;
+                       background: #007bff;
+                       color: #fff;
+                       padding: 0.75em 1.1em;
+                       border-radius: 6px;
+                       text-decoration: none;
+                     }
+                     .button:hover {
+                       background: #0056b3;
+                     }
+                   </style>
+                 </head>
+                 <body>
+                   <main class="container">
+                     <header>
+                       <h1>단국대학교 이메일만 지원합니다</h1>
+                       <p>@dankook.ac.kr 이메일로 다시 시도해주세요.</p>
+                     </header>
+                     <section class="button-container">
+                       <div class="buttons">
+                         <a href="https://join.dkuaegis.org" class="button">회원가입</a>
+                         <a href="https://mypage.dkuaegis.org" class="button">마이페이지</a>
+                         <a href="https://study.dkuaegis.org" class="button">스터디</a>
+                       </div>
+                     </section>
+                   </main>
+                 </body>
+               </html>
                 """;
         return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html);
     }
