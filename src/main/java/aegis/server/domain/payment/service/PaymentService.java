@@ -3,7 +3,6 @@ package aegis.server.domain.payment.service;
 import java.math.BigDecimal;
 import java.util.List;
 
-import aegis.server.domain.payment.domain.PaymentStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -16,6 +15,7 @@ import aegis.server.domain.coupon.repository.IssuedCouponRepository;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.Payment;
+import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
 import aegis.server.domain.payment.dto.internal.PaymentInfo;
 import aegis.server.domain.payment.dto.request.PaymentRequest;
