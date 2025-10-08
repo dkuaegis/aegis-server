@@ -28,6 +28,9 @@ public class CustomOidcUserService extends OidcUserService {
     @Value("${email-restriction.enabled}")
     private boolean emailRestrictionEnabled;
 
+    @Value("${email-restriction.admin-email}")
+    private String adminEmail;
+
     @Override
     @Transactional
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
@@ -46,8 +49,10 @@ public class CustomOidcUserService extends OidcUserService {
 
         if (email == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
-        } else if (emailRestrictionEnabled && !email.endsWith("@dankook.ac.kr")) {
-            throw new OAuth2AuthenticationException(new OAuth2Error("NOT_DKU_EMAIL"));
+        } else if (emailRestrictionEnabled) {
+            if (!email.equals(adminEmail) && !email.endsWith("@dankook.ac.kr")) {
+                throw new OAuth2AuthenticationException(new OAuth2Error("NOT_DKU_EMAIL"));
+            }
         }
 
         Member member = memberRepository.findByOidcId(oidcId).orElse(null);
