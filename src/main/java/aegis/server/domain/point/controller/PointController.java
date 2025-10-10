@@ -44,7 +44,8 @@ public class PointController {
 
     @Operation(
             summary = "포인트 랭킹 조회",
-            description = "현재 학기 기준 포인트 적립량 상위 10명과 로그인한 사용자의 랭킹 정보를 조회합니다.",
+            description =
+                    "현재 학기 기준 포인트 적립량 상위 10명과 로그인한 사용자의 랭킹 정보를 조회합니다. STAFF(Role_STAFF)는 집계에서 제외되며, 이 경우 'me'가 null일 수 있습니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "포인트 랭킹 조회 성공"),
                 @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
