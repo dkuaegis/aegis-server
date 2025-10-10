@@ -18,9 +18,7 @@ import aegis.server.domain.point.repository.PointAccountRepository;
 import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class PointServiceTest extends IntegrationTest {
 
@@ -376,6 +374,54 @@ class PointServiceTest extends IntegrationTest {
 
             // 현재 사용자는 결제 완료자 중 네 번째(700,600,500,400)여야 한다
             assertEquals(4L, response.me().rank());
+        }
+
+        @Test
+        void STAFF_회원은_랭킹에서_제외되고_me_null이며_memberCount에는_포함된다() {
+            // given: USER 5명, STAFF 3명 모두 결제 완료. USER는 점수 높음, STAFF는 더 높은 점수여도 제외되어야 함
+            Member[] users = new Member[5];
+            PointAccount[] userAccounts = new PointAccount[5];
+            for (int i = 0; i < 5; i++) {
+                users[i] = createMember(); // 기본은 USER로 승격됨
+                createCompletedPaymentForCurrentSemester(users[i]);
+                userAccounts[i] = createPointAccount(users[i]);
+                createEarnPointTransaction(userAccounts[i], BigDecimal.valueOf(500 - (i * 50)), "USER 적립");
+            }
+
+            Member[] staffs = new Member[3];
+            PointAccount[] staffAccounts = new PointAccount[3];
+            for (int i = 0; i < 3; i++) {
+                staffs[i] = createMember();
+                // STAFF로 강제 설정
+                org.springframework.test.util.ReflectionTestUtils.setField(staffs[i], "role", Role.STAFF);
+                createCompletedPaymentForCurrentSemester(staffs[i]);
+                staffAccounts[i] = createPointAccount(staffs[i]);
+                // USER보다 높은 점수여도 랭킹에서 제외되어야 함
+                createEarnPointTransaction(staffAccounts[i], BigDecimal.valueOf(1000 - (i * 100)), "STAFF 적립");
+            }
+
+            // 현재 사용자: STAFF 중 한 명
+            Member currentUser = staffs[0];
+            UserDetails userDetails = createUserDetails(currentUser);
+
+            // when
+            PointRankingListResponse response = pointService.getPointRanking(userDetails);
+
+            // then
+            // memberCount: 결제 완료 총원(5 USER + 3 STAFF) = 8명 (STAFF 포함)
+            assertEquals(8, response.memberCount());
+            // top10: STAFF는 제외되어 USER 5명만 포함
+            assertEquals(5, response.top10().size());
+            // me: STAFF는 제외 정책으로 null
+            assertNull(response.me());
+            // top10에 STAFF 이름이 없어야 함
+            for (Member m : staffs) {
+                boolean exists =
+                        response.top10().stream().anyMatch(r -> r.name().equals(m.getName()));
+                assertFalse(exists);
+            }
+            // top1은 USER 중 최고 점수(500)여야 함
+            assertEquals(BigDecimal.valueOf(500), response.top10().get(0).totalEarnedPoints());
         }
     }
 }

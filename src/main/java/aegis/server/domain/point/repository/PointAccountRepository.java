@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.domain.Role;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.point.domain.PointAccount;
 
@@ -27,14 +28,17 @@ public interface PointAccountRepository extends JpaRepository<PointAccount, Long
     Optional<PointAccount> findByIdWithLock(Long id);
 
     @Query("SELECT pa FROM PointAccount pa JOIN FETCH pa.member "
-            + "WHERE EXISTS (SELECT 1 FROM Payment p WHERE p.member = pa.member AND p.yearSemester = :yearSemester AND p.status = :status) "
+            + "WHERE pa.member.role <> :excludedRole "
+            + "AND EXISTS (SELECT 1 FROM Payment p WHERE p.member = pa.member AND p.yearSemester = :yearSemester AND p.status = :status) "
             + "ORDER BY pa.totalEarned DESC")
-    List<PointAccount> findTopByEligible(YearSemester yearSemester, PaymentStatus status, Pageable pageable);
+    List<PointAccount> findTopByEligibleExcludingRole(
+            YearSemester yearSemester, PaymentStatus status, Role excludedRole, Pageable pageable);
 
     @Query(
             "SELECT COUNT(pa) FROM PointAccount pa "
                     + "WHERE pa.totalEarned > :totalEarnedThreshold "
+                    + "AND pa.member.role <> :excludedRole "
                     + "AND EXISTS (SELECT 1 FROM Payment p WHERE p.member = pa.member AND p.yearSemester = :yearSemester AND p.status = :status)")
-    long countEligibleWithTotalEarnedGreaterThan(
-            YearSemester yearSemester, PaymentStatus status, BigDecimal totalEarnedThreshold);
+    long countEligibleWithTotalEarnedGreaterThanExcludingRole(
+            YearSemester yearSemester, PaymentStatus status, Role excludedRole, BigDecimal totalEarnedThreshold);
 }

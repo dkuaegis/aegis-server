@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import aegis.server.domain.member.domain.Role;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.domain.point.domain.PointAccount;
@@ -50,8 +51,8 @@ public class PointService {
         long memberCount = paymentRepository.countCompletedPaymentsInCurrentYearSemester();
 
         // 상위 10명 조회 (결제 완료자만)
-        List<PointAccount> top10Accounts = pointAccountRepository.findTopByEligible(
-                CURRENT_YEAR_SEMESTER, PaymentStatus.COMPLETED, PageRequest.of(0, 10));
+        List<PointAccount> top10Accounts = pointAccountRepository.findTopByEligibleExcludingRole(
+                CURRENT_YEAR_SEMESTER, PaymentStatus.COMPLETED, Role.STAFF, PageRequest.of(0, 10));
         List<PointRankingResponse> top10Rankings = convertToRankingResponses(top10Accounts);
 
         // 현재 사용자 랭킹 계산 (결제 완료자 기준)
@@ -65,9 +66,14 @@ public class PointService {
                 .findByMemberId(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POINT_ACCOUNT_NOT_FOUND));
 
+        // STAFF는 랭킹에서 제외: me를 null로 반환
+        if (currentUserAccount.getMember().getRole() == Role.STAFF) {
+            return null;
+        }
+
         BigDecimal userTotalEarned = currentUserAccount.getTotalEarned();
-        long higherCount = pointAccountRepository.countEligibleWithTotalEarnedGreaterThan(
-                CURRENT_YEAR_SEMESTER, PaymentStatus.COMPLETED, userTotalEarned);
+        long higherCount = pointAccountRepository.countEligibleWithTotalEarnedGreaterThanExcludingRole(
+                CURRENT_YEAR_SEMESTER, PaymentStatus.COMPLETED, Role.STAFF, userTotalEarned);
         Long rank = higherCount + 1;
 
         return PointRankingResponse.of(
