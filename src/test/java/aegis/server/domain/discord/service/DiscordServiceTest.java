@@ -19,6 +19,7 @@ import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
 import aegis.server.helper.RedisCleaner;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -37,7 +38,7 @@ class DiscordServiceTest extends IntegrationTest {
     @Autowired
     RedisCleaner redisCleaner;
 
-    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    @MockitoBean
     DiscordMembershipChecker discordMembershipChecker;
 
     @BeforeEach
