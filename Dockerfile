@@ -1,4 +1,4 @@
-FROM gradle:8-jdk21-alpine AS builder
+FROM gradle:8-jdk21-ubi-minimal AS builder
 
 WORKDIR /tmp
 
@@ -11,7 +11,7 @@ COPY . .
 
 RUN gradle build --no-daemon -x check -x test -x spotlessApply -x spotlessCheck
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre-ubi10-minimal
 
 WORKDIR /app
 
