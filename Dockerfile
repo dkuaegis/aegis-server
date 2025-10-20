@@ -15,7 +15,7 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-RUN wget -O /app/grafana-opentelemetry-java.jar https://github.com/grafana/grafana-opentelemetry-java/releases/latest/download/grafana-opentelemetry-java.jar
+RUN wget -O /app/grafana-opentelemetry-java.jar https://github.com/grafana/grafana-opentelemetry-java/releases/download/v2.20.1/grafana-opentelemetry-java.jar
 
 COPY --from=builder /tmp/build/version.txt /app/version.txt
 COPY --from=builder /tmp/build/libs/*-*.jar /app/app.jar
