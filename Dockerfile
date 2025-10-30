@@ -5,11 +5,15 @@ WORKDIR /tmp
 COPY settings.gradle .
 COPY build.gradle .
 
-RUN gradle --no-daemon dependencies
+RUN --mount=type=cache,target=/home/gradle/.gradle/caches,id=gradle-cache,sharing=locked \
+    --mount=type=cache,target=/home/gradle/.gradle/wrapper,id=gradle-wrapper,sharing=locked \
+    gradle --no-daemon dependencies
 
 COPY . .
 
-RUN gradle build --no-daemon -x check -x test -x spotlessApply -x spotlessCheck
+RUN --mount=type=cache,target=/home/gradle/.gradle/caches,id=gradle-cache,sharing=locked \
+    --mount=type=cache,target=/home/gradle/.gradle/wrapper,id=gradle-wrapper,sharing=locked \
+    gradle build --no-daemon -x check -x test -x spotlessApply -x spotlessCheck
 
 FROM eclipse-temurin:21-jre-ubi10-minimal
 
