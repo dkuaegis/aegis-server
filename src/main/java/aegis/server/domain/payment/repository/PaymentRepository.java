@@ -19,6 +19,10 @@ import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Payment p WHERE p.id = :paymentId")
+    Optional<Payment> findByIdWithLock(Long paymentId);
+
     @Query("SELECT p FROM Payment p JOIN FETCH p.member WHERE p.member = :member AND p.yearSemester = :yearSemester")
     Optional<Payment> findByMemberAndYearSemester(Member member, YearSemester yearSemester);
 

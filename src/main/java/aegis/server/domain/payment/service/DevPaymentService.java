@@ -69,16 +69,16 @@ public class DevPaymentService {
 
     @Transactional
     public DevPaymentResponse updatePayment(Long paymentId, DevPaymentUpdateRequest request, UserDetails userDetails) {
-        List<IssuedCoupon> issuedCoupons =
-                getUsableCouponsWithLock(userDetails.getMemberId(), request.issuedCouponIds());
-
         Payment payment = paymentRepository
-                .findById(paymentId)
+                .findByIdWithLock(paymentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
         if (!payment.getMember().getId().equals(userDetails.getMemberId())) {
             throw new CustomException(ErrorCode.PAYMENT_ACCESS_DENIED);
         }
+
+        List<IssuedCoupon> issuedCoupons =
+                getUsableCouponsWithLock(userDetails.getMemberId(), request.issuedCouponIds());
 
         payment.updateForDev(request.status(), request.yearSemester());
         applyCoupons(payment, issuedCoupons);
