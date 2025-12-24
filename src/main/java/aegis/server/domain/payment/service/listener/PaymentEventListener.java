@@ -35,7 +35,7 @@ public class PaymentEventListener {
     public void handleTransactionCreatedEvent(TransactionCreatedEvent event) {
         try {
             paymentRepository
-                    .findPendingPaymentForCurrentSemester(
+                    .findPendingPaymentForCurrentSemesterWithLock(
                             event.transactionInfo().depositorName(),
                             event.transactionInfo().amount())
                     .ifPresentOrElse(this::processPayment, () -> handleMismatch(event.transactionInfo()));

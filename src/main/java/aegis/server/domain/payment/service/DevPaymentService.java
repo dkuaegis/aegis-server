@@ -51,10 +51,11 @@ public class DevPaymentService {
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         validateNoPaymentInYearSemester(userDetails.getMemberId(), request.yearSemester());
-        validateUsableCoupons(userDetails.getMemberId(), request.issuedCouponIds());
+        List<IssuedCoupon> issuedCoupons =
+                getUsableCouponsWithLock(userDetails.getMemberId(), request.issuedCouponIds());
 
         Payment payment = Payment.createForDev(member, request.status(), request.yearSemester());
-        applyCoupons(payment, request.issuedCouponIds());
+        applyCoupons(payment, issuedCoupons);
         paymentRepository.save(payment);
 
         if (payment.getFinalPrice().compareTo(BigDecimal.ZERO) == 0) {
@@ -68,7 +69,8 @@ public class DevPaymentService {
 
     @Transactional
     public DevPaymentResponse updatePayment(Long paymentId, DevPaymentUpdateRequest request, UserDetails userDetails) {
-        validateUsableCoupons(userDetails.getMemberId(), request.issuedCouponIds());
+        List<IssuedCoupon> issuedCoupons =
+                getUsableCouponsWithLock(userDetails.getMemberId(), request.issuedCouponIds());
 
         Payment payment = paymentRepository
                 .findById(paymentId)
@@ -79,7 +81,7 @@ public class DevPaymentService {
         }
 
         payment.updateForDev(request.status(), request.yearSemester());
-        applyCoupons(payment, request.issuedCouponIds());
+        applyCoupons(payment, issuedCoupons);
 
         if (payment.getFinalPrice().compareTo(BigDecimal.ZERO) == 0) {
             payment.completePayment();
@@ -112,16 +114,19 @@ public class DevPaymentService {
         }
     }
 
-    private void validateUsableCoupons(Long memberId, List<Long> issuedCouponIds) {
-        long validIssuedCouponCount = issuedCouponRepository.countValidByIdInAndMemberId(issuedCouponIds, memberId);
-        if (validIssuedCouponCount != issuedCouponIds.size()) {
+    private List<IssuedCoupon> getUsableCouponsWithLock(Long memberId, List<Long> issuedCouponIds) {
+        if (issuedCouponIds.isEmpty()) {
+            return List.of();
+        }
+        List<IssuedCoupon> issuedCoupons =
+                issuedCouponRepository.findByIdInAndMemberIdAndValidWithLock(issuedCouponIds, memberId);
+        if (issuedCoupons.size() != issuedCouponIds.size()) {
             throw new CustomException(ErrorCode.INVALID_ISSUED_COUPON_INCLUDED);
         }
+        return issuedCoupons;
     }
 
-    private void applyCoupons(Payment payment, List<Long> issuedCouponIds) {
-        List<IssuedCoupon> issuedCoupons = issuedCouponRepository.findByIdInAndMemberIdAndValid(
-                issuedCouponIds, payment.getMember().getId());
+    private void applyCoupons(Payment payment, List<IssuedCoupon> issuedCoupons) {
         payment.applyCoupons(issuedCoupons);
     }
 }
