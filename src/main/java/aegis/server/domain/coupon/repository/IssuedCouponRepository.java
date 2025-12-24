@@ -21,7 +21,8 @@ public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long
     List<IssuedCoupon> findAllByMemberAndIsValidTrueWithCoupon(Member member);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT ic FROM IssuedCoupon ic WHERE ic.id IN :ids AND ic.member.id = :memberId AND ic.isValid = true")
+    @Query("SELECT ic FROM IssuedCoupon ic JOIN FETCH ic.coupon "
+            + "WHERE ic.id IN :ids AND ic.member.id = :memberId AND ic.isValid = true")
     List<IssuedCoupon> findByIdInAndMemberIdAndValidWithLock(List<Long> ids, Long memberId);
 
     @Query("SELECT ic FROM IssuedCoupon ic WHERE ic.payment.id = :paymentId")
