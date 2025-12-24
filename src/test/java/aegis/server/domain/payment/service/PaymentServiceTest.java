@@ -202,6 +202,24 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
         }
 
         @Test
+        void 이미_완료된_결제가_존재하면_실패한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Coupon coupon = Coupon.create("전액 쿠폰", CLUB_DUES);
+            couponRepository.save(coupon);
+            IssuedCoupon issuedCoupon = createIssuedCoupon(member, coupon);
+            PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
+            paymentService.createPayment(request, userDetails);
+
+            // when-then
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> paymentService.createPayment(new PaymentRequest(List.of()), userDetails));
+            assertEquals(ErrorCode.PAYMENT_ALREADY_EXISTS, exception.getErrorCode());
+        }
+
+        @Test
         void 이전_학기_결제_완료_후_새_학기_결제가_성공한다() {
             // given
             Member member = createMember();

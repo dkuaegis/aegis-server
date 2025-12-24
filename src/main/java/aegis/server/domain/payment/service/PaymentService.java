@@ -53,12 +53,12 @@ public class PaymentService {
 
     @Transactional
     public PaymentResponse createPayment(PaymentRequest request, UserDetails userDetails) {
-        validateNoPendingPaymentInCurrentSemester(userDetails.getMemberId());
-        validateUsableCoupons(userDetails.getMemberId(), request.issuedCouponIds());
-
         Member member = memberRepository
-                .findById(userDetails.getMemberId())
+                .findByIdWithLock(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        validateNoPaymentInCurrentSemester(userDetails.getMemberId());
+        validateUsableCoupons(userDetails.getMemberId(), request.issuedCouponIds());
 
         Payment payment = Payment.of(member);
         applyCoupons(payment, request.issuedCouponIds());
@@ -91,8 +91,8 @@ public class PaymentService {
         return PaymentResponse.from(payment);
     }
 
-    private void validateNoPendingPaymentInCurrentSemester(Long memberId) {
-        if (paymentRepository.existsByMemberIdAndCurrentYearSemesterAndStatusIsPending(memberId)) {
+    private void validateNoPaymentInCurrentSemester(Long memberId) {
+        if (paymentRepository.existsByMemberIdAndCurrentYearSemester(memberId)) {
             throw new CustomException(ErrorCode.PAYMENT_ALREADY_EXISTS);
         }
     }
