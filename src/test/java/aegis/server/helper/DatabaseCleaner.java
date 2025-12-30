@@ -24,7 +24,7 @@ public class DatabaseCleaner implements InitializingBean {
     private List<String> tableNames;
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         tableNames = em.getMetamodel().getEntities().stream()
                 .map(EntityType::getName)
                 .map(name -> name.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase())

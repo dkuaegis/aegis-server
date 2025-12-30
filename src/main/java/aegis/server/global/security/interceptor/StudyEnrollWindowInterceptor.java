@@ -78,8 +78,7 @@ public class StudyEnrollWindowInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-            throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         // POST 메소드만 검사
         if (!"POST".equalsIgnoreCase(request.getMethod())) {
             return true;
