@@ -1,5 +1,7 @@
 package aegis.server.global.config;
 
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -8,15 +10,10 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisKeyValueAdapter;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.security.jackson2.SecurityJackson2Modules;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.security.jackson.SecurityJacksonModules;
 
 @Configuration
 @EnableRedisRepositories(enableKeyspaceEvents = RedisKeyValueAdapter.EnableKeyspaceEvents.ON_STARTUP)
@@ -25,16 +22,13 @@ public class RedisConfig {
 
     @Bean
     public RedisSerializer<Object> redisValueSerializer() {
-        PolymorphicTypeValidator typeValidator = BasicPolymorphicTypeValidator.builder()
-                .allowIfSubType(Object.class)
-                .build();
+        BasicPolymorphicTypeValidator.Builder typeValidatorBuilder =
+                BasicPolymorphicTypeValidator.builder().allowIfSubType(Object.class);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.registerModules(
-                SecurityJackson2Modules.getModules(getClass().getClassLoader()));
-        objectMapper.activateDefaultTyping(typeValidator, ObjectMapper.DefaultTyping.NON_FINAL);
-        return new GenericJackson2JsonRedisSerializer(objectMapper);
+        return GenericJacksonJsonRedisSerializer.builder()
+                .customize(mapperBuilder -> mapperBuilder.addModules(
+                        SecurityJacksonModules.getModules(getClass().getClassLoader(), typeValidatorBuilder)))
+                .build();
     }
 
     // Spring Session이 기본 값 직렬화기로 사용
