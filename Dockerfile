@@ -1,4 +1,4 @@
-FROM gradle:8-jdk21-ubi-minimal AS builder
+FROM gradle:9-jdk21-ubi-minimal AS builder
 
 WORKDIR /tmp
 
