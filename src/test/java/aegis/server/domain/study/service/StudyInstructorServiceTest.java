@@ -341,7 +341,7 @@ class StudyInstructorServiceTest extends IntegrationTest {
             // then
             assertEquals(0, response.sessions().size());
             assertEquals(1, response.members().size());
-            assertEquals(0, response.members().get(0).attendance().size());
+            assertEquals(0, response.members().getFirst().attendance().size());
         }
 
         @Test
@@ -435,9 +435,9 @@ class StudyInstructorServiceTest extends IntegrationTest {
             assertEquals(1, response.sessions().size());
             assertEquals(1, response.members().size());
             // 유일한 멤버는 participant여야 함
-            assertEquals(participant.getId(), response.members().get(0).memberId());
+            assertEquals(participant.getId(), response.members().getFirst().memberId());
             // outsider 출석은 무시되므로 false
-            assertEquals(java.util.List.of(false), response.members().get(0).attendance());
+            assertEquals(java.util.List.of(false), response.members().getFirst().attendance());
         }
 
         @Test
@@ -468,10 +468,11 @@ class StudyInstructorServiceTest extends IntegrationTest {
 
             // then: study2 데이터는 포함되면 안 됨
             assertEquals(1, response.sessions().size());
-            assertEquals(LocalDate.of(2025, 9, 3), response.sessions().get(0).date());
+            assertEquals(
+                    LocalDate.of(2025, 9, 3), response.sessions().getFirst().date());
             assertEquals(1, response.members().size());
-            assertEquals(s1p.getId(), response.members().get(0).memberId());
-            assertEquals(java.util.List.of(false), response.members().get(0).attendance());
+            assertEquals(s1p.getId(), response.members().getFirst().memberId());
+            assertEquals(java.util.List.of(false), response.members().getFirst().attendance());
         }
 
         @Test
@@ -495,7 +496,7 @@ class StudyInstructorServiceTest extends IntegrationTest {
 
             // then
             assertEquals(3, response.sessions().size());
-            assertEquals(3, response.members().get(0).attendance().size());
+            assertEquals(3, response.members().getFirst().attendance().size());
         }
 
         @Test

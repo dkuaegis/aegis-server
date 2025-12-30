@@ -121,7 +121,7 @@ class PointShopServiceTest extends IntegrationTest {
 
             List<PointTransaction> transactions = pointTransactionRepository.findAllByPointAccountId(member.getId());
             assertFalse(transactions.isEmpty());
-            PointTransaction latest = transactions.get(0);
+            PointTransaction latest = transactions.getFirst();
             assertEquals(PointTransactionType.SPEND, latest.getTransactionType());
             assertEquals(BigDecimal.valueOf(100), latest.getAmount());
 
