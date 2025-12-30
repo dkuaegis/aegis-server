@@ -11,7 +11,6 @@ import org.springframework.data.jpa.repository.Query;
 import aegis.server.domain.coupon.domain.CouponCode;
 
 public interface CouponCodeRepository extends JpaRepository<CouponCode, Long> {
-    Optional<CouponCode> findByCode(String code);
 
     @Query("SELECT cc FROM CouponCode cc WHERE cc.code = :code")
     @Lock(LockModeType.PESSIMISTIC_WRITE)
