@@ -11,8 +11,7 @@ public interface StudyAttendanceRepository extends JpaRepository<StudyAttendance
 
     boolean existsByStudySessionIdAndMemberId(Long studySessionId, Long memberId);
 
-    @Query(
-            """
+    @Query("""
         SELECT sa.member.id AS memberId, sa.studySession.id AS sessionId
         FROM StudyAttendance sa
         JOIN sa.studySession ss

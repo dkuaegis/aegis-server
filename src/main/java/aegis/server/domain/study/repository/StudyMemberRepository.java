@@ -24,8 +24,7 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
 
     boolean existsByStudyAndMember(Study study, Member member);
 
-    @Query(
-            """
+    @Query("""
         SELECT sm
         FROM StudyMember sm
         JOIN FETCH sm.member m
@@ -38,8 +37,7 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
     @Query("SELECT sm FROM StudyMember sm WHERE sm.study.id = :studyId AND sm.role = :role")
     Optional<StudyMember> findFirstByStudyIdAndRole(Long studyId, StudyRole role);
 
-    @Query(
-            """
+    @Query("""
         SELECT s.id
         FROM StudyMember sm
         JOIN sm.study s

@@ -23,8 +23,7 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Study> findByIdWithLock(Long id);
 
-    @Query(
-            """
+    @Query("""
         SELECT new aegis.server.domain.study.dto.response.GeneralStudySummary(
             s.id, s.title, s.category, s.level,
             s.currentParticipants,
@@ -41,8 +40,7 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
         return findStudySummariesByYearSemester(CURRENT_YEAR_SEMESTER, StudyRole.INSTRUCTOR);
     }
 
-    @Query(
-            """
+    @Query("""
         SELECT new aegis.server.domain.study.dto.response.GeneralStudyDetail(
             s.id, s.title, s.category, s.level, s.description, s.recruitmentMethod,
             s.currentParticipants,

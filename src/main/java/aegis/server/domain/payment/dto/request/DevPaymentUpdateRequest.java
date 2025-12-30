@@ -8,4 +8,6 @@ import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.payment.domain.PaymentStatus;
 
 public record DevPaymentUpdateRequest(
-        @NotNull List<Long> issuedCouponIds, @NotNull PaymentStatus status, @NotNull YearSemester yearSemester) {}
+        @NotNull List<Long> issuedCouponIds,
+        @NotNull PaymentStatus status,
+        @NotNull YearSemester yearSemester) {}

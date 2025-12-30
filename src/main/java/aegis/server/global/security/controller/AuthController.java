@@ -24,7 +24,6 @@ import aegis.server.domain.payment.repository.PaymentRepository;
 import aegis.server.global.security.annotation.LoginUser;
 import aegis.server.global.security.oidc.UserDetails;
 
-// TODO: 전면 리팩토링 필요
 @Tag(name = "Auth", description = "인증 관련 API")
 @RestController
 @RequestMapping
@@ -57,6 +56,7 @@ public class AuthController {
         Optional<Payment> optionalPayment =
                 paymentRepository.findByMemberIdInCurrentYearSemester(userDetails.getMemberId());
 
+        //noinspection OptionalIsPresent
         if (optionalPayment.isPresent()) {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new AuthCheckResponse(optionalPayment.get().getStatus()));
@@ -71,8 +71,7 @@ public class AuthController {
             responses = {@ApiResponse(responseCode = "200", description = "오류 페이지 반환")})
     @GetMapping("/auth/error/not-dku")
     public ResponseEntity<String> notDku() {
-        String html =
-                """
+        String html = """
                <!DOCTYPE html>
                <html lang="ko">
                  <head>
@@ -128,7 +127,7 @@ public class AuthController {
                    </main>
                  </body>
                </html>
-                """;
+               """;
         return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html);
     }
 }

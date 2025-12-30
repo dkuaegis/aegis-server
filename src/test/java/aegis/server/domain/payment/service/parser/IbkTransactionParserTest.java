@@ -34,8 +34,7 @@ class IbkTransactionParserTest {
     @DisplayName("입금 거래를 정상적으로 파싱한다")
     void parseDepositTransaction() {
         // given
-        String log =
-                """
+        String log = """
                 [입금] 10,000원 윤성민212874
                 982-******-01-017
                 01/13 19:10 /잔액 150,000원""";
@@ -59,8 +58,7 @@ class IbkTransactionParserTest {
     @DisplayName("출금 거래를 정상적으로 파싱한다")
     void parseWithdrawalTransaction() {
         // given
-        String log =
-                """
+        String log = """
                 [출금] 30,000원 ATM출금
                 982-******-01-017
                 12/17 14:30 /잔액 120,000원""";
@@ -89,8 +87,7 @@ class IbkTransactionParserTest {
                 LocalDateTime.of(currentYear + 1, 1, 1, 0, 0).atZone(timeZone).toInstant(), timeZone);
         parser = new IbkTransactionParser(januaryClock);
 
-        String log =
-                """
+        String log = """
                 [입금] 50,000원 홍길동
                 982-******-01-017
                 12/31 23:59 /잔액 150,000원""";
@@ -120,8 +117,7 @@ class IbkTransactionParserTest {
     @DisplayName("잘못된 거래 유형은 예외를 발생시킨다")
     void parseInvalidTransactionType() {
         // given
-        String invalidLog =
-                """
+        String invalidLog = """
                 [송금] 50,000원 홍길동
                 982-******-01-017
                 12/25 14:30 /잔액 150,000원""";
@@ -136,8 +132,7 @@ class IbkTransactionParserTest {
     @DisplayName("잘못된 시간/잔액 형식은 예외를 발생시킨다")
     void parseInvalidTimeFormat() {
         // given
-        String invalidLog =
-                """
+        String invalidLog = """
                 [입금] 50,000원 홍길동
                 982-******-01-017
                 2023년 12월 25일 /잔액 150,000원""";
