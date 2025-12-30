@@ -82,6 +82,6 @@ class PointShopDrawDistributionTest extends IntegrationTest {
         }
 
         sb.append(String.format("chiSquare=%.3f df=%d\n", chiSquare, PointShopItem.values().length - 1));
-        System.out.println(sb.toString());
+        System.out.println(sb);
     }
 }
