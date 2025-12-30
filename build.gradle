@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.6'
+    id 'org.springframework.boot' version '4.0.1'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'com.diffplug.spotless' version '8.1.0'
 }
@@ -50,6 +50,9 @@ repositories {
     mavenCentral()
 }
 
+def isMacOs = System.getProperty('os.name').toLowerCase().contains('mac')
+def isArm64 = System.getProperty('os.arch').toLowerCase().contains('aarch64')
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -57,11 +60,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.springframework.session:spring-session-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-session-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.postgresql:postgresql'
+
+    // Netty native DNS resolver for macOS ARM64
+    // --enable-native-access=ALL-UNNAMED 옵션과 함께 실행해야 WARNING이 뜨지 않음 (25.12.31 기준)
+    // IDEA Run/Debug Configurations의 VM options에 추가할 것
+    if (isMacOs && isArm64) {
+        runtimeOnly 'io.netty:netty-resolver-dns-native-macos:4.2.9.Final:osx-aarch_64'
+    }
 
     implementation 'net.dv8tion:JDA:6.2.0'
 
@@ -69,7 +79,7 @@ dependencies {
     implementation 'com.google.oauth-client:google-oauth-client-jetty:1.39.0'
     implementation 'com.google.apis:google-api-services-sheets:v4-rev20251110-2.0.0'
 
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0'
     
     implementation 'com.google.zxing:core:3.5.4'
     implementation 'com.google.zxing:javase:3.5.4'
@@ -77,8 +87,8 @@ dependencies {
     testImplementation 'com.github.fppt:jedis-mock:1.1.12'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.testcontainers:junit-jupiter'
-    testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
+    testImplementation 'org.testcontainers:testcontainers-postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     compileOnly 'org.projectlombok:lombok'

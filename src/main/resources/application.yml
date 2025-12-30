@@ -17,11 +17,12 @@ spring:
   jpa:
     open-in-view: false
   session:
-    redis:
-      namespace: aegis
-      flush-mode: on_save
-      save-mode: always
-      repository-type: indexed
+    data:
+      redis:
+        namespace: aegis
+        flush-mode: on_save
+        save-mode: always
+        repository-type: indexed
     timeout: ${SESSION_TIMEOUT}
 
 management:

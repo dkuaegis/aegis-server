@@ -13,8 +13,9 @@ spring:
             client-id: test-client-id
             client-secret: test-client-secret
   session:
-    redis:
-      repository-type: default
+    data:
+      redis:
+        repository-type: default
     timeout: 0
 
 exception:
