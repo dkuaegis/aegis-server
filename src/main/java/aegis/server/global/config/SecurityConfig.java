@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .hasRole("USER")
 
                 // 회원가입 과정 API (게스트 이상 접근 가능)
-                .requestMatchers("/auth/check", "/members/**", "/survey", "/discord/**", "/coupons/**", "/payments/**")
+                .requestMatchers("/auth/check", "/members/**", "/survey", "/coupons/**", "/payments/**")
                 .hasRole("GUEST")
 
                 // 나머지 모든 요청은 인증 필요

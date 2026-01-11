@@ -2,7 +2,6 @@ package aegis.server.global.config;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -20,14 +19,8 @@ public class DiscordConfig {
 
     @Bean
     public JDA jda() {
-        JDA jda = JDABuilder.createDefault(token)
+        return JDABuilder.createDefault(token)
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
                 .build();
-
-        jda.upsertCommand("join", "디스코드 연동 인증코드를 입력해주세요!")
-                .addOption(OptionType.STRING, "code", "인증코드", true)
-                .queue();
-
-        return jda;
     }
 }

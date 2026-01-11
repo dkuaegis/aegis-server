@@ -14,7 +14,7 @@
 - **스터디 관리**:
   스터디 개설, 커리큘럼 및 참여 조건 설정, 선착순 또는 지원서 기반의 두 가지 모집 방식을 지원합니다. 또한, 출석 코드 발급을 통한 참여자 출석 관리 기능을 포함합니다.
 - **외부 서비스 연동**:  
-  신규 회원이 회비를 납부하면 **Discord** 서버의 역할을 자동으로 부여하고, 주요 데이터(회원 명단, 포인트샵 당첨 내역 등)를 **Google Sheets**에 자동으로 기록하여 관리 효율을 높입니다.
+  입금 예외 상황 및 포인트샵 이벤트를 **Discord** 알림 채널로 전송하고, 주요 데이터(회원 명단, 포인트샵 당첨 내역 등)를 **Google Sheets**에 자동으로 기록하여 관리 효율을 높입니다.
 
 # 기술 스택
 
@@ -94,7 +94,6 @@ sequenceDiagram
     participant AppEventPublisher as Application<br>EventPublisher
     participant PaymentEventListener
     participant MemberEventListener
-    participant DiscordEventListener
     participant GoogleSheetsListener
 
     Android Smartphone->>TransactionController: POST /internal/transaction (Webhook)
@@ -111,8 +110,6 @@ sequenceDiagram
 
     AppEventPublisher->>MemberEventListener: handle(PaymentCompletedEvent)
     note right of MemberEventListener: 회원 등급 USER로 변경
-    AppEventPublisher->>DiscordEventListener: handle(PaymentCompletedEvent)
-    note right of DiscordEventListener: Discord '회원' 역할 부여
     AppEventPublisher->>GoogleSheetsListener: handle(PaymentCompletedEvent)
     note right of GoogleSheetsListener: Google Sheets에 정보 기록 (Async)
 ```
@@ -158,7 +155,7 @@ sequenceDiagram
 
 ### 3단계: 후속 작업 처리
 
-`MemberEventListener`, `DiscordEventListener`, `GoogleSheetsListener`가 `PaymentCompletedEvent`를 각각 구독하여 회원 등급 상향, Discord 역할 부여, Google Sheets 기록 등 독립적인 후속 작업을 수행합니다.  
+`MemberEventListener`, `GoogleSheetsListener`가 `PaymentCompletedEvent`를 각각 구독하여 회원 등급 상향, Google Sheets 기록 등 독립적인 후속 작업을 수행합니다.  
 특히 외부 API 호출로 인해 지연이 발생할 수 있는 `GoogleSheetsListener`는 `@Async`를 통해 비동기로 처리하여 전체 트랜잭션 시간에 영향을 주지 않도록 설계되었습니다.
 
 ```java
