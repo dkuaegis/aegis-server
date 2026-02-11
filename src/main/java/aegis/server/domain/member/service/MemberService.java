@@ -2,6 +2,7 @@ package aegis.server.domain.member.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +12,7 @@ import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.domain.Role;
 import aegis.server.domain.member.dto.request.PersonalInfoUpdateRequest;
 import aegis.server.domain.member.dto.request.ProfileIconUpdateRequest;
+import aegis.server.domain.member.dto.response.AdminMemberSummaryResponse;
 import aegis.server.domain.member.dto.response.MemberDemoteResponse;
 import aegis.server.domain.member.dto.response.PersonalInfoResponse;
 import aegis.server.domain.member.repository.MemberRepository;
@@ -30,6 +32,12 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final PaymentRepository paymentRepository;
+
+    public List<AdminMemberSummaryResponse> findAllMembersForAdmin() {
+        return memberRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream()
+                .map(AdminMemberSummaryResponse::from)
+                .toList();
+    }
 
     public PersonalInfoResponse getPersonalInfo(UserDetails userDetails) {
         Member member = memberRepository

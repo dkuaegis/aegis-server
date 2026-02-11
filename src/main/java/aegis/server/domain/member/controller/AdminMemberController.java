@@ -1,5 +1,7 @@
 package aegis.server.domain.member.controller;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 
+import aegis.server.domain.member.dto.response.AdminMemberSummaryResponse;
 import aegis.server.domain.member.dto.response.MemberDemoteResponse;
 import aegis.server.domain.member.service.MemberService;
 
@@ -20,6 +23,19 @@ import aegis.server.domain.member.service.MemberService;
 public class AdminMemberController {
 
     private final MemberService memberService;
+
+    @Operation(
+            summary = "회원 목록 조회",
+            description = "관리자가 전체 회원의 기본 정보를 조회합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "회원 목록 조회 성공"),
+                @ApiResponse(responseCode = "403", description = "관리자 권한 필요", content = @Content)
+            })
+    @GetMapping
+    public ResponseEntity<List<AdminMemberSummaryResponse>> getAllMembers() {
+        List<AdminMemberSummaryResponse> response = memberService.findAllMembersForAdmin();
+        return ResponseEntity.ok().body(response);
+    }
 
     @Operation(
             summary = "회원 강등",

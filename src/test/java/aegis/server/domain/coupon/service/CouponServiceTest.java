@@ -15,6 +15,8 @@ import aegis.server.domain.coupon.dto.request.CouponCodeCreateRequest;
 import aegis.server.domain.coupon.dto.request.CouponCodeUseRequest;
 import aegis.server.domain.coupon.dto.request.CouponCreateRequest;
 import aegis.server.domain.coupon.dto.request.CouponIssueRequest;
+import aegis.server.domain.coupon.dto.request.CouponNameUpdateRequest;
+import aegis.server.domain.coupon.dto.response.AdminCouponResponse;
 import aegis.server.domain.coupon.dto.response.CouponCodeResponse;
 import aegis.server.domain.coupon.dto.response.CouponResponse;
 import aegis.server.domain.coupon.dto.response.IssuedCouponResponse;
@@ -234,6 +236,25 @@ class CouponServiceTest extends IntegrationTest {
             CustomException exception = assertThrows(CustomException.class, () -> couponService.deleteCodeCoupon(999L));
             assertEquals(ErrorCode.COUPON_CODE_NOT_FOUND, exception.getErrorCode());
         }
+
+        @Test
+        void 이미_사용된_쿠폰코드는_삭제할_수_없다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Coupon coupon = createCoupon();
+            CouponCodeResponse couponCodeResponse =
+                    couponService.createCouponCode(new CouponCodeCreateRequest(coupon.getId(), null));
+            couponService.useCouponCode(userDetails, new CouponCodeUseRequest(couponCodeResponse.code()));
+
+            // when-then
+            CustomException exception = assertThrows(
+                    CustomException.class, () -> couponService.deleteCodeCoupon(couponCodeResponse.codeCouponId()));
+            assertEquals(ErrorCode.COUPON_CODE_ALREADY_USED_CANNOT_DELETE, exception.getErrorCode());
+            assertTrue(couponCodeRepository
+                    .findById(couponCodeResponse.codeCouponId())
+                    .isPresent());
+        }
     }
 
     @Nested
@@ -401,6 +422,50 @@ class CouponServiceTest extends IntegrationTest {
     }
 
     @Nested
+    class 쿠폰이름_수정 {
+        @Test
+        void 성공한다() {
+            // given
+            Coupon coupon = createCoupon("기존 이름");
+            CouponNameUpdateRequest request = new CouponNameUpdateRequest("공백 포함 쿠폰 이름");
+
+            // when
+            AdminCouponResponse response = couponService.updateCouponName(coupon.getId(), request);
+
+            // then
+            assertEquals(coupon.getId(), response.couponId());
+            assertEquals(request.couponName(), response.couponName());
+
+            Coupon updatedCoupon = couponRepository.findById(coupon.getId()).get();
+            assertEquals(request.couponName(), updatedCoupon.getCouponName());
+        }
+
+        @Test
+        void 존재하지_않는_쿠폰이면_실패한다() {
+            // given
+            CouponNameUpdateRequest request = new CouponNameUpdateRequest("새 이름");
+
+            // when-then
+            CustomException exception =
+                    assertThrows(CustomException.class, () -> couponService.updateCouponName(999L, request));
+            assertEquals(ErrorCode.COUPON_NOT_FOUND, exception.getErrorCode());
+        }
+
+        @Test
+        void 동일한_이름_할인금액_조합이_있으면_실패한다() {
+            // given
+            createCoupon("중복쿠폰명");
+            Coupon toUpdate = createCoupon("수정대상");
+            CouponNameUpdateRequest request = new CouponNameUpdateRequest("중복쿠폰명");
+
+            // when-then
+            CustomException exception = assertThrows(
+                    CustomException.class, () -> couponService.updateCouponName(toUpdate.getId(), request));
+            assertEquals(ErrorCode.COUPON_ALREADY_EXISTS, exception.getErrorCode());
+        }
+    }
+
+    @Nested
     class 발급된_쿠폰삭제 {
         @Test
         void 성공한다() {
@@ -425,6 +490,22 @@ class CouponServiceTest extends IntegrationTest {
                     assertThrows(CustomException.class, () -> couponService.deleteIssuedCoupon(999L));
             assertEquals(ErrorCode.ISSUED_COUPON_NOT_FOUND, exception.getErrorCode());
         }
+
+        @Test
+        void 이미_사용된_발급쿠폰은_삭제할_수_없다() {
+            // given
+            Member member = createMember();
+            Coupon coupon = createCoupon();
+            IssuedCoupon issuedCoupon = createIssuedCoupon(coupon, member);
+            Payment payment = paymentRepository.save(Payment.of(member));
+            issuedCoupon.use(payment);
+
+            // when-then
+            CustomException exception =
+                    assertThrows(CustomException.class, () -> couponService.deleteIssuedCoupon(issuedCoupon.getId()));
+            assertEquals(ErrorCode.ISSUED_COUPON_ALREADY_USED, exception.getErrorCode());
+            assertTrue(issuedCouponRepository.findById(issuedCoupon.getId()).isPresent());
+        }
     }
 
     @Nested
@@ -433,7 +514,7 @@ class CouponServiceTest extends IntegrationTest {
         void 성공한다() {
             // given
             Coupon coupon = createCoupon();
-            CouponCodeCreateRequest codeCreateRequest = new CouponCodeCreateRequest(coupon.getId());
+            CouponCodeCreateRequest codeCreateRequest = new CouponCodeCreateRequest(coupon.getId(), "신입생 OT 배포");
 
             // when
             CouponCodeResponse response = couponService.createCouponCode(codeCreateRequest);
@@ -452,6 +533,7 @@ class CouponServiceTest extends IntegrationTest {
             assertEquals(coupon.getId(), couponCode.getCoupon().getId());
             assertTrue(couponCode.getIsValid());
             assertNotNull(couponCode.getCode());
+            assertEquals(codeCreateRequest.description(), couponCode.getDescription());
         }
     }
 
@@ -464,7 +546,7 @@ class CouponServiceTest extends IntegrationTest {
             UserDetails userDetails = createUserDetails(member);
             Coupon coupon = createCoupon();
 
-            CouponCodeCreateRequest codeCreateRequest = new CouponCodeCreateRequest(coupon.getId());
+            CouponCodeCreateRequest codeCreateRequest = new CouponCodeCreateRequest(coupon.getId(), null);
             CouponCodeResponse codeResponse = couponService.createCouponCode(codeCreateRequest);
 
             // when
@@ -502,7 +584,7 @@ class CouponServiceTest extends IntegrationTest {
             UserDetails userDetails = createUserDetails(member);
             Coupon coupon = createCoupon();
 
-            CouponCodeCreateRequest codeCreateRequest = new CouponCodeCreateRequest(coupon.getId());
+            CouponCodeCreateRequest codeCreateRequest = new CouponCodeCreateRequest(coupon.getId(), null);
             CouponCodeResponse codeResponse = couponService.createCouponCode(codeCreateRequest);
 
             couponService.useCouponCode(userDetails, new CouponCodeUseRequest(codeResponse.code()));
@@ -532,7 +614,7 @@ class CouponServiceTest extends IntegrationTest {
 
     private CouponCode createCouponCode(Coupon coupon) {
         String code = CodeGenerator.generateCouponCode(8);
-        CouponCode couponCode = CouponCode.of(coupon, code);
+        CouponCode couponCode = CouponCode.of(coupon, code, null);
         return couponCodeRepository.save(couponCode);
     }
 }
