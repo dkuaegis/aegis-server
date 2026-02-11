@@ -16,6 +16,12 @@ public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long
     @Query("SELECT ic FROM IssuedCoupon ic JOIN FETCH ic.member JOIN FETCH ic.coupon WHERE ic.member = :member")
     List<IssuedCoupon> findAllByMemberWithCoupon(Member member);
 
+    @Query("SELECT ic FROM IssuedCoupon ic "
+            + "JOIN FETCH ic.member "
+            + "JOIN FETCH ic.coupon "
+            + "LEFT JOIN FETCH ic.payment")
+    List<IssuedCoupon> findAllWithCouponMemberAndPayment();
+
     @Query("SELECT ic FROM IssuedCoupon ic JOIN FETCH ic.member JOIN FETCH ic.coupon "
             + "WHERE ic.member = :member AND ic.isValid = true")
     List<IssuedCoupon> findAllByMemberAndIsValidTrueWithCoupon(Member member);

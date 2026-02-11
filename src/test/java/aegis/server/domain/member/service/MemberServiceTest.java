@@ -1,5 +1,8 @@
 package aegis.server.domain.member.service;
 
+import java.util.List;
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -9,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.dto.request.PersonalInfoUpdateRequest;
 import aegis.server.domain.member.dto.request.ProfileIconUpdateRequest;
+import aegis.server.domain.member.dto.response.AdminMemberSummaryResponse;
 import aegis.server.domain.member.dto.response.MemberDemoteResponse;
 import aegis.server.domain.member.dto.response.PersonalInfoResponse;
 import aegis.server.domain.member.repository.MemberRepository;
@@ -33,6 +37,32 @@ class MemberServiceTest extends IntegrationTest {
 
     @Autowired
     PaymentRepository paymentRepository;
+
+    @Nested
+    class 관리자_회원_목록_조회 {
+        @Test
+        void 성공한다() {
+            // given
+            Member member1 = createMember();
+            Member member2 = createMember();
+
+            // when
+            List<AdminMemberSummaryResponse> responses = memberService.findAllMembersForAdmin();
+
+            // then
+            assertEquals(2, responses.size());
+            assertTrue(
+                    responses.stream().anyMatch(response -> response.memberId().equals(member1.getId())));
+            assertTrue(
+                    responses.stream().anyMatch(response -> response.memberId().equals(member2.getId())));
+            assertTrue(responses.stream()
+                    .anyMatch(response -> response.memberId().equals(member1.getId())
+                            && Objects.equals(response.studentId(), member1.getStudentId())));
+            assertTrue(responses.stream()
+                    .anyMatch(response -> response.memberId().equals(member2.getId())
+                            && Objects.equals(response.studentId(), member2.getStudentId())));
+        }
+    }
 
     @Nested
     class 개인정보_조회 {

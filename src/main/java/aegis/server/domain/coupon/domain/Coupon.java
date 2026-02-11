@@ -38,4 +38,8 @@ public class Coupon extends BaseEntity {
                 .discountAmount(discountAmount)
                 .build();
     }
+
+    public void updateCouponName(String couponName) {
+        this.couponName = couponName;
+    }
 }
