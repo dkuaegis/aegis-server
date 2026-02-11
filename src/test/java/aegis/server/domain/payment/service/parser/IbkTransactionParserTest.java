@@ -100,6 +100,26 @@ class IbkTransactionParserTest {
     }
 
     @Test
+    @DisplayName("3줄 이후에 문구가 추가되어도 정상적으로 파싱한다")
+    void parseTransactionWithAdditionalLines() {
+        // given
+        String log = """
+                [입금] 10,000원 윤성민212874
+                982-******-01-017
+                01/13 19:10 /잔액 150,000원
+                지금 i-ONE Bank 앱을 설치해보세요.""";
+
+        // when
+        Transaction transaction = parser.parse(log);
+
+        // then
+        assertThat(transaction.getTransactionType()).isEqualTo(TransactionType.DEPOSIT);
+        assertThat(transaction.getAmount()).isEqualTo(BigDecimal.valueOf(10000));
+        assertThat(transaction.getDepositorName()).isEqualTo("윤성민212874");
+        assertThat(transaction.getBalance()).isEqualTo(BigDecimal.valueOf(150000));
+    }
+
+    @Test
     @DisplayName("잘못된 형식의 로그는 예외를 발생시킨다")
     void parseInvalidLog() {
         // given
@@ -110,7 +130,7 @@ class IbkTransactionParserTest {
         // when & then
         assertThatThrownBy(() -> parser.parse(invalidLog))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("IBK의 거래 내역은 3줄로 구성되어야 합니다");
+                .hasMessage("거래유형, 거래금액, 이름을 추출할 수 없습니다");
     }
 
     @Test

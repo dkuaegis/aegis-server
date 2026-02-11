@@ -25,9 +25,6 @@ public class IbkTransactionParser implements TransactionParser {
     public Transaction parse(String transactionLog) {
         // 1. transactionLog를 줄바꿈 문자로 분리하여 lines 변수에 할당
         String[] lines = transactionLog.split("\n");
-        if (lines.length != 3) {
-            throw new IllegalArgumentException("IBK의 거래 내역은 3줄로 구성되어야 합니다");
-        }
 
         // 2. 첫번째 줄에서 거래유형, 거래금액, 이름을 추출
         Matcher matcher = TX_TYPE_AMOUNT_NAME_PATTERN.matcher(lines[0]);
