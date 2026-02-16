@@ -26,6 +26,8 @@ import aegis.server.global.exception.ErrorCode;
 @RequiredArgsConstructor
 public class DiscordEventListener {
 
+    private static final String DIVIDER = "───────────────────────";
+
     private final JDA jda;
     private final MemberRepository memberRepository;
 
@@ -39,10 +41,11 @@ public class DiscordEventListener {
     public void handleMismatchEvent(MismatchEvent event) {
         alarmChannel()
                 .sendMessage(String.format(
-                        "[MISMATCH]\nTX ID: %s 입금자명: %s 입금 금액: %s",
+                        "## [MISMATCH]\n**TX ID**: %s\n**입금자명**: %s\n**입금 금액**: %s\n%s",
                         event.transactionInfo().id(),
                         event.transactionInfo().depositorName(),
-                        event.transactionInfo().amount()))
+                        event.transactionInfo().amount(),
+                        DIVIDER))
                 .queue();
     }
 
@@ -50,11 +53,12 @@ public class DiscordEventListener {
     public void handleNameConflictEvent(NameConflictEvent event) {
         alarmChannel()
                 .sendMessage(String.format(
-                        "[NAME_CONFLICT]\n동명이인 결제 충돌\nTX ID: %s\n입금자명: %s\n입금 금액: %s\n해당 회원 ID: %s",
+                        "## [NAME_CONFLICT]\n동명이인 결제 충돌\n**TX ID**: %s\n**입금자명**: %s\n**입금 금액**: %s\n**해당 회원 ID**: %s\n%s",
                         event.transactionInfo().id(),
                         event.transactionInfo().depositorName(),
                         event.transactionInfo().amount(),
-                        event.memberIds()))
+                        event.memberIds(),
+                        DIVIDER))
                 .queue();
     }
 
@@ -72,8 +76,8 @@ public class DiscordEventListener {
 
         alarmChannel()
                 .sendMessage(String.format(
-                        "[POINT_SHOP_DRAW]\n상품: %s\n회원 ID: %s\n이름: %s\n학번: %s\n전화번호: %s",
-                        info.item(), info.memberId(), name, studentId, phoneNumber))
+                        "## [POINT_SHOP_DRAW]\n**상품**: %s\n**회원 ID**: %s\n**이름**: %s\n**학번**: %s\n**전화번호**: %s\n%s",
+                        info.item(), info.memberId(), name, studentId, phoneNumber, DIVIDER))
                 .queue();
     }
 
