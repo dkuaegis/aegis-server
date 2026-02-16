@@ -30,6 +30,7 @@ import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTestWithoutTransactional;
 
 import static aegis.server.global.constant.Constant.CLUB_DUES;
+import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -241,7 +242,7 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             // then
             Payment newPayment =
                     paymentRepository.findByMemberInCurrentYearSemester(member).get();
-            assertEquals(YearSemester.YEAR_SEMESTER_2025_2, newPayment.getYearSemester());
+            assertEquals(CURRENT_YEAR_SEMESTER, newPayment.getYearSemester());
             assertEquals(PaymentStatus.PENDING, newPayment.getStatus());
         }
 
@@ -266,7 +267,7 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             // then
             Payment newPayment =
                     paymentRepository.findByMemberInCurrentYearSemester(member).get();
-            assertEquals(YearSemester.YEAR_SEMESTER_2025_2, newPayment.getYearSemester());
+            assertEquals(CURRENT_YEAR_SEMESTER, newPayment.getYearSemester());
             assertEquals(PaymentStatus.PENDING, newPayment.getStatus());
         }
     }
