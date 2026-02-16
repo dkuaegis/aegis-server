@@ -9,7 +9,7 @@ public class Constant {
 
     public static final BigDecimal CLUB_DUES = BigDecimal.valueOf(15000);
 
-    public static final YearSemester CURRENT_YEAR_SEMESTER = YearSemester.YEAR_SEMESTER_2025_2;
+    public static final YearSemester CURRENT_YEAR_SEMESTER = YearSemester.YEAR_SEMESTER_2026_1;
 
     public static final String PROD_SERVER_URL = "https://api.dkuaegis.org";
     public static final String PROD_JOIN_URL = "https://join.dkuaegis.org";
