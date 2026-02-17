@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import aegis.server.domain.featureflag.domain.FeatureFlag;
+import aegis.server.domain.featureflag.dto.request.MemberSignupWriteUpdateRequest;
 import aegis.server.domain.featureflag.dto.request.StudyEnrollWindowUpdateRequest;
 import aegis.server.domain.featureflag.dto.response.AdminFeatureFlagsResponse;
 import aegis.server.domain.featureflag.repository.FeatureFlagRepository;
@@ -88,6 +89,33 @@ class AdminFeatureFlagServiceTest extends IntegrationTest {
         }
     }
 
+    @Nested
+    class 회원가입_쓰기_플래그_수정 {
+
+        @Test
+        void 성공한다() {
+            // given
+            MemberSignupWriteUpdateRequest request = new MemberSignupWriteUpdateRequest(false);
+
+            // when
+            AdminFeatureFlagsResponse response = adminFeatureFlagService.updateMemberSignupWrite(request);
+
+            // then
+            // 반환값 검증
+            assertFalse(response.memberSignupWrite().signupWriteAllowed());
+            assertFalse(response.memberSignupWrite().enabled());
+            assertTrue(response.memberSignupWrite().valid());
+
+            // DB 상태 검증
+            FeatureFlag signupWriteFlag = featureFlagRepository
+                    .findById(response.memberSignupWrite().featureFlagId())
+                    .orElseThrow();
+            assertEquals("false", signupWriteFlag.getValue());
+
+            assertFalse(featurePolicyService.isSignupWriteAllowed());
+        }
+    }
+
     @Test
     void 플래그가_없으면_기본정책은_허용이다() {
         // when
@@ -95,6 +123,8 @@ class AdminFeatureFlagServiceTest extends IntegrationTest {
 
         // then
         assertTrue(featurePolicyService.isStudyEnrollmentAllowed());
+        assertTrue(featurePolicyService.isSignupWriteAllowed());
         assertFalse(response.studyEnrollWindow().valid());
+        assertFalse(response.memberSignupWrite().valid());
     }
 }

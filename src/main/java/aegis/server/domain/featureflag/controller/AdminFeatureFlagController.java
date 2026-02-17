@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 
+import aegis.server.domain.featureflag.dto.request.MemberSignupWriteUpdateRequest;
 import aegis.server.domain.featureflag.dto.request.StudyEnrollWindowUpdateRequest;
 import aegis.server.domain.featureflag.dto.response.AdminFeatureFlagsResponse;
 import aegis.server.domain.featureflag.service.AdminFeatureFlagService;
@@ -49,6 +50,21 @@ public class AdminFeatureFlagController {
     public ResponseEntity<AdminFeatureFlagsResponse> updateStudyEnrollWindow(
             @Valid @RequestBody StudyEnrollWindowUpdateRequest request) {
         AdminFeatureFlagsResponse response = adminFeatureFlagService.updateStudyEnrollWindow(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "회원가입 쓰기 차단 플래그 수정",
+            description = "회원가입 단계에서 사용하는 쓰기 API 허용 여부를 수정합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "회원가입 쓰기 플래그 수정 성공"),
+                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+                @ApiResponse(responseCode = "403", description = "관리자 권한 필요", content = @Content)
+            })
+    @PutMapping("/member-signup-write")
+    public ResponseEntity<AdminFeatureFlagsResponse> updateMemberSignupWrite(
+            @Valid @RequestBody MemberSignupWriteUpdateRequest request) {
+        AdminFeatureFlagsResponse response = adminFeatureFlagService.updateMemberSignupWrite(request);
         return ResponseEntity.ok(response);
     }
 }

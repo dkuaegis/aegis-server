@@ -9,8 +9,10 @@ import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.featureflag.domain.FeatureFlagKey;
 import aegis.server.domain.featureflag.domain.FeatureFlagValueType;
+import aegis.server.domain.featureflag.dto.request.MemberSignupWriteUpdateRequest;
 import aegis.server.domain.featureflag.dto.request.StudyEnrollWindowUpdateRequest;
 import aegis.server.domain.featureflag.dto.response.AdminFeatureFlagsResponse;
+import aegis.server.domain.featureflag.dto.response.MemberSignupWriteFlagResponse;
 import aegis.server.domain.featureflag.dto.response.StudyEnrollWindowFlagResponse;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
@@ -48,18 +50,37 @@ public class AdminFeatureFlagService {
         return buildAdminResponse();
     }
 
+    @Transactional
+    public AdminFeatureFlagsResponse updateMemberSignupWrite(MemberSignupWriteUpdateRequest request) {
+        featureFlagService.upsertAll(List.of(FeatureFlagUpsertCommand.of(
+                FeatureFlagKey.MEMBER_SIGNUP_WRITE_ENABLED,
+                FeatureFlagValueType.BOOLEAN,
+                request.enabled().toString(),
+                "회원가입 단계 쓰기 API 허용 여부")));
+
+        return buildAdminResponse();
+    }
+
     private AdminFeatureFlagsResponse buildAdminResponse() {
         FeaturePolicyService.StudyEnrollWindowEvaluation enrollWindow =
                 featurePolicyService.evaluateStudyEnrollWindow();
+        FeaturePolicyService.MemberSignupWriteEvaluation signupWrite = featurePolicyService.evaluateMemberSignupWrite();
 
-        return AdminFeatureFlagsResponse.of(StudyEnrollWindowFlagResponse.of(
-                enrollWindow.openFlagId(),
-                enrollWindow.closeFlagId(),
-                enrollWindow.openAtRaw(),
-                enrollWindow.closeAtRaw(),
-                enrollWindow.openAt(),
-                enrollWindow.closeAt(),
-                enrollWindow.valid(),
-                enrollWindow.enrollmentAllowedNow()));
+        return AdminFeatureFlagsResponse.of(
+                StudyEnrollWindowFlagResponse.of(
+                        enrollWindow.openFlagId(),
+                        enrollWindow.closeFlagId(),
+                        enrollWindow.openAtRaw(),
+                        enrollWindow.closeAtRaw(),
+                        enrollWindow.openAt(),
+                        enrollWindow.closeAt(),
+                        enrollWindow.valid(),
+                        enrollWindow.enrollmentAllowedNow()),
+                MemberSignupWriteFlagResponse.of(
+                        signupWrite.featureFlagId(),
+                        signupWrite.rawValue(),
+                        signupWrite.enabled(),
+                        signupWrite.valid(),
+                        signupWrite.signupWriteAllowed()));
     }
 }
