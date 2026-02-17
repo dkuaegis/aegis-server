@@ -60,11 +60,6 @@ payment:
 time:
   zone: Asia/Seoul
 
-study:
-  enroll-window:
-    open-at: ${STUDY_ENROLL_OPEN_AT:}
-    close-at: ${STUDY_ENROLL_CLOSE_AT:}
-
 logging:
   level:
     org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport: WARN
