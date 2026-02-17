@@ -35,6 +35,10 @@ public class FeaturePolicyService {
         return evaluateMemberSignupWrite().signupWriteAllowed();
     }
 
+    public boolean isStudyCreationAllowed() {
+        return evaluateStudyCreation().studyCreationAllowed();
+    }
+
     public StudyEnrollWindowEvaluation evaluateStudyEnrollWindow() {
         FeatureFlagSnapshot openSnapshot = featureFlagService
                 .findCachedFlag(FeatureFlagKey.STUDY_ENROLL_WINDOW_OPEN_AT)
@@ -79,6 +83,22 @@ public class FeaturePolicyService {
         }
 
         return MemberSignupWriteEvaluation.of(featureFlagId, raw, parsed, true, parsed);
+    }
+
+    public StudyCreationEvaluation evaluateStudyCreation() {
+        FeatureFlagSnapshot studyCreationSnapshot = featureFlagService
+                .findCachedFlag(FeatureFlagKey.STUDY_CREATION_ENABLED)
+                .orElse(null);
+
+        Long featureFlagId = studyCreationSnapshot == null ? null : studyCreationSnapshot.id();
+        String raw = studyCreationSnapshot == null ? null : studyCreationSnapshot.value();
+        Boolean parsed = parseBoolean(studyCreationSnapshot);
+
+        if (parsed == null) {
+            return StudyCreationEvaluation.of(featureFlagId, raw, null, false, true);
+        }
+
+        return StudyCreationEvaluation.of(featureFlagId, raw, parsed, true, parsed);
     }
 
     private static LocalDateTime parseLocalDateTime(FeatureFlagSnapshot snapshot) {
@@ -148,6 +168,15 @@ public class FeaturePolicyService {
         public static MemberSignupWriteEvaluation of(
                 Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean signupWriteAllowed) {
             return new MemberSignupWriteEvaluation(featureFlagId, rawValue, enabled, valid, signupWriteAllowed);
+        }
+    }
+
+    public record StudyCreationEvaluation(
+            Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean studyCreationAllowed) {
+
+        public static StudyCreationEvaluation of(
+                Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean studyCreationAllowed) {
+            return new StudyCreationEvaluation(featureFlagId, rawValue, enabled, valid, studyCreationAllowed);
         }
     }
 }

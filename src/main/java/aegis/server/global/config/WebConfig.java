@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 import aegis.server.global.security.annotation.LoginUserArgumentResolver;
 import aegis.server.global.security.interceptor.SignupWriteGuardInterceptor;
+import aegis.server.global.security.interceptor.StudyCreationGuardInterceptor;
 import aegis.server.global.security.interceptor.StudyEnrollWindowInterceptor;
 import aegis.server.global.security.interceptor.TransactionTrackInterceptor;
 
@@ -22,6 +23,7 @@ public class WebConfig implements WebMvcConfigurer {
     private final TransactionTrackInterceptor transactionTrackInterceptor;
     private final StudyEnrollWindowInterceptor studyEnrollWindowInterceptor;
     private final SignupWriteGuardInterceptor signupWriteGuardInterceptor;
+    private final StudyCreationGuardInterceptor studyCreationGuardInterceptor;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
@@ -32,6 +34,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(transactionTrackInterceptor).addPathPatterns("/internal/transaction");
         registry.addInterceptor(studyEnrollWindowInterceptor).addPathPatterns("/studies/*/enrollment");
+        registry.addInterceptor(studyCreationGuardInterceptor).addPathPatterns("/studies");
         registry.addInterceptor(signupWriteGuardInterceptor)
                 .addPathPatterns("/members/**", "/survey/**", "/payments/**");
     }

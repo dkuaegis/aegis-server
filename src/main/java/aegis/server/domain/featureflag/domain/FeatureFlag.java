@@ -30,7 +30,7 @@ public class FeatureFlag extends BaseEntity {
     @Column(nullable = false)
     private FeatureFlagValueType valueType;
 
-    @Column(nullable = false)
+    @Column(name = "\"value\"", nullable = false)
     private String value;
 
     private String description;

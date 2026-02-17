@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import aegis.server.domain.featureflag.domain.FeatureFlag;
 import aegis.server.domain.featureflag.dto.request.MemberSignupWriteUpdateRequest;
+import aegis.server.domain.featureflag.dto.request.StudyCreationUpdateRequest;
 import aegis.server.domain.featureflag.dto.request.StudyEnrollWindowUpdateRequest;
 import aegis.server.domain.featureflag.dto.response.AdminFeatureFlagsResponse;
 import aegis.server.domain.featureflag.repository.FeatureFlagRepository;
@@ -116,6 +117,33 @@ class AdminFeatureFlagServiceTest extends IntegrationTest {
         }
     }
 
+    @Nested
+    class 스터디_개설_플래그_수정 {
+
+        @Test
+        void 성공한다() {
+            // given
+            StudyCreationUpdateRequest request = new StudyCreationUpdateRequest(false);
+
+            // when
+            AdminFeatureFlagsResponse response = adminFeatureFlagService.updateStudyCreation(request);
+
+            // then
+            // 반환값 검증
+            assertFalse(response.studyCreation().studyCreationAllowed());
+            assertFalse(response.studyCreation().enabled());
+            assertTrue(response.studyCreation().valid());
+
+            // DB 상태 검증
+            FeatureFlag studyCreationFlag = featureFlagRepository
+                    .findById(response.studyCreation().featureFlagId())
+                    .orElseThrow();
+            assertEquals("false", studyCreationFlag.getValue());
+
+            assertFalse(featurePolicyService.isStudyCreationAllowed());
+        }
+    }
+
     @Test
     void 플래그가_없으면_기본정책은_허용이다() {
         // when
@@ -124,7 +152,9 @@ class AdminFeatureFlagServiceTest extends IntegrationTest {
         // then
         assertTrue(featurePolicyService.isStudyEnrollmentAllowed());
         assertTrue(featurePolicyService.isSignupWriteAllowed());
+        assertTrue(featurePolicyService.isStudyCreationAllowed());
         assertFalse(response.studyEnrollWindow().valid());
         assertFalse(response.memberSignupWrite().valid());
+        assertFalse(response.studyCreation().valid());
     }
 }

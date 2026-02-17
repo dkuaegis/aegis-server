@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.featureflag.dto.request.MemberSignupWriteUpdateRequest;
+import aegis.server.domain.featureflag.dto.request.StudyCreationUpdateRequest;
 import aegis.server.domain.featureflag.dto.request.StudyEnrollWindowUpdateRequest;
 import aegis.server.domain.featureflag.dto.response.AdminFeatureFlagsResponse;
 import aegis.server.domain.featureflag.service.AdminFeatureFlagService;
@@ -65,6 +66,21 @@ public class AdminFeatureFlagController {
     public ResponseEntity<AdminFeatureFlagsResponse> updateMemberSignupWrite(
             @Valid @RequestBody MemberSignupWriteUpdateRequest request) {
         AdminFeatureFlagsResponse response = adminFeatureFlagService.updateMemberSignupWrite(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "스터디 개설 허용 플래그 수정",
+            description = "스터디 개설 API 허용 여부를 수정합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "스터디 개설 플래그 수정 성공"),
+                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+                @ApiResponse(responseCode = "403", description = "관리자 권한 필요", content = @Content)
+            })
+    @PutMapping("/study-creation")
+    public ResponseEntity<AdminFeatureFlagsResponse> updateStudyCreation(
+            @Valid @RequestBody StudyCreationUpdateRequest request) {
+        AdminFeatureFlagsResponse response = adminFeatureFlagService.updateStudyCreation(request);
         return ResponseEntity.ok(response);
     }
 }

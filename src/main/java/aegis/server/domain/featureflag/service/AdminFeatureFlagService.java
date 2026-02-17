@@ -10,9 +10,11 @@ import lombok.RequiredArgsConstructor;
 import aegis.server.domain.featureflag.domain.FeatureFlagKey;
 import aegis.server.domain.featureflag.domain.FeatureFlagValueType;
 import aegis.server.domain.featureflag.dto.request.MemberSignupWriteUpdateRequest;
+import aegis.server.domain.featureflag.dto.request.StudyCreationUpdateRequest;
 import aegis.server.domain.featureflag.dto.request.StudyEnrollWindowUpdateRequest;
 import aegis.server.domain.featureflag.dto.response.AdminFeatureFlagsResponse;
 import aegis.server.domain.featureflag.dto.response.MemberSignupWriteFlagResponse;
+import aegis.server.domain.featureflag.dto.response.StudyCreationFlagResponse;
 import aegis.server.domain.featureflag.dto.response.StudyEnrollWindowFlagResponse;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
@@ -61,10 +63,22 @@ public class AdminFeatureFlagService {
         return buildAdminResponse();
     }
 
+    @Transactional
+    public AdminFeatureFlagsResponse updateStudyCreation(StudyCreationUpdateRequest request) {
+        featureFlagService.upsertAll(List.of(FeatureFlagUpsertCommand.of(
+                FeatureFlagKey.STUDY_CREATION_ENABLED,
+                FeatureFlagValueType.BOOLEAN,
+                request.enabled().toString(),
+                "스터디 개설 API 허용 여부")));
+
+        return buildAdminResponse();
+    }
+
     private AdminFeatureFlagsResponse buildAdminResponse() {
         FeaturePolicyService.StudyEnrollWindowEvaluation enrollWindow =
                 featurePolicyService.evaluateStudyEnrollWindow();
         FeaturePolicyService.MemberSignupWriteEvaluation signupWrite = featurePolicyService.evaluateMemberSignupWrite();
+        FeaturePolicyService.StudyCreationEvaluation studyCreation = featurePolicyService.evaluateStudyCreation();
 
         return AdminFeatureFlagsResponse.of(
                 StudyEnrollWindowFlagResponse.of(
@@ -81,6 +95,12 @@ public class AdminFeatureFlagService {
                         signupWrite.rawValue(),
                         signupWrite.enabled(),
                         signupWrite.valid(),
-                        signupWrite.signupWriteAllowed()));
+                        signupWrite.signupWriteAllowed()),
+                StudyCreationFlagResponse.of(
+                        studyCreation.featureFlagId(),
+                        studyCreation.rawValue(),
+                        studyCreation.enabled(),
+                        studyCreation.valid(),
+                        studyCreation.studyCreationAllowed()));
     }
 }
