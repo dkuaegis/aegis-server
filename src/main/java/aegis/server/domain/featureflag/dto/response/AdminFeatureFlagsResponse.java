@@ -2,13 +2,13 @@ package aegis.server.domain.featureflag.dto.response;
 
 public record AdminFeatureFlagsResponse(
         StudyEnrollWindowFlagResponse studyEnrollWindow,
-        MemberSignupWriteFlagResponse memberSignupWrite,
+        MemberSignupFlagResponse memberSignup,
         StudyCreationFlagResponse studyCreation) {
 
     public static AdminFeatureFlagsResponse of(
             StudyEnrollWindowFlagResponse studyEnrollWindow,
-            MemberSignupWriteFlagResponse memberSignupWrite,
+            MemberSignupFlagResponse memberSignup,
             StudyCreationFlagResponse studyCreation) {
-        return new AdminFeatureFlagsResponse(studyEnrollWindow, memberSignupWrite, studyCreation);
+        return new AdminFeatureFlagsResponse(studyEnrollWindow, memberSignup, studyCreation);
     }
 }

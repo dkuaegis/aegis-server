@@ -9,11 +9,11 @@ import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.featureflag.domain.FeatureFlagKey;
 import aegis.server.domain.featureflag.domain.FeatureFlagValueType;
-import aegis.server.domain.featureflag.dto.request.MemberSignupWriteUpdateRequest;
+import aegis.server.domain.featureflag.dto.request.MemberSignupUpdateRequest;
 import aegis.server.domain.featureflag.dto.request.StudyCreationUpdateRequest;
 import aegis.server.domain.featureflag.dto.request.StudyEnrollWindowUpdateRequest;
 import aegis.server.domain.featureflag.dto.response.AdminFeatureFlagsResponse;
-import aegis.server.domain.featureflag.dto.response.MemberSignupWriteFlagResponse;
+import aegis.server.domain.featureflag.dto.response.MemberSignupFlagResponse;
 import aegis.server.domain.featureflag.dto.response.StudyCreationFlagResponse;
 import aegis.server.domain.featureflag.dto.response.StudyEnrollWindowFlagResponse;
 import aegis.server.global.exception.CustomException;
@@ -53,12 +53,12 @@ public class AdminFeatureFlagService {
     }
 
     @Transactional
-    public AdminFeatureFlagsResponse updateMemberSignupWrite(MemberSignupWriteUpdateRequest request) {
+    public AdminFeatureFlagsResponse updateMemberSignup(MemberSignupUpdateRequest request) {
         featureFlagService.upsertAll(List.of(FeatureFlagUpsertCommand.of(
-                FeatureFlagKey.MEMBER_SIGNUP_WRITE_ENABLED,
+                FeatureFlagKey.MEMBER_SIGNUP_ENABLED,
                 FeatureFlagValueType.BOOLEAN,
                 request.enabled().toString(),
-                "회원가입 단계 쓰기 API 허용 여부")));
+                "회원가입 허용 여부")));
 
         return buildAdminResponse();
     }
@@ -77,7 +77,7 @@ public class AdminFeatureFlagService {
     private AdminFeatureFlagsResponse buildAdminResponse() {
         FeaturePolicyService.StudyEnrollWindowEvaluation enrollWindow =
                 featurePolicyService.evaluateStudyEnrollWindow();
-        FeaturePolicyService.MemberSignupWriteEvaluation signupWrite = featurePolicyService.evaluateMemberSignupWrite();
+        FeaturePolicyService.MemberSignupEvaluation memberSignup = featurePolicyService.evaluateMemberSignup();
         FeaturePolicyService.StudyCreationEvaluation studyCreation = featurePolicyService.evaluateStudyCreation();
 
         return AdminFeatureFlagsResponse.of(
@@ -90,12 +90,12 @@ public class AdminFeatureFlagService {
                         enrollWindow.closeAt(),
                         enrollWindow.valid(),
                         enrollWindow.enrollmentAllowedNow()),
-                MemberSignupWriteFlagResponse.of(
-                        signupWrite.featureFlagId(),
-                        signupWrite.rawValue(),
-                        signupWrite.enabled(),
-                        signupWrite.valid(),
-                        signupWrite.signupWriteAllowed()),
+                MemberSignupFlagResponse.of(
+                        memberSignup.featureFlagId(),
+                        memberSignup.rawValue(),
+                        memberSignup.enabled(),
+                        memberSignup.valid(),
+                        memberSignup.signupAllowed()),
                 StudyCreationFlagResponse.of(
                         studyCreation.featureFlagId(),
                         studyCreation.rawValue(),

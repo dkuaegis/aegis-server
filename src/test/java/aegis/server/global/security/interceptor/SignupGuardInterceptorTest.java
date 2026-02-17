@@ -10,17 +10,17 @@ import aegis.server.domain.featureflag.service.FeaturePolicyService;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class SignupWriteGuardInterceptorTest {
+class SignupGuardInterceptorTest {
 
     private final FeaturePolicyService featurePolicyService = mock(FeaturePolicyService.class);
-    private final SignupWriteGuardInterceptor interceptor = new SignupWriteGuardInterceptor(featurePolicyService);
+    private final SignupGuardInterceptor interceptor = new SignupGuardInterceptor(featurePolicyService);
 
     @Test
-    void 가입_쓰기_차단_플래그가_false면_요청을_차단한다() {
+    void 회원가입_허용_플래그가_false면_요청을_차단한다() {
         // given
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/members");
         MockHttpServletResponse response = new MockHttpServletResponse();
-        when(featurePolicyService.isSignupWriteAllowed()).thenReturn(false);
+        when(featurePolicyService.isSignupAllowed()).thenReturn(false);
 
         // when
         boolean result = interceptor.preHandle(request, response, new Object());
@@ -31,11 +31,11 @@ class SignupWriteGuardInterceptorTest {
     }
 
     @Test
-    void 가입_쓰기_차단_플래그가_true면_요청을_허용한다() {
+    void 회원가입_허용_플래그가_true면_요청을_허용한다() {
         // given
         MockHttpServletRequest request = new MockHttpServletRequest("PUT", "/payments");
         MockHttpServletResponse response = new MockHttpServletResponse();
-        when(featurePolicyService.isSignupWriteAllowed()).thenReturn(true);
+        when(featurePolicyService.isSignupAllowed()).thenReturn(true);
 
         // when
         boolean result = interceptor.preHandle(request, response, new Object());

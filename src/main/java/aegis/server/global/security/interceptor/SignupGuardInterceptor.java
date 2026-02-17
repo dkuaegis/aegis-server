@@ -13,17 +13,17 @@ import aegis.server.domain.featureflag.service.FeaturePolicyService;
 
 @Component
 @RequiredArgsConstructor
-public class SignupWriteGuardInterceptor implements HandlerInterceptor {
+public class SignupGuardInterceptor implements HandlerInterceptor {
 
     private final FeaturePolicyService featurePolicyService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        if (!isSignupWriteMethod(request.getMethod())) {
+        if (!isSignupMutationMethod(request.getMethod())) {
             return true;
         }
 
-        if (featurePolicyService.isSignupWriteAllowed()) {
+        if (featurePolicyService.isSignupAllowed()) {
             return true;
         }
 
@@ -31,7 +31,7 @@ public class SignupWriteGuardInterceptor implements HandlerInterceptor {
         return false;
     }
 
-    private boolean isSignupWriteMethod(String method) {
+    private boolean isSignupMutationMethod(String method) {
         return "POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method);
     }
 }

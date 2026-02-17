@@ -31,8 +31,8 @@ public class FeaturePolicyService {
         return evaluateStudyEnrollWindow().enrollmentAllowedNow();
     }
 
-    public boolean isSignupWriteAllowed() {
-        return evaluateMemberSignupWrite().signupWriteAllowed();
+    public boolean isSignupAllowed() {
+        return evaluateMemberSignup().signupAllowed();
     }
 
     public boolean isStudyCreationAllowed() {
@@ -69,20 +69,20 @@ public class FeaturePolicyService {
                 openFlagId, closeFlagId, openRaw, closeRaw, openAt, closeAt, true, allowed);
     }
 
-    public MemberSignupWriteEvaluation evaluateMemberSignupWrite() {
-        FeatureFlagSnapshot signupWriteSnapshot = featureFlagService
-                .findCachedFlag(FeatureFlagKey.MEMBER_SIGNUP_WRITE_ENABLED)
+    public MemberSignupEvaluation evaluateMemberSignup() {
+        FeatureFlagSnapshot memberSignupSnapshot = featureFlagService
+                .findCachedFlag(FeatureFlagKey.MEMBER_SIGNUP_ENABLED)
                 .orElse(null);
 
-        Long featureFlagId = signupWriteSnapshot == null ? null : signupWriteSnapshot.id();
-        String raw = signupWriteSnapshot == null ? null : signupWriteSnapshot.value();
-        Boolean parsed = parseBoolean(signupWriteSnapshot);
+        Long featureFlagId = memberSignupSnapshot == null ? null : memberSignupSnapshot.id();
+        String raw = memberSignupSnapshot == null ? null : memberSignupSnapshot.value();
+        Boolean parsed = parseBoolean(memberSignupSnapshot);
 
         if (parsed == null) {
-            return MemberSignupWriteEvaluation.of(featureFlagId, raw, null, false, true);
+            return MemberSignupEvaluation.of(featureFlagId, raw, null, false, true);
         }
 
-        return MemberSignupWriteEvaluation.of(featureFlagId, raw, parsed, true, parsed);
+        return MemberSignupEvaluation.of(featureFlagId, raw, parsed, true, parsed);
     }
 
     public StudyCreationEvaluation evaluateStudyCreation() {
@@ -162,12 +162,12 @@ public class FeaturePolicyService {
         }
     }
 
-    public record MemberSignupWriteEvaluation(
-            Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean signupWriteAllowed) {
+    public record MemberSignupEvaluation(
+            Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean signupAllowed) {
 
-        public static MemberSignupWriteEvaluation of(
-                Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean signupWriteAllowed) {
-            return new MemberSignupWriteEvaluation(featureFlagId, rawValue, enabled, valid, signupWriteAllowed);
+        public static MemberSignupEvaluation of(
+                Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean signupAllowed) {
+            return new MemberSignupEvaluation(featureFlagId, rawValue, enabled, valid, signupAllowed);
         }
     }
 
