@@ -13,7 +13,7 @@ import aegis.server.domain.featureflag.service.FeaturePolicyService;
 
 @Component
 @RequiredArgsConstructor
-public class StudyEnrollWindowInterceptor implements HandlerInterceptor {
+public class StudyCreationGuardInterceptor implements HandlerInterceptor {
 
     private final FeaturePolicyService featurePolicyService;
 
@@ -23,7 +23,7 @@ public class StudyEnrollWindowInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        if (featurePolicyService.isStudyEnrollmentAllowed()) {
+        if (featurePolicyService.isStudyCreationAllowed()) {
             return true;
         }
 
