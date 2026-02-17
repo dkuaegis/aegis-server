@@ -40,21 +40,6 @@ public class AdminFeatureFlagController {
     }
 
     @Operation(
-            summary = "스터디 신청 기간 플래그 수정",
-            description = "스터디 신청 허용 시작/종료 일시를 수정합니다.",
-            responses = {
-                @ApiResponse(responseCode = "200", description = "스터디 신청 기간 수정 성공"),
-                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
-                @ApiResponse(responseCode = "403", description = "관리자 권한 필요", content = @Content)
-            })
-    @PutMapping("/study-enroll-window")
-    public ResponseEntity<AdminFeatureFlagsResponse> updateStudyEnrollWindow(
-            @Valid @RequestBody StudyEnrollWindowUpdateRequest request) {
-        AdminFeatureFlagsResponse response = adminFeatureFlagService.updateStudyEnrollWindow(request);
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(
             summary = "회원가입 허용 플래그 수정",
             description = "회원가입 허용 여부를 수정합니다.",
             responses = {
@@ -81,6 +66,21 @@ public class AdminFeatureFlagController {
     public ResponseEntity<AdminFeatureFlagsResponse> updateStudyCreation(
             @Valid @RequestBody StudyCreationUpdateRequest request) {
         AdminFeatureFlagsResponse response = adminFeatureFlagService.updateStudyCreation(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "스터디 신청 기간 플래그 수정",
+            description = "스터디 신청 허용 시작/종료 일시를 수정합니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "스터디 신청 기간 수정 성공"),
+                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+                @ApiResponse(responseCode = "403", description = "관리자 권한 필요", content = @Content)
+            })
+    @PutMapping("/study-enroll-window")
+    public ResponseEntity<AdminFeatureFlagsResponse> updateStudyEnrollWindow(
+            @Valid @RequestBody StudyEnrollWindowUpdateRequest request) {
+        AdminFeatureFlagsResponse response = adminFeatureFlagService.updateStudyEnrollWindow(request);
         return ResponseEntity.ok(response);
     }
 }

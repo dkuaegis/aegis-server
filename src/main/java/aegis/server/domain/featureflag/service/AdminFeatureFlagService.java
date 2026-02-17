@@ -32,27 +32,6 @@ public class AdminFeatureFlagService {
     }
 
     @Transactional
-    public AdminFeatureFlagsResponse updateStudyEnrollWindow(StudyEnrollWindowUpdateRequest request) {
-        if (!request.closeAt().isAfter(request.openAt())) {
-            throw new CustomException(ErrorCode.BAD_REQUEST);
-        }
-
-        featureFlagService.upsertAll(List.of(
-                FeatureFlagUpsertCommand.of(
-                        FeatureFlagKey.STUDY_ENROLL_WINDOW_OPEN_AT,
-                        FeatureFlagValueType.LOCAL_DATE_TIME,
-                        request.openAt().toString(),
-                        "스터디 신청 허용 시작 일시"),
-                FeatureFlagUpsertCommand.of(
-                        FeatureFlagKey.STUDY_ENROLL_WINDOW_CLOSE_AT,
-                        FeatureFlagValueType.LOCAL_DATE_TIME,
-                        request.closeAt().toString(),
-                        "스터디 신청 허용 종료 일시")));
-
-        return buildAdminResponse();
-    }
-
-    @Transactional
     public AdminFeatureFlagsResponse updateMemberSignup(MemberSignupUpdateRequest request) {
         featureFlagService.upsertAll(List.of(FeatureFlagUpsertCommand.of(
                 FeatureFlagKey.MEMBER_SIGNUP_ENABLED,
@@ -74,22 +53,34 @@ public class AdminFeatureFlagService {
         return buildAdminResponse();
     }
 
+    @Transactional
+    public AdminFeatureFlagsResponse updateStudyEnrollWindow(StudyEnrollWindowUpdateRequest request) {
+        if (!request.closeAt().isAfter(request.openAt())) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
+
+        featureFlagService.upsertAll(List.of(
+                FeatureFlagUpsertCommand.of(
+                        FeatureFlagKey.STUDY_ENROLL_WINDOW_OPEN_AT,
+                        FeatureFlagValueType.LOCAL_DATE_TIME,
+                        request.openAt().toString(),
+                        "스터디 신청 허용 시작 일시"),
+                FeatureFlagUpsertCommand.of(
+                        FeatureFlagKey.STUDY_ENROLL_WINDOW_CLOSE_AT,
+                        FeatureFlagValueType.LOCAL_DATE_TIME,
+                        request.closeAt().toString(),
+                        "스터디 신청 허용 종료 일시")));
+
+        return buildAdminResponse();
+    }
+
     private AdminFeatureFlagsResponse buildAdminResponse() {
-        FeaturePolicyService.StudyEnrollWindowEvaluation enrollWindow =
-                featurePolicyService.evaluateStudyEnrollWindow();
         FeaturePolicyService.MemberSignupEvaluation memberSignup = featurePolicyService.evaluateMemberSignup();
         FeaturePolicyService.StudyCreationEvaluation studyCreation = featurePolicyService.evaluateStudyCreation();
+        FeaturePolicyService.StudyEnrollWindowEvaluation enrollWindow =
+                featurePolicyService.evaluateStudyEnrollWindow();
 
         return AdminFeatureFlagsResponse.of(
-                StudyEnrollWindowFlagResponse.of(
-                        enrollWindow.openFlagId(),
-                        enrollWindow.closeFlagId(),
-                        enrollWindow.openAtRaw(),
-                        enrollWindow.closeAtRaw(),
-                        enrollWindow.openAt(),
-                        enrollWindow.closeAt(),
-                        enrollWindow.valid(),
-                        enrollWindow.enrollmentAllowedNow()),
                 MemberSignupFlagResponse.of(
                         memberSignup.featureFlagId(),
                         memberSignup.rawValue(),
@@ -101,6 +92,15 @@ public class AdminFeatureFlagService {
                         studyCreation.rawValue(),
                         studyCreation.enabled(),
                         studyCreation.valid(),
-                        studyCreation.studyCreationAllowed()));
+                        studyCreation.studyCreationAllowed()),
+                StudyEnrollWindowFlagResponse.of(
+                        enrollWindow.openFlagId(),
+                        enrollWindow.closeFlagId(),
+                        enrollWindow.openAtRaw(),
+                        enrollWindow.closeAtRaw(),
+                        enrollWindow.openAt(),
+                        enrollWindow.closeAt(),
+                        enrollWindow.valid(),
+                        enrollWindow.enrollmentAllowedNow()));
     }
 }

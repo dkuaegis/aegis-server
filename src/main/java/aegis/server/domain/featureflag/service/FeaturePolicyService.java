@@ -138,6 +138,24 @@ public class FeaturePolicyService {
         return value == null || value.trim().isEmpty();
     }
 
+    public record MemberSignupEvaluation(
+            Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean signupAllowed) {
+
+        public static MemberSignupEvaluation of(
+                Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean signupAllowed) {
+            return new MemberSignupEvaluation(featureFlagId, rawValue, enabled, valid, signupAllowed);
+        }
+    }
+
+    public record StudyCreationEvaluation(
+            Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean studyCreationAllowed) {
+
+        public static StudyCreationEvaluation of(
+                Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean studyCreationAllowed) {
+            return new StudyCreationEvaluation(featureFlagId, rawValue, enabled, valid, studyCreationAllowed);
+        }
+    }
+
     public record StudyEnrollWindowEvaluation(
             Long openFlagId,
             Long closeFlagId,
@@ -159,24 +177,6 @@ public class FeaturePolicyService {
                 boolean enrollmentAllowedNow) {
             return new StudyEnrollWindowEvaluation(
                     openFlagId, closeFlagId, openAtRaw, closeAtRaw, openAt, closeAt, valid, enrollmentAllowedNow);
-        }
-    }
-
-    public record MemberSignupEvaluation(
-            Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean signupAllowed) {
-
-        public static MemberSignupEvaluation of(
-                Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean signupAllowed) {
-            return new MemberSignupEvaluation(featureFlagId, rawValue, enabled, valid, signupAllowed);
-        }
-    }
-
-    public record StudyCreationEvaluation(
-            Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean studyCreationAllowed) {
-
-        public static StudyCreationEvaluation of(
-                Long featureFlagId, String rawValue, Boolean enabled, boolean valid, boolean studyCreationAllowed) {
-            return new StudyCreationEvaluation(featureFlagId, rawValue, enabled, valid, studyCreationAllowed);
         }
     }
 }
