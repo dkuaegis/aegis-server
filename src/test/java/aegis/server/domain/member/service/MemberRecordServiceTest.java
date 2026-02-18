@@ -1,5 +1,7 @@
 package aegis.server.domain.member.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import aegis.server.domain.activity.domain.Activity;
+import aegis.server.domain.activity.domain.ActivityParticipation;
+import aegis.server.domain.activity.repository.ActivityParticipationRepository;
+import aegis.server.domain.activity.repository.ActivityRepository;
 import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.member.domain.Department;
 import aegis.server.domain.member.domain.Gender;
@@ -16,7 +22,9 @@ import aegis.server.domain.member.domain.MemberRecord;
 import aegis.server.domain.member.domain.MemberRecordSource;
 import aegis.server.domain.member.domain.Role;
 import aegis.server.domain.member.dto.response.AdminMemberRecordPageResponse;
+import aegis.server.domain.member.dto.response.AdminMemberRecordSemesterOptionResponse;
 import aegis.server.domain.member.dto.response.AdminMemberRecordTimelineResponse;
+import aegis.server.domain.member.dto.response.AdminMemberSemesterActivityDetailResponse;
 import aegis.server.domain.member.dto.response.MemberRecordBackfillResponse;
 import aegis.server.domain.member.repository.MemberRecordRepository;
 import aegis.server.domain.member.repository.MemberRepository;
@@ -26,6 +34,18 @@ import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
 import aegis.server.domain.payment.dto.internal.PaymentInfo;
 import aegis.server.domain.payment.repository.PaymentRepository;
+import aegis.server.domain.study.domain.Study;
+import aegis.server.domain.study.domain.StudyAttendance;
+import aegis.server.domain.study.domain.StudyCategory;
+import aegis.server.domain.study.domain.StudyLevel;
+import aegis.server.domain.study.domain.StudyMember;
+import aegis.server.domain.study.domain.StudyRecruitmentMethod;
+import aegis.server.domain.study.domain.StudyRole;
+import aegis.server.domain.study.domain.StudySession;
+import aegis.server.domain.study.repository.StudyAttendanceRepository;
+import aegis.server.domain.study.repository.StudyMemberRepository;
+import aegis.server.domain.study.repository.StudyRepository;
+import aegis.server.domain.study.repository.StudySessionRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.helper.IntegrationTestWithoutTransactional;
@@ -48,6 +68,24 @@ class MemberRecordServiceTest extends IntegrationTestWithoutTransactional {
 
     @Autowired
     PaymentRepository paymentRepository;
+
+    @Autowired
+    ActivityRepository activityRepository;
+
+    @Autowired
+    ActivityParticipationRepository activityParticipationRepository;
+
+    @Autowired
+    StudyRepository studyRepository;
+
+    @Autowired
+    StudyMemberRepository studyMemberRepository;
+
+    @Autowired
+    StudySessionRepository studySessionRepository;
+
+    @Autowired
+    StudyAttendanceRepository studyAttendanceRepository;
 
     @Nested
     class 결제완료_이벤트_기록 {
@@ -239,6 +277,122 @@ class MemberRecordServiceTest extends IntegrationTestWithoutTransactional {
             // when-then
             CustomException exception = assertThrows(
                     CustomException.class, () -> memberRecordService.getMemberRecordTimeline(notExistingMemberId));
+            assertEquals(ErrorCode.MEMBER_NOT_FOUND, exception.getErrorCode());
+        }
+
+        @Test
+        void 학기별_회원기록_조회시_검색_필터_정렬이_적용된다() {
+            // given
+            Member backendMember = createMember();
+            backendMember.updateName("김백엔드");
+            backendMember.updateEmail("backend@dankook.ac.kr");
+            memberRepository.save(backendMember);
+
+            Member designMember = createMember();
+            designMember.updateName("이디자인");
+            designMember.updateEmail("design@dankook.ac.kr");
+            memberRepository.save(designMember);
+
+            memberRecordService.createMemberRecordIfAbsent(
+                    backendMember.getId(), YearSemester.YEAR_SEMESTER_2026_1, MemberRecordSource.BACKFILL_PAYMENT);
+            memberRecordService.createMemberRecordIfAbsent(
+                    designMember.getId(), YearSemester.YEAR_SEMESTER_2026_1, MemberRecordSource.BACKFILL_PAYMENT);
+
+            designMember.demoteToGuest();
+            memberRepository.save(designMember);
+            memberRecordService.createMemberRecordIfAbsent(
+                    designMember.getId(), YearSemester.YEAR_SEMESTER_2025_2, MemberRecordSource.BACKFILL_PAYMENT);
+
+            // when
+            AdminMemberRecordPageResponse keywordFiltered = memberRecordService.getMemberRecordsByYearSemester(
+                    YearSemester.YEAR_SEMESTER_2026_1, 0, 50, "백엔드", null, "name,asc");
+            AdminMemberRecordPageResponse roleFiltered = memberRecordService.getMemberRecordsByYearSemester(
+                    YearSemester.YEAR_SEMESTER_2025_2, 0, 50, null, Role.GUEST, "name,asc");
+            AdminMemberRecordPageResponse sorted = memberRecordService.getMemberRecordsByYearSemester(
+                    YearSemester.YEAR_SEMESTER_2026_1, 0, 50, null, null, "name,desc");
+
+            // then
+            assertEquals(1, keywordFiltered.content().size());
+            assertEquals("김백엔드", keywordFiltered.content().getFirst().snapshotName());
+            assertEquals(1, roleFiltered.content().size());
+            assertEquals(Role.GUEST, roleFiltered.content().getFirst().snapshotRole());
+            assertEquals("이디자인", sorted.content().getFirst().snapshotName());
+        }
+
+        @Test
+        void 회원기록_학기옵션을_조회한다() {
+            // when
+            List<AdminMemberRecordSemesterOptionResponse> options =
+                    memberRecordService.getMemberRecordSemesterOptions();
+
+            // then
+            assertEquals(YearSemester.values().length, options.size());
+            assertTrue(options.stream()
+                    .anyMatch(
+                            option -> option.yearSemester() == YearSemester.YEAR_SEMESTER_2026_1 && option.current()));
+            assertTrue(options.stream()
+                    .allMatch(
+                            option -> option.label() != null && !option.label().isBlank()));
+        }
+
+        @Test
+        void 회원별_학기_활동상세를_조회한다() {
+            // given
+            Member member = createMember();
+
+            Study study = studyRepository.save(Study.create(
+                    "백엔드 스터디",
+                    StudyCategory.WEB,
+                    StudyLevel.INTERMEDIATE,
+                    "Spring 기반 API 구현",
+                    StudyRecruitmentMethod.FCFS,
+                    20,
+                    "매주 월요일",
+                    List.of("JPA"),
+                    List.of("기초 Java")));
+            StudyMember studyMember =
+                    studyMemberRepository.save(StudyMember.create(study, member, StudyRole.PARTICIPANT));
+            StudySession studySession =
+                    studySessionRepository.save(StudySession.create(study, LocalDate.of(2026, 1, 10), "ABC123"));
+            StudyAttendance studyAttendance =
+                    studyAttendanceRepository.save(StudyAttendance.create(studySession, member));
+
+            Activity activity = activityRepository.save(Activity.create("OT 참여", BigDecimal.valueOf(200)));
+            ActivityParticipation activityParticipation =
+                    activityParticipationRepository.save(ActivityParticipation.create(activity, member));
+
+            // when
+            AdminMemberSemesterActivityDetailResponse response = memberRecordService.getMemberSemesterActivityDetail(
+                    member.getId(), YearSemester.YEAR_SEMESTER_2026_1);
+
+            // then
+            assertEquals(member.getId(), response.memberId());
+            assertEquals(YearSemester.YEAR_SEMESTER_2026_1, response.yearSemester());
+            assertEquals(1, response.summary().studyParticipationCount());
+            assertEquals(1, response.summary().studyAttendanceCount());
+            assertEquals(1, response.summary().activityParticipationCount());
+
+            assertEquals(
+                    studyMember.getId(),
+                    response.studyParticipations().getFirst().studyMemberId());
+            assertEquals(
+                    studyAttendance.getId(),
+                    response.studyAttendances().getFirst().studyAttendanceId());
+            assertEquals(
+                    activityParticipation.getId(),
+                    response.activityParticipations().getFirst().activityParticipationId());
+        }
+
+        @Test
+        void 존재하지_않는_회원의_학기_활동상세_조회는_실패한다() {
+            // given
+            Long notExistingMemberId = 99_999_998L;
+
+            // when-then
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> memberRecordService.getMemberSemesterActivityDetail(
+                            notExistingMemberId, YearSemester.YEAR_SEMESTER_2026_1));
             assertEquals(ErrorCode.MEMBER_NOT_FOUND, exception.getErrorCode());
         }
     }

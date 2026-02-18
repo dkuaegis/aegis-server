@@ -3,6 +3,7 @@ package aegis.server.domain.study.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -46,4 +47,8 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
           AND s.yearSemester = :yearSemester
         """)
     List<Long> findStudyIdsByMemberIdAndRoleAndYearSemester(Long memberId, StudyRole role, YearSemester yearSemester);
+
+    @EntityGraph(attributePaths = "study")
+    List<StudyMember> findByMemberIdAndStudyYearSemesterOrderByCreatedAtDescIdDesc(
+            Long memberId, YearSemester yearSemester);
 }
