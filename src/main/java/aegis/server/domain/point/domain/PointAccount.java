@@ -56,6 +56,10 @@ public class PointAccount extends BaseEntity {
         this.balance = this.balance.subtract(amount);
     }
 
+    public void resetTotalEarned() {
+        this.totalEarned = BigDecimal.ZERO;
+    }
+
     private void assertPositiveAmount(BigDecimal amount) {
         if (amount.signum() <= 0) {
             throw new CustomException(ErrorCode.POINT_ACTION_AMOUNT_NOT_POSITIVE);

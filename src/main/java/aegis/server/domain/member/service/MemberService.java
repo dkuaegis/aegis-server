@@ -2,6 +2,7 @@ package aegis.server.domain.member.service;
 
 import java.util.List;
 
+import aegis.server.domain.point.domain.PointAccount;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.repository.PaymentRepository;
+import aegis.server.domain.point.repository.PointAccountRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
@@ -32,6 +34,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final PaymentRepository paymentRepository;
+    private final PointAccountRepository pointAccountRepository;
 
     public List<AdminMemberSummaryResponse> findAllMembersForAdmin() {
         return memberRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream()
@@ -90,6 +93,9 @@ public class MemberService {
                 unpaidMembers.stream().map(Member::getStudentId).toList();
 
         unpaidMembers.forEach(Member::demoteToGuest);
+        pointAccountRepository
+                .findAllById(unpaidMembers.stream().map(Member::getId).toList())
+                .forEach(PointAccount::resetTotalEarned);
 
         return MemberDemoteResponse.of(demotedMemberStudentIds);
     }

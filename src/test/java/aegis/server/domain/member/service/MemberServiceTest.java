@@ -1,5 +1,6 @@
 package aegis.server.domain.member.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -18,6 +19,8 @@ import aegis.server.domain.member.dto.response.PersonalInfoResponse;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.repository.PaymentRepository;
+import aegis.server.domain.point.domain.PointAccount;
+import aegis.server.domain.point.repository.PointAccountRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
@@ -37,6 +40,9 @@ class MemberServiceTest extends IntegrationTest {
 
     @Autowired
     PaymentRepository paymentRepository;
+
+    @Autowired
+    PointAccountRepository pointAccountRepository;
 
     @Nested
     class 관리자_회원_목록_조회 {
@@ -210,6 +216,23 @@ class MemberServiceTest extends IntegrationTest {
             Member updatedMember = memberRepository.findById(userMember.getId()).get();
             assertTrue(updatedMember.isGuest());
             assertTrue(response.demotedMemberStudentIds().contains(userMember.getStudentId()));
+        }
+
+        @Test
+        void 강등_시_누적_적립_포인트를_초기화한다() {
+            // given
+            Member userMember = createMember();
+            PointAccount pointAccount = createPointAccount(userMember);
+            createEarnPointTransaction(pointAccount, BigDecimal.valueOf(300), "테스트 적립");
+
+            // when
+            memberService.demoteMembersForCurrentSemester();
+
+            // then
+            PointAccount updatedPointAccount =
+                    pointAccountRepository.findById(userMember.getId()).orElseThrow();
+            assertEquals(BigDecimal.valueOf(300), updatedPointAccount.getBalance());
+            assertEquals(BigDecimal.ZERO, updatedPointAccount.getTotalEarned());
         }
 
         @Test
