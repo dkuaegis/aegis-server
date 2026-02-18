@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import jakarta.persistence.LockModeType;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -22,6 +23,12 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT m FROM Member m WHERE m.id = :memberId")
     Optional<Member> findByIdWithLock(Long memberId);
+
+    @Query("SELECT m FROM Member m "
+            + "WHERE LOWER(m.name) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+            + "OR LOWER(COALESCE(m.studentId, '')) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+            + "ORDER BY m.id ASC")
+    List<Member> searchByStudentIdOrName(String keyword, Pageable pageable);
 
     // 결제완료자 ID 목록이 비어 있는 경우를 위한 단순 조회
     List<Member> findAllByRoleNot(Role role);
