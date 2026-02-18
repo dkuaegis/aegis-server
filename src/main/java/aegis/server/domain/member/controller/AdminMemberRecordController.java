@@ -4,6 +4,7 @@ import java.util.List;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -54,12 +55,13 @@ public class AdminMemberRecordController {
             description = "관리자가 특정 회원의 학기별 기록 타임라인을 조회합니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "회원 기록 타임라인 조회 성공"),
+                @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
                 @ApiResponse(responseCode = "403", description = "관리자 권한 필요", content = @Content),
                 @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음", content = @Content)
             })
     @GetMapping("/{memberId}/records")
     public ResponseEntity<List<AdminMemberRecordTimelineResponse>> getMemberRecordTimeline(
-            @PathVariable Long memberId) {
+            @PathVariable @Positive Long memberId) {
         List<AdminMemberRecordTimelineResponse> response = memberRecordService.getMemberRecordTimeline(memberId);
         return ResponseEntity.ok(response);
     }
