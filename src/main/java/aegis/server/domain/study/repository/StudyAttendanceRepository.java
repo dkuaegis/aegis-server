@@ -2,9 +2,11 @@ package aegis.server.domain.study.repository;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.study.domain.StudyAttendance;
 
 public interface StudyAttendanceRepository extends JpaRepository<StudyAttendance, Long> {
@@ -18,4 +20,8 @@ public interface StudyAttendanceRepository extends JpaRepository<StudyAttendance
         WHERE ss.study.id = :studyId
         """)
     List<AttendanceMemberSessionPair> findMemberSessionPairsByStudyId(Long studyId);
+
+    @EntityGraph(attributePaths = {"studySession", "studySession.study"})
+    List<StudyAttendance> findByMemberIdAndStudySessionStudyYearSemesterOrderByCreatedAtDescIdDesc(
+            Long memberId, YearSemester yearSemester);
 }
