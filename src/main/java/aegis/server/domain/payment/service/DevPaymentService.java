@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import aegis.server.domain.common.domain.YearSemester;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
 import aegis.server.domain.coupon.repository.IssuedCouponRepository;
 import aegis.server.domain.member.domain.Member;
@@ -45,15 +46,16 @@ public class DevPaymentService {
 
     @Transactional
     public DevPaymentResponse createPayment(DevPaymentCreateRequest request, UserDetails userDetails) {
-        validateNoPendingPaymentInCurrentSemester(userDetails.getMemberId());
-        validateUsableCoupons(userDetails.getMemberId(), request.issuedCouponIds());
-
         Member member = memberRepository
-                .findById(userDetails.getMemberId())
+                .findByIdWithLock(userDetails.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
+        validateNoPaymentInYearSemester(userDetails.getMemberId(), request.yearSemester());
+        List<IssuedCoupon> issuedCoupons =
+                getUsableCouponsWithLock(userDetails.getMemberId(), request.issuedCouponIds());
+
         Payment payment = Payment.createForDev(member, request.status(), request.yearSemester());
-        applyCoupons(payment, request.issuedCouponIds());
+        applyCoupons(payment, issuedCoupons);
         paymentRepository.save(payment);
 
         if (payment.getFinalPrice().compareTo(BigDecimal.ZERO) == 0) {
@@ -67,18 +69,19 @@ public class DevPaymentService {
 
     @Transactional
     public DevPaymentResponse updatePayment(Long paymentId, DevPaymentUpdateRequest request, UserDetails userDetails) {
-        validateUsableCoupons(userDetails.getMemberId(), request.issuedCouponIds());
-
         Payment payment = paymentRepository
-                .findById(paymentId)
+                .findByIdWithLock(paymentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
         if (!payment.getMember().getId().equals(userDetails.getMemberId())) {
             throw new CustomException(ErrorCode.PAYMENT_ACCESS_DENIED);
         }
 
+        List<IssuedCoupon> issuedCoupons =
+                getUsableCouponsWithLock(userDetails.getMemberId(), request.issuedCouponIds());
+
         payment.updateForDev(request.status(), request.yearSemester());
-        applyCoupons(payment, request.issuedCouponIds());
+        applyCoupons(payment, issuedCoupons);
 
         if (payment.getFinalPrice().compareTo(BigDecimal.ZERO) == 0) {
             payment.completePayment();
@@ -105,22 +108,25 @@ public class DevPaymentService {
         paymentRepository.delete(payment);
     }
 
-    private void validateNoPendingPaymentInCurrentSemester(Long memberId) {
-        if (paymentRepository.existsByMemberIdAndCurrentYearSemesterAndStatusIsPending(memberId)) {
+    private void validateNoPaymentInYearSemester(Long memberId, YearSemester yearSemester) {
+        if (paymentRepository.existsByMemberIdAndYearSemester(memberId, yearSemester)) {
             throw new CustomException(ErrorCode.PAYMENT_ALREADY_EXISTS);
         }
     }
 
-    private void validateUsableCoupons(Long memberId, List<Long> issuedCouponIds) {
-        long validIssuedCouponCount = issuedCouponRepository.countValidByIdInAndMemberId(issuedCouponIds, memberId);
-        if (validIssuedCouponCount != issuedCouponIds.size()) {
+    private List<IssuedCoupon> getUsableCouponsWithLock(Long memberId, List<Long> issuedCouponIds) {
+        if (issuedCouponIds.isEmpty()) {
+            return List.of();
+        }
+        List<IssuedCoupon> issuedCoupons =
+                issuedCouponRepository.findByIdInAndMemberIdAndValidWithLock(issuedCouponIds, memberId);
+        if (issuedCoupons.size() != issuedCouponIds.size()) {
             throw new CustomException(ErrorCode.INVALID_ISSUED_COUPON_INCLUDED);
         }
+        return issuedCoupons;
     }
 
-    private void applyCoupons(Payment payment, List<Long> issuedCouponIds) {
-        List<IssuedCoupon> issuedCoupons = issuedCouponRepository.findByIdInAndMemberIdAndValid(
-                issuedCouponIds, payment.getMember().getId());
+    private void applyCoupons(Payment payment, List<IssuedCoupon> issuedCoupons) {
         payment.applyCoupons(issuedCoupons);
     }
 }

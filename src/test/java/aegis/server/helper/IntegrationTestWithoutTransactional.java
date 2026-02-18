@@ -16,9 +16,6 @@ import aegis.server.domain.member.domain.*;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.global.security.oidc.UserDetails;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-
 @SpringBootTest
 @ActiveProfiles("test")
 public class IntegrationTestWithoutTransactional {
@@ -48,9 +45,6 @@ public class IntegrationTestWithoutTransactional {
     void setUp() {
         databaseCleaner.clean();
         redisCleaner.clean();
-
-        doNothing().when(discordEventListener).handlePaymentCompletedEvent(any());
-        doNothing().when(discordEventListener).handleMismatchEvent(any());
     }
 
     protected Member createMember() {

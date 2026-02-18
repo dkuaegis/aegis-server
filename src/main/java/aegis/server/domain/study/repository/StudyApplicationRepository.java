@@ -28,8 +28,7 @@ public interface StudyApplicationRepository extends JpaRepository<StudyApplicati
 
     boolean existsByStudyAndMember(Study study, Member member);
 
-    @Query(
-            """
+    @Query("""
         SELECT s.id
         FROM StudyApplication sa
         JOIN sa.study s

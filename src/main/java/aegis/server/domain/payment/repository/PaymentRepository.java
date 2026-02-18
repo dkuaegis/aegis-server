@@ -4,7 +4,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.persistence.LockModeType;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 import aegis.server.domain.common.domain.YearSemester;
@@ -15,6 +20,10 @@ import aegis.server.domain.payment.domain.PaymentStatus;
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Payment p WHERE p.id = :paymentId")
+    Optional<Payment> findByIdWithLock(Long paymentId);
 
     @Query("SELECT p FROM Payment p JOIN FETCH p.member WHERE p.member = :member AND p.yearSemester = :yearSemester")
     Optional<Payment> findByMemberAndYearSemester(Member member, YearSemester yearSemester);
@@ -30,30 +39,30 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
         return findByMemberIdAndYearSemester(memberId, CURRENT_YEAR_SEMESTER);
     }
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(
             "SELECT p FROM Payment p WHERE p.member.id = :memberId AND p.yearSemester = :yearSemester AND p.status = :status")
-    Optional<Payment> findByMemberIdAndYearSemesterAndStatus(
+    Optional<Payment> findByMemberIdAndYearSemesterAndStatusWithLock(
             Long memberId, YearSemester yearSemester, PaymentStatus status);
 
-    default Optional<Payment> findByMemberIdAndCurrentYearSemesterAndStatusIsPending(Long memberId) {
-        return findByMemberIdAndYearSemesterAndStatus(memberId, CURRENT_YEAR_SEMESTER, PaymentStatus.PENDING);
+    default Optional<Payment> findByMemberIdAndCurrentYearSemesterAndStatusIsPendingWithLock(Long memberId) {
+        return findByMemberIdAndYearSemesterAndStatusWithLock(memberId, CURRENT_YEAR_SEMESTER, PaymentStatus.PENDING);
     }
 
-    @Query(
-            "SELECT COUNT(p) > 0 FROM Payment p WHERE p.member.id = :memberId AND p.yearSemester = :yearSemester AND p.status = :status")
-    boolean existsByMemberIdAndYearSemesterAndStatus(Long memberId, YearSemester yearSemester, PaymentStatus status);
+    boolean existsByMemberIdAndYearSemester(Long memberId, YearSemester yearSemester);
 
-    default boolean existsByMemberIdAndCurrentYearSemesterAndStatusIsPending(Long memberId) {
-        return existsByMemberIdAndYearSemesterAndStatus(memberId, CURRENT_YEAR_SEMESTER, PaymentStatus.PENDING);
+    default boolean existsByMemberIdAndCurrentYearSemester(Long memberId) {
+        return existsByMemberIdAndYearSemester(memberId, CURRENT_YEAR_SEMESTER);
     }
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(
             "SELECT p FROM Payment p WHERE p.member.name = :memberName AND p.finalPrice = :finalPrice AND p.yearSemester = :yearSemester AND p.status = :status")
-    Optional<Payment> findByMemberNameAndFinalPriceAndYearSemesterAndStatus(
+    Optional<Payment> findByMemberNameAndFinalPriceAndYearSemesterAndStatusWithLock(
             String memberName, BigDecimal finalPrice, YearSemester yearSemester, PaymentStatus status);
 
-    default Optional<Payment> findPendingPaymentForCurrentSemester(String memberName, BigDecimal finalPrice) {
-        return findByMemberNameAndFinalPriceAndYearSemesterAndStatus(
+    default Optional<Payment> findPendingPaymentForCurrentSemesterWithLock(String memberName, BigDecimal finalPrice) {
+        return findByMemberNameAndFinalPriceAndYearSemesterAndStatusWithLock(
                 memberName, finalPrice, CURRENT_YEAR_SEMESTER, PaymentStatus.PENDING);
     }
 
@@ -75,6 +84,10 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     }
 
     List<Payment> findAllByStatusAndYearSemester(PaymentStatus paymentStatus, YearSemester currentYearSemester);
+
+    @EntityGraph(attributePaths = "member")
+    List<Payment> findByStatusAndIdGreaterThanOrderByIdAsc(
+            PaymentStatus paymentStatus, Long paymentId, Pageable pageable);
 
     @Query(
             "SELECT p FROM Payment p JOIN FETCH p.member WHERE p.member.id = :memberId ORDER BY p.yearSemester DESC, p.createdAt DESC")

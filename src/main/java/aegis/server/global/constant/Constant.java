@@ -9,13 +9,14 @@ public class Constant {
 
     public static final BigDecimal CLUB_DUES = BigDecimal.valueOf(15000);
 
-    public static final YearSemester CURRENT_YEAR_SEMESTER = YearSemester.YEAR_SEMESTER_2025_2;
+    public static final YearSemester CURRENT_YEAR_SEMESTER = YearSemester.YEAR_SEMESTER_2026_1;
 
     public static final String PROD_SERVER_URL = "https://api.dkuaegis.org";
     public static final String PROD_JOIN_URL = "https://join.dkuaegis.org";
     public static final String PROD_STUDY_URL = "https://study.dkuaegis.org";
     public static final String PROD_MYPAGE_URL = "https://mypage.dkuaegis.org";
     public static final String PROD_ADMIN_URL = "https://admin.dkuaegis.org";
+    public static final String PROD_HOME_URL = "https://homepage.dkuaegis.org";
 
     public static final String STAGING_SERVER_URL = "https://staging-api.dkuaegis.org";
     public static final String STAGING_JOIN_URL = "https://staging-join.dkuaegis.org";
@@ -40,6 +41,7 @@ public class Constant {
             PROD_STUDY_URL,
             PROD_MYPAGE_URL,
             PROD_ADMIN_URL,
+            PROD_HOME_URL,
             STAGING_SERVER_URL,
             STAGING_JOIN_URL,
             STAGING_STUDY_URL,

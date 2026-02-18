@@ -17,6 +17,7 @@ import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
 
+import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -133,7 +134,7 @@ class SurveyServiceTest extends IntegrationTest {
 
             assertEquals(newSurveyRequest.acquisitionType(), newSurvey.getAcquisitionType());
             assertEquals(newSurveyRequest.joinReason(), newSurvey.getJoinReason());
-            assertEquals(YearSemester.YEAR_SEMESTER_2025_2, newSurvey.getYearSemester());
+            assertEquals(CURRENT_YEAR_SEMESTER, newSurvey.getYearSemester());
         }
 
         @Test

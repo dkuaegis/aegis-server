@@ -30,6 +30,7 @@ import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTestWithoutTransactional;
 
 import static aegis.server.global.constant.Constant.CLUB_DUES;
+import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -202,6 +203,24 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
         }
 
         @Test
+        void 이미_완료된_결제가_존재하면_실패한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Coupon coupon = Coupon.create("전액 쿠폰", CLUB_DUES);
+            couponRepository.save(coupon);
+            IssuedCoupon issuedCoupon = createIssuedCoupon(member, coupon);
+            PaymentRequest request = new PaymentRequest(List.of(issuedCoupon.getId()));
+            paymentService.createPayment(request, userDetails);
+
+            // when-then
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> paymentService.createPayment(new PaymentRequest(List.of()), userDetails));
+            assertEquals(ErrorCode.PAYMENT_ALREADY_EXISTS, exception.getErrorCode());
+        }
+
+        @Test
         void 이전_학기_결제_완료_후_새_학기_결제가_성공한다() {
             // given
             Member member = createMember();
@@ -223,7 +242,7 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             // then
             Payment newPayment =
                     paymentRepository.findByMemberInCurrentYearSemester(member).get();
-            assertEquals(YearSemester.YEAR_SEMESTER_2025_2, newPayment.getYearSemester());
+            assertEquals(CURRENT_YEAR_SEMESTER, newPayment.getYearSemester());
             assertEquals(PaymentStatus.PENDING, newPayment.getStatus());
         }
 
@@ -248,7 +267,7 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             // then
             Payment newPayment =
                     paymentRepository.findByMemberInCurrentYearSemester(member).get();
-            assertEquals(YearSemester.YEAR_SEMESTER_2025_2, newPayment.getYearSemester());
+            assertEquals(CURRENT_YEAR_SEMESTER, newPayment.getYearSemester());
             assertEquals(PaymentStatus.PENDING, newPayment.getStatus());
         }
     }

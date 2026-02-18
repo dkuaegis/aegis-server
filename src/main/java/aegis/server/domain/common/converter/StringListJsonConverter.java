@@ -6,8 +6,8 @@ import java.util.List;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 @Converter
 public class StringListJsonConverter implements AttributeConverter<List<String>, String> {
@@ -21,7 +21,7 @@ public class StringListJsonConverter implements AttributeConverter<List<String>,
         }
         try {
             return OBJECT_MAPPER.writeValueAsString(attribute);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Failed to serialize List<String> to JSON", e);
         }
     }
@@ -34,7 +34,7 @@ public class StringListJsonConverter implements AttributeConverter<List<String>,
         try {
             return OBJECT_MAPPER.readValue(
                     dbData, OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, String.class));
-        } catch (Exception e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Failed to deserialize JSON to List<String>", e);
         }
     }

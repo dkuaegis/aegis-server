@@ -4,6 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.databind.exc.MismatchedInputException;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -120,8 +123,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         Throwable cause = e.getCause();
 
         // 1. JSON 형식 오류
-        if (cause instanceof com.fasterxml.jackson.core.JsonParseException
-                || cause instanceof com.fasterxml.jackson.databind.exc.MismatchedInputException) {
+        if (cause instanceof StreamReadException || cause instanceof MismatchedInputException) {
             return ResponseEntity.status(ErrorCode.INVALID_JSON.getHttpStatus())
                     .body(ErrorResponse.of(ErrorCode.INVALID_JSON));
         }

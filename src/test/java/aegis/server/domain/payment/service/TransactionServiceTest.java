@@ -53,15 +53,13 @@ public class TransactionServiceTest extends IntegrationTestWithoutTransactional 
     @Autowired
     IssuedCouponRepository issuedCouponRepository;
 
-    private final String DEPOSIT_TRANSACTION_LOG_FORMAT =
-            """
+    private final String DEPOSIT_TRANSACTION_LOG_FORMAT = """
             [입금] %s원 %s
             982-******-01-017
             01/09 12:25 / 잔액 1000000원
             """;
 
-    private final String WITHDRAWAL_TRANSACTION_LOG_FORMAT =
-            """
+    private final String WITHDRAWAL_TRANSACTION_LOG_FORMAT = """
             [출금] %s원 %s
             982-******-01-017
             01/09 12:25 / 잔액 1000000원

@@ -58,7 +58,8 @@ class PointServiceTest extends IntegrationTest {
             // then
             assertEquals(BigDecimal.valueOf(300), response.balance()); // 500 - 200 = 300
             assertEquals(2, response.history().size());
-            assertEquals(PointTransactionType.SPEND, response.history().get(0).transactionType());
+            assertEquals(
+                    PointTransactionType.SPEND, response.history().getFirst().transactionType());
             assertEquals(BigDecimal.valueOf(200), response.history().get(0).amount());
             assertEquals("테스트 사용", response.history().get(0).reason());
             assertEquals(PointTransactionType.EARN, response.history().get(1).transactionType());
@@ -186,8 +187,8 @@ class PointServiceTest extends IntegrationTest {
             assertEquals(10, response.top10().size());
 
             // 1위 검증
-            assertEquals(1L, response.top10().get(0).rank());
-            assertEquals(BigDecimal.valueOf(1000), response.top10().get(0).totalEarnedPoints());
+            assertEquals(1L, response.top10().getFirst().rank());
+            assertEquals(BigDecimal.valueOf(1000), response.top10().getFirst().totalEarnedPoints());
 
             // 동점자들은 모두 2위 (1명이 1위이므로)
             long tieRank = 2L;
@@ -421,7 +422,7 @@ class PointServiceTest extends IntegrationTest {
                 assertFalse(exists);
             }
             // top1은 USER 중 최고 점수(500)여야 함
-            assertEquals(BigDecimal.valueOf(500), response.top10().get(0).totalEarnedPoints());
+            assertEquals(BigDecimal.valueOf(500), response.top10().getFirst().totalEarnedPoints());
         }
     }
 }

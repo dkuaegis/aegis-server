@@ -20,7 +20,9 @@ public record StudyCreateUpdateRequest(
         StudyLevel level,
         @Size(max = 1000) String description,
         StudyRecruitmentMethod recruitmentMethod,
+
         @Schema(description = "스터디 정원 (0=무제한), 최대 100") @Min(0) @Max(100) int maxParticipants,
+
         @Size(max = 100) String schedule,
         @NotNull List<@NotBlank String> curricula,
         @NotNull List<@NotBlank String> qualifications) {}

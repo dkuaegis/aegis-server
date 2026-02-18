@@ -60,7 +60,7 @@ class CouponCodeUseConcurrencyTest extends IntegrationTestWithoutTransactional {
 
         // given
         Coupon coupon = createCoupon();
-        CouponCodeCreateRequest codeCreateRequest = new CouponCodeCreateRequest(coupon.getId());
+        CouponCodeCreateRequest codeCreateRequest = new CouponCodeCreateRequest(coupon.getId(), null);
         CouponCodeResponse codeResponse = couponService.createCouponCode(codeCreateRequest);
         String couponCode = codeResponse.code();
 

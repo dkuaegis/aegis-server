@@ -17,8 +17,7 @@ public class TransactionTrackInterceptor implements HandlerInterceptor {
     private String apiKey;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-            throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String providedApiKey = request.getHeader(API_KEY_HEADER);
 
         if (providedApiKey == null || !providedApiKey.equals(apiKey)) {

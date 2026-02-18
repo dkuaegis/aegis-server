@@ -33,12 +33,20 @@ public class CouponCode extends BaseEntity {
     @Column(unique = true)
     private String code;
 
+    @Column(length = 255)
+    private String description;
+
     private Boolean isValid;
 
     private LocalDateTime usedAt;
 
-    public static CouponCode of(Coupon coupon, String code) {
-        return CouponCode.builder().coupon(coupon).code(code).isValid(true).build();
+    public static CouponCode of(Coupon coupon, String code, String description) {
+        return CouponCode.builder()
+                .coupon(coupon)
+                .code(code)
+                .description(description)
+                .isValid(true)
+                .build();
     }
 
     public void use(IssuedCoupon issuedCoupon) {

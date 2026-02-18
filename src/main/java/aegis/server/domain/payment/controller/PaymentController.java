@@ -37,7 +37,7 @@ public class PaymentController {
                 @ApiResponse(responseCode = "400", description = "쿠폰이 해당 사용자에게 발급되지 않음", content = @Content),
                 @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
                 @ApiResponse(responseCode = "404", description = "학생 정보를 찾을 수 없음", content = @Content),
-                @ApiResponse(responseCode = "409", description = "이미 PENDING 상태의 결제가 존재함", content = @Content)
+                @ApiResponse(responseCode = "409", description = "이미 해당 학기의 결제가 존재함", content = @Content)
             })
     @PostMapping
     public ResponseEntity<PaymentResponse> createPayment(

@@ -76,7 +76,7 @@ class ActivityParticipationServiceTest extends IntegrationTest {
                     pointTransactionRepository.findAllByPointAccountId(account.getId());
             assertFalse(pointTransactions.isEmpty());
 
-            PointTransaction pointTransaction = pointTransactions.get(0);
+            PointTransaction pointTransaction = pointTransactions.getFirst();
             assertEquals(activity.getPointAmount(), pointTransaction.getAmount());
             assertEquals(activity.getName() + " 활동 참여", pointTransaction.getReason());
             assertEquals(account.getId(), pointTransaction.getPointAccount().getId());

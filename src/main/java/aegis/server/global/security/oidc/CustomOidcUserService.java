@@ -3,6 +3,7 @@ package aegis.server.global.security.oidc;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -20,10 +21,11 @@ import aegis.server.global.exception.ErrorCode;
 
 @Service
 @RequiredArgsConstructor
-public class CustomOidcUserService extends OidcUserService {
+public class CustomOidcUserService implements OAuth2UserService<OidcUserRequest, OidcUser> {
 
     private final MemberRepository memberRepository;
     private final PointAccountRepository pointAccountRepository;
+    private final OidcUserService delegate = new OidcUserService();
 
     @Value("${email-restriction.enabled}")
     private boolean emailRestrictionEnabled;
@@ -34,7 +36,7 @@ public class CustomOidcUserService extends OidcUserService {
     @Override
     @Transactional
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
-        OidcUser oidcUser = super.loadUser(userRequest);
+        OidcUser oidcUser = delegate.loadUser(userRequest);
 
         Member member = findOrCreateMember(oidcUser);
         createPointAccountIfNotExists(member);

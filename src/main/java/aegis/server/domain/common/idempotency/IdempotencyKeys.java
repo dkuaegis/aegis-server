@@ -34,6 +34,18 @@ public final class IdempotencyKeys {
         return format("ipk:v1:point:earn:activity:%d:member:%d", activityId, memberId);
     }
 
+    public static String forAdminManualGrant(String requestId, Long memberId) {
+        requireText(requestId, "requestId");
+        requirePositive(memberId, "memberId");
+        return format("ipk:v1:point:earn:admin-manual:%s:member:%d", requestId, memberId);
+    }
+
+    public static String forAdminBatchGrant(String requestId, Long memberId) {
+        requireText(requestId, "requestId");
+        requirePositive(memberId, "memberId");
+        return format("ipk:v1:point:earn:admin-batch:%s:member:%d", requestId, memberId);
+    }
+
     private static String format(String pattern, Object... args) {
         return String.format(pattern, args).toLowerCase();
     }
@@ -41,6 +53,12 @@ public final class IdempotencyKeys {
     private static void requirePositive(Long v, String name) {
         if (v == null || v <= 0) {
             throw new IllegalArgumentException(name + " must be positive");
+        }
+    }
+
+    private static void requireText(String v, String name) {
+        if (v == null || v.isBlank()) {
+            throw new IllegalArgumentException(name + " must not be blank");
         }
     }
 }

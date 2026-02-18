@@ -17,11 +17,12 @@ spring:
   jpa:
     open-in-view: false
   session:
-    redis:
-      namespace: aegis
-      flush-mode: on_save
-      save-mode: always
-      repository-type: indexed
+    data:
+      redis:
+        namespace: aegis
+        flush-mode: on_save
+        save-mode: always
+        repository-type: indexed
     timeout: ${SESSION_TIMEOUT}
 
 management:
@@ -59,11 +60,6 @@ payment:
 time:
   zone: Asia/Seoul
 
-study:
-  enroll-window:
-    open-at: ${STUDY_ENROLL_OPEN_AT:}
-    close-at: ${STUDY_ENROLL_CLOSE_AT:}
-
 logging:
   level:
     org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport: WARN
@@ -75,7 +71,6 @@ discord:
   token: ${DISCORD_BOT_TOKEN}
   guild-id: ${DISCORD_GUILD_ID}
   alarm-channel-id: ${DISCORD_ALARM_CHANNEL_ID}
-  complete-role-id: ${DISCORD_COMPLETE_ROLE_ID}
 
 google:
   credentials:

@@ -33,7 +33,7 @@ public class GoogleSheetsService {
     @Value("${google.spreadsheets.registration.id}")
     private String registrationSpreadsheetId;
 
-    private static final String REGISTRATION_SHEET_RANGE = "database!A2:O";
+    private static final String REGISTRATION_SHEET_RANGE = "database!A2:L";
 
     @Value("${google.spreadsheets.pointshop.id}")
     private String pointShopDrawSpreadsheetId;
@@ -52,7 +52,6 @@ public class GoogleSheetsService {
                 member.getDepartment(),
                 member.getGrade(),
                 member.getPhoneNumber(),
-                member.getDiscordId(),
                 member.getEmail(),
                 member.getBirthdate(),
                 member.getGender(),
