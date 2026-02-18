@@ -21,9 +21,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final LoginUserArgumentResolver loginUserArgumentResolver;
     private final TransactionTrackInterceptor transactionTrackInterceptor;
-    private final StudyEnrollWindowInterceptor studyEnrollWindowInterceptor;
     private final SignupGuardInterceptor signupGuardInterceptor;
     private final StudyCreationGuardInterceptor studyCreationGuardInterceptor;
+    private final StudyEnrollWindowInterceptor studyEnrollWindowInterceptor;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
@@ -33,8 +33,8 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(transactionTrackInterceptor).addPathPatterns("/internal/transaction");
-        registry.addInterceptor(studyEnrollWindowInterceptor).addPathPatterns("/studies/*/enrollment");
-        registry.addInterceptor(studyCreationGuardInterceptor).addPathPatterns("/studies");
         registry.addInterceptor(signupGuardInterceptor).addPathPatterns("/members/**", "/survey/**", "/payments/**");
+        registry.addInterceptor(studyCreationGuardInterceptor).addPathPatterns("/studies");
+        registry.addInterceptor(studyEnrollWindowInterceptor).addPathPatterns("/studies/*/enrollment");
     }
 }
