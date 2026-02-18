@@ -16,7 +16,7 @@ public class Constant {
     public static final String PROD_STUDY_URL = "https://study.dkuaegis.org";
     public static final String PROD_MYPAGE_URL = "https://mypage.dkuaegis.org";
     public static final String PROD_ADMIN_URL = "https://admin.dkuaegis.org";
-    public static final String PROD_HOME_URL = "https://homepage.dkuaegis.org";
+    public static final String PROD_HOME_URL = "https://dkuaegis.org";
 
     public static final String STAGING_SERVER_URL = "https://staging-api.dkuaegis.org";
     public static final String STAGING_JOIN_URL = "https://staging-join.dkuaegis.org";
