@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import jakarta.persistence.LockModeType;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -83,8 +85,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     List<Payment> findAllByStatusAndYearSemester(PaymentStatus paymentStatus, YearSemester currentYearSemester);
 
-    @Query("SELECT p FROM Payment p JOIN FETCH p.member WHERE p.status = :paymentStatus")
-    List<Payment> findAllByStatusFetchMember(PaymentStatus paymentStatus);
+    @EntityGraph(attributePaths = "member")
+    List<Payment> findByStatusAndIdGreaterThanOrderByIdAsc(
+            PaymentStatus paymentStatus, Long paymentId, Pageable pageable);
 
     @Query(
             "SELECT p FROM Payment p JOIN FETCH p.member WHERE p.member.id = :memberId ORDER BY p.yearSemester DESC, p.createdAt DESC")

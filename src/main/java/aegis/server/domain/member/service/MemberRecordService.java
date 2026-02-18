@@ -30,6 +30,7 @@ import aegis.server.global.exception.ErrorCode;
 @Transactional(readOnly = true)
 public class MemberRecordService {
 
+    private static final int BACKFILL_CHUNK_SIZE = 500;
     private static final int MAX_PAGE_SIZE = 100;
 
     private final MemberRecordRepository memberRecordRepository;
@@ -53,26 +54,36 @@ public class MemberRecordService {
 
     @Transactional
     public MemberRecordBackfillResponse backfillFromCompletedPayments() {
-        List<Payment> completedPayments = paymentRepository.findAllByStatusFetchMember(PaymentStatus.COMPLETED);
-
+        long totalCompletedPayments = 0L;
         long createdRecords = 0L;
         long skippedRecords = 0L;
+        long lastPaymentId = 0L;
 
-        for (Payment completedPayment : completedPayments) {
-            boolean created = createMemberRecordIfAbsent(
-                    completedPayment.getMember(),
-                    completedPayment.getYearSemester(),
-                    MemberRecordSource.BACKFILL_PAYMENT,
-                    completedPayment.getId(),
-                    completedPayment.getUpdatedAt());
-            if (created) {
-                createdRecords++;
-            } else {
-                skippedRecords++;
+        while (true) {
+            List<Payment> completedPayments = paymentRepository.findByStatusAndIdGreaterThanOrderByIdAsc(
+                    PaymentStatus.COMPLETED, lastPaymentId, PageRequest.of(0, BACKFILL_CHUNK_SIZE));
+            if (completedPayments.isEmpty()) {
+                break;
+            }
+
+            for (Payment completedPayment : completedPayments) {
+                totalCompletedPayments++;
+                boolean created = createMemberRecordIfAbsent(
+                        completedPayment.getMember(),
+                        completedPayment.getYearSemester(),
+                        MemberRecordSource.BACKFILL_PAYMENT,
+                        completedPayment.getId(),
+                        completedPayment.getUpdatedAt());
+                if (created) {
+                    createdRecords++;
+                } else {
+                    skippedRecords++;
+                }
+                lastPaymentId = completedPayment.getId();
             }
         }
 
-        return MemberRecordBackfillResponse.of(completedPayments.size(), createdRecords, skippedRecords);
+        return MemberRecordBackfillResponse.of(totalCompletedPayments, createdRecords, skippedRecords);
     }
 
     @Transactional
