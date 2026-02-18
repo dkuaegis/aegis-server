@@ -3,7 +3,6 @@ package aegis.server.domain.member.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -36,6 +35,7 @@ public class MemberRecordService {
     private final MemberRecordRepository memberRecordRepository;
     private final MemberRepository memberRepository;
     private final PaymentRepository paymentRepository;
+    private final MemberRecordCreator memberRecordCreator;
 
     public AdminMemberRecordPageResponse getMemberRecordsByYearSemester(YearSemester yearSemester, int page, int size) {
         int normalizedSize = Math.min(size, MAX_PAGE_SIZE);
@@ -99,19 +99,7 @@ public class MemberRecordService {
             MemberRecordSource recordSource,
             Long paymentId,
             LocalDateTime paymentCompletedAt) {
-        if (memberRecordRepository.existsByMemberIdAndYearSemester(member.getId(), yearSemester)) {
-            return false;
-        }
-
-        MemberRecord memberRecord =
-                MemberRecord.create(member, yearSemester, recordSource, paymentId, paymentCompletedAt);
-
-        try {
-            memberRecordRepository.save(memberRecord);
-            return true;
-        } catch (DataIntegrityViolationException e) {
-            return false;
-        }
+        return memberRecordCreator.createIfAbsent(member, yearSemester, recordSource, paymentId, paymentCompletedAt);
     }
 
     private void validateMemberExists(Long memberId) {
