@@ -1,5 +1,6 @@
 package aegis.server.domain.member.service;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +80,9 @@ class MemberRecordServiceTest extends IntegrationTestWithoutTransactional {
             assertEquals(member.getGrade(), records.getFirst().getSnapshotGrade());
             assertEquals(member.getRole(), records.getFirst().getSnapshotRole());
             assertEquals(payment.getId(), records.getFirst().getPaymentId());
-            assertEquals(payment.getUpdatedAt(), records.getFirst().getPaymentCompletedAt());
+            assertEquals(
+                    payment.getUpdatedAt().truncatedTo(ChronoUnit.MICROS),
+                    records.getFirst().getPaymentCompletedAt());
         }
     }
 
