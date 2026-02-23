@@ -2,7 +2,6 @@ package aegis.server.domain.member.service;
 
 import java.util.List;
 
-import aegis.server.domain.point.domain.PointAccount;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +19,7 @@ import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.repository.PaymentRepository;
+import aegis.server.domain.point.domain.PointAccount;
 import aegis.server.domain.point.repository.PointAccountRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
