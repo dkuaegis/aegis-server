@@ -15,7 +15,6 @@ import aegis.server.domain.coupon.repository.IssuedCouponRepository;
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.Payment;
-import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
 import aegis.server.domain.payment.dto.internal.PaymentInfo;
 import aegis.server.domain.payment.dto.request.PaymentRequest;
@@ -41,14 +40,13 @@ public class PaymentService {
 
     public PaymentStatusResponse checkPaymentStatus(UserDetails userDetails) {
         if (userDetails.getEmail().equals(adminEmail)) {
-            return new PaymentStatusResponse(PaymentStatus.COMPLETED, BigDecimal.ZERO);
+            return PaymentStatusResponse.completed();
         }
 
-        Payment payment = paymentRepository
+        return paymentRepository
                 .findByMemberIdInCurrentYearSemester(userDetails.getMemberId())
-                .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
-
-        return PaymentStatusResponse.from(payment);
+                .map(PaymentStatusResponse::from)
+                .orElseGet(PaymentStatusResponse::notCreated);
     }
 
     @Transactional
