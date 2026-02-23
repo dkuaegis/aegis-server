@@ -65,11 +65,10 @@ public class PaymentController {
 
     @Operation(
             summary = "결제 상태 조회",
-            description = "로그인한 사용자의 결제 상태를 조회합니다.",
+            description = "로그인한 사용자의 결제 상태를 조회합니다. 결제가 없을 경우 NOT_CREATED 상태를 반환합니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "결제 상태 조회 성공"),
-                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content),
-                @ApiResponse(responseCode = "404", description = "사용자 정보를 찾을 수 없음", content = @Content)
+                @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content)
             })
     @GetMapping("/status")
     public ResponseEntity<PaymentStatusResponse> checkPaymentStatus(

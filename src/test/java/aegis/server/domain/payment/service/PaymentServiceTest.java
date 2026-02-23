@@ -21,6 +21,7 @@ import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.payment.domain.Payment;
 import aegis.server.domain.payment.domain.PaymentStatus;
 import aegis.server.domain.payment.dto.request.PaymentRequest;
+import aegis.server.domain.payment.dto.response.PaymentCheckStatus;
 import aegis.server.domain.payment.dto.response.PaymentResponse;
 import aegis.server.domain.payment.dto.response.PaymentStatusResponse;
 import aegis.server.domain.payment.repository.PaymentRepository;
@@ -428,7 +429,7 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             PaymentStatusResponse response = paymentService.checkPaymentStatus(userDetails);
 
             // then
-            assertEquals(PaymentStatus.PENDING, response.status());
+            assertEquals(PaymentCheckStatus.PENDING, response.status());
             assertEquals(CLUB_DUES, response.finalPrice());
         }
 
@@ -447,7 +448,7 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             PaymentStatusResponse response = paymentService.checkPaymentStatus(userDetails);
 
             // then
-            assertEquals(PaymentStatus.COMPLETED, response.status());
+            assertEquals(PaymentCheckStatus.COMPLETED, response.status());
             assertEquals(BigDecimal.ZERO, response.finalPrice());
         }
 
@@ -465,21 +466,23 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             PaymentStatusResponse response = paymentService.checkPaymentStatus(userDetails);
 
             // then
-            assertEquals(PaymentStatus.PENDING, response.status());
+            assertEquals(PaymentCheckStatus.PENDING, response.status());
             assertEquals(CLUB_DUES.subtract(coupon.getDiscountAmount()), response.finalPrice());
         }
 
         @Test
-        void 결제정보가_존재하지_않으면_실패한다() {
+        void 결제정보가_존재하지_않으면_NOT_CREATED를_반환한다() {
             // given
             Member member = createMember();
             UserDetails userDetails = createUserDetails(member);
             // 결제정보를 생성하지 않음
 
-            // when-then
-            CustomException exception =
-                    assertThrows(CustomException.class, () -> paymentService.checkPaymentStatus(userDetails));
-            assertEquals(ErrorCode.PAYMENT_NOT_FOUND, exception.getErrorCode());
+            // when
+            PaymentStatusResponse response = paymentService.checkPaymentStatus(userDetails);
+
+            // then
+            assertEquals(PaymentCheckStatus.NOT_CREATED, response.status());
+            assertEquals(BigDecimal.ZERO, response.finalPrice());
         }
     }
 
