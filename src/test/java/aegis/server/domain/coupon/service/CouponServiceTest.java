@@ -16,7 +16,10 @@ import aegis.server.domain.coupon.dto.request.CouponCodeUseRequest;
 import aegis.server.domain.coupon.dto.request.CouponCreateRequest;
 import aegis.server.domain.coupon.dto.request.CouponIssueRequest;
 import aegis.server.domain.coupon.dto.request.CouponNameUpdateRequest;
+import aegis.server.domain.coupon.dto.response.AdminCouponCodePageResponse;
+import aegis.server.domain.coupon.dto.response.AdminCouponPageResponse;
 import aegis.server.domain.coupon.dto.response.AdminCouponResponse;
+import aegis.server.domain.coupon.dto.response.AdminIssuedCouponPageResponse;
 import aegis.server.domain.coupon.dto.response.CouponCodeResponse;
 import aegis.server.domain.coupon.dto.response.CouponResponse;
 import aegis.server.domain.coupon.dto.response.IssuedCouponResponse;
@@ -78,6 +81,137 @@ class CouponServiceTest extends IntegrationTest {
 
             // then
             assertEquals(0, responses.size());
+        }
+    }
+
+    @Nested
+    class 관리자_쿠폰_페이지_조회 {
+        @Test
+        void 기본값은_id_오름차순_페이지네이션이다() {
+            // given
+            Coupon coupon1 = createCoupon("가쿠폰");
+            createCoupon("나쿠폰");
+
+            // when
+            AdminCouponPageResponse response = couponService.getAdminCouponsPage(0, 1, null, null);
+
+            // then
+            assertEquals(2, response.totalElements());
+            assertEquals(1, response.content().size());
+            assertTrue(response.hasNext());
+            assertEquals(coupon1.getId(), response.content().getFirst().couponId());
+        }
+
+        @Test
+        void 키워드로_쿠폰명을_검색할_수_있다() {
+            // given
+            createCoupon("신입생 환영 쿠폰");
+            createCoupon("운영진 전용 쿠폰");
+
+            // when
+            AdminCouponPageResponse response = couponService.getAdminCouponsPage(0, 50, "환영", "id,asc");
+
+            // then
+            assertEquals(1, response.totalElements());
+            assertEquals("신입생 환영 쿠폰", response.content().getFirst().couponName());
+        }
+
+        @Test
+        void 지원하지_않는_sort는_실패한다() {
+            // when
+            CustomException exception = assertThrows(
+                    CustomException.class, () -> couponService.getAdminCouponsPage(0, 50, null, "unknown,asc"));
+
+            // then
+            assertEquals(ErrorCode.BAD_REQUEST, exception.getErrorCode());
+        }
+    }
+
+    @Nested
+    class 관리자_쿠폰코드_페이지_조회 {
+        @Test
+        void 키워드로_코드와_설명을_검색할_수_있다() {
+            // given
+            Coupon coupon = createCoupon("코드용 쿠폰");
+            CouponCode matched = CouponCode.of(coupon, "WELCOME01", "신입생 OT 배포");
+            CouponCode other = CouponCode.of(coupon, "STAFF01", "운영진 지급");
+            couponCodeRepository.save(matched);
+            couponCodeRepository.save(other);
+
+            // when
+            AdminCouponCodePageResponse response = couponService.getAdminCouponCodesPage(0, 50, "ot", null);
+
+            // then
+            assertEquals(1, response.totalElements());
+            assertEquals(matched.getId(), response.content().getFirst().codeCouponId());
+        }
+
+        @Test
+        void 지원하지_않는_sort는_실패한다() {
+            // when
+            CustomException exception = assertThrows(
+                    CustomException.class, () -> couponService.getAdminCouponCodesPage(0, 50, null, "nope,desc"));
+
+            // then
+            assertEquals(ErrorCode.BAD_REQUEST, exception.getErrorCode());
+        }
+    }
+
+    @Nested
+    class 관리자_발급쿠폰_페이지_조회 {
+        @Test
+        void 키워드로_회원정보를_검색할_수_있다() {
+            // given
+            Coupon coupon = createCoupon("발급용 쿠폰");
+            Member memberA = createMember();
+            memberA.updateName("홍길동");
+            memberA.updatePersonalInfo(
+                    "010-0000-0001", "32009991", Department.SW융합대학_컴퓨터공학과, Grade.THREE, "010101", Gender.MALE);
+            Member memberB = createMember();
+            memberB.updateName("김철수");
+            memberB.updatePersonalInfo(
+                    "010-0000-0002", "32009992", Department.SW융합대학_컴퓨터공학과, Grade.THREE, "010101", Gender.MALE);
+            createIssuedCoupon(coupon, memberA);
+            createIssuedCoupon(coupon, memberB);
+
+            // when
+            AdminIssuedCouponPageResponse response = couponService.getAdminIssuedCouponsPage(0, 50, "32009991", null);
+
+            // then
+            assertEquals(1, response.totalElements());
+            assertEquals(memberA.getId(), response.content().getFirst().memberId());
+        }
+
+        @Test
+        void 확장_필터_구조로_coupon_member_isValid를_적용할_수_있다() {
+            // given
+            Coupon couponA = createCoupon("필터쿠폰A");
+            Coupon couponB = createCoupon("필터쿠폰B");
+            Member memberA = createMember();
+            Member memberB = createMember();
+
+            IssuedCoupon invalidIssued = createIssuedCoupon(couponA, memberA);
+            IssuedCoupon validIssued = createIssuedCoupon(couponB, memberB);
+            Payment payment = paymentRepository.save(Payment.of(memberA));
+            invalidIssued.use(payment);
+
+            // when
+            AdminIssuedCouponPageResponse response = couponService.getAdminIssuedCouponsPage(
+                    0, 50, null, couponB.getId(), memberB.getId(), true, "id,asc");
+
+            // then
+            assertEquals(1, response.totalElements());
+            assertEquals(validIssued.getId(), response.content().getFirst().issuedCouponId());
+        }
+
+        @Test
+        void 지원하지_않는_sort는_실패한다() {
+            // when
+            CustomException exception = assertThrows(
+                    CustomException.class, () -> couponService.getAdminIssuedCouponsPage(0, 50, null, "invalid,asc"));
+
+            // then
+            assertEquals(ErrorCode.BAD_REQUEST, exception.getErrorCode());
         }
     }
 

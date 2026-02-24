@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import aegis.server.domain.activity.domain.Activity;
 import aegis.server.domain.activity.dto.request.ActivityCreateUpdateRequest;
 import aegis.server.domain.activity.dto.response.ActivityResponse;
+import aegis.server.domain.activity.dto.response.AdminActivityPageResponse;
 import aegis.server.domain.activity.repository.ActivityRepository;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
@@ -89,6 +90,53 @@ class ActivityServiceTest extends IntegrationTest {
             assertTrue(responses.stream()
                     .anyMatch(r ->
                             r.name().equals(ACTIVITY_NAME_2) && r.pointAmount().equals(POINT_20)));
+        }
+    }
+
+    @Nested
+    class 관리자_활동_페이지_조회 {
+        @Test
+        void 기본값은_id_오름차순_페이지네이션이다() {
+            // given
+            Activity first = createActivity(ACTIVITY_NAME_1, POINT_10);
+            createActivity(ACTIVITY_NAME_2, POINT_20);
+
+            // when
+            AdminActivityPageResponse response = activityService.searchActivitiesForAdmin(0, 1, null, null);
+
+            // then
+            assertEquals(2, response.totalElements());
+            assertEquals(1, response.content().size());
+            assertTrue(response.hasNext());
+            assertEquals(first.getId(), response.content().getFirst().activityId());
+        }
+
+        @Test
+        void 키워드로_이름과_금액을_검색할_수_있다() {
+            // given
+            createActivity("신입생 오리엔테이션", POINT_10);
+            createActivity("운영 회의", BigDecimal.valueOf(30));
+
+            // when
+            AdminActivityPageResponse byName = activityService.searchActivitiesForAdmin(0, 50, "오리엔", "id,asc");
+            AdminActivityPageResponse byAmount = activityService.searchActivitiesForAdmin(0, 50, "30", "id,asc");
+
+            // then
+            assertEquals(1, byName.totalElements());
+            assertEquals("신입생 오리엔테이션", byName.content().getFirst().name());
+            assertEquals(1, byAmount.totalElements());
+            assertEquals("운영 회의", byAmount.content().getFirst().name());
+        }
+
+        @Test
+        void 지원하지_않는_sort는_실패한다() {
+            // when
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> activityService.searchActivitiesForAdmin(0, 50, null, "unsupported,asc"));
+
+            // then
+            assertEquals(ErrorCode.BAD_REQUEST, exception.getErrorCode());
         }
     }
 

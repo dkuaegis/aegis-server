@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import aegis.server.domain.coupon.domain.Coupon;
 
-public interface CouponRepository extends JpaRepository<Coupon, Long> {
+public interface CouponRepository extends JpaRepository<Coupon, Long>, CouponQueryRepository {
     boolean existsByCouponNameAndDiscountAmount(String couponName, BigDecimal discountAmount);
 }

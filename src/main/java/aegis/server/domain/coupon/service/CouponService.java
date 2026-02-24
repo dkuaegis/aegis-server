@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,8 +21,11 @@ import aegis.server.domain.coupon.dto.request.CouponCodeUseRequest;
 import aegis.server.domain.coupon.dto.request.CouponCreateRequest;
 import aegis.server.domain.coupon.dto.request.CouponIssueRequest;
 import aegis.server.domain.coupon.dto.request.CouponNameUpdateRequest;
+import aegis.server.domain.coupon.dto.response.AdminCouponCodePageResponse;
 import aegis.server.domain.coupon.dto.response.AdminCouponCodeResponse;
+import aegis.server.domain.coupon.dto.response.AdminCouponPageResponse;
 import aegis.server.domain.coupon.dto.response.AdminCouponResponse;
+import aegis.server.domain.coupon.dto.response.AdminIssuedCouponPageResponse;
 import aegis.server.domain.coupon.dto.response.AdminIssuedCouponResponse;
 import aegis.server.domain.coupon.dto.response.CouponCodeResponse;
 import aegis.server.domain.coupon.dto.response.CouponResponse;
@@ -39,6 +44,8 @@ import aegis.server.global.security.oidc.UserDetails;
 @RequiredArgsConstructor
 public class CouponService {
 
+    private static final int MAX_PAGE_SIZE = 100;
+
     private final CouponRepository couponRepository;
     private final IssuedCouponRepository issuedCouponRepository;
     private final CouponCodeRepository couponCodeRepository;
@@ -56,6 +63,16 @@ public class CouponService {
                 .sorted(Comparator.comparing(Coupon::getId))
                 .map(AdminCouponResponse::from)
                 .toList();
+    }
+
+    public AdminCouponPageResponse getAdminCouponsPage(int page, int size, String keyword, String sort) {
+        int normalizedSize = Math.min(size, MAX_PAGE_SIZE);
+        String normalizedKeyword = normalizeKeyword(keyword);
+        String orderByClause = resolveCouponOrderBy(sort);
+        PageRequest pageRequest = PageRequest.of(page, normalizedSize);
+
+        Page<Coupon> couponPage = couponRepository.searchAdminCoupons(normalizedKeyword, pageRequest, orderByClause);
+        return AdminCouponPageResponse.from(couponPage);
     }
 
     @Transactional
@@ -115,6 +132,22 @@ public class CouponService {
                 .sorted(Comparator.comparing(IssuedCoupon::getId))
                 .map(AdminIssuedCouponResponse::from)
                 .toList();
+    }
+
+    public AdminIssuedCouponPageResponse getAdminIssuedCouponsPage(int page, int size, String keyword, String sort) {
+        return getAdminIssuedCouponsPage(page, size, keyword, null, null, null, sort);
+    }
+
+    public AdminIssuedCouponPageResponse getAdminIssuedCouponsPage(
+            int page, int size, String keyword, Long couponId, Long memberId, Boolean isValid, String sort) {
+        int normalizedSize = Math.min(size, MAX_PAGE_SIZE);
+        String normalizedKeyword = normalizeKeyword(keyword);
+        String orderByClause = resolveIssuedCouponOrderBy(sort);
+        PageRequest pageRequest = PageRequest.of(page, normalizedSize);
+
+        Page<IssuedCoupon> issuedCouponPage = issuedCouponRepository.searchAdminIssuedCoupons(
+                normalizedKeyword, couponId, memberId, isValid, pageRequest, orderByClause);
+        return AdminIssuedCouponPageResponse.from(issuedCouponPage);
     }
 
     public List<IssuedCouponResponse> findMyAllIssuedCoupons(UserDetails userDetails) {
@@ -179,6 +212,17 @@ public class CouponService {
                 .sorted(Comparator.comparing(CouponCode::getId))
                 .map(AdminCouponCodeResponse::from)
                 .toList();
+    }
+
+    public AdminCouponCodePageResponse getAdminCouponCodesPage(int page, int size, String keyword, String sort) {
+        int normalizedSize = Math.min(size, MAX_PAGE_SIZE);
+        String normalizedKeyword = normalizeKeyword(keyword);
+        String orderByClause = resolveCouponCodeOrderBy(sort);
+        PageRequest pageRequest = PageRequest.of(page, normalizedSize);
+
+        Page<CouponCode> couponCodePage =
+                couponCodeRepository.searchAdminCouponCodes(normalizedKeyword, pageRequest, orderByClause);
+        return AdminCouponCodePageResponse.from(couponCodePage);
     }
 
     @Transactional
@@ -285,5 +329,81 @@ public class CouponService {
             code = CodeGenerator.generateCouponCode(8);
         } while (couponCodeRepository.existsByCode(code));
         return code;
+    }
+
+    private String normalizeKeyword(String keyword) {
+        if (keyword == null) {
+            return null;
+        }
+        String trimmedKeyword = keyword.trim();
+        return trimmedKeyword.isEmpty() ? null : trimmedKeyword;
+    }
+
+    private String resolveCouponOrderBy(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return "c.id ASC";
+        }
+
+        return switch (sort.trim().toLowerCase()) {
+            case "id,asc" -> "c.id ASC";
+            case "id,desc" -> "c.id DESC";
+            case "couponname,asc" -> "c.couponName ASC, c.id ASC";
+            case "couponname,desc" -> "c.couponName DESC, c.id DESC";
+            case "discountamount,asc" -> "c.discountAmount ASC, c.id ASC";
+            case "discountamount,desc" -> "c.discountAmount DESC, c.id DESC";
+            case "createdat,asc" -> "c.createdAt ASC, c.id ASC";
+            case "createdat,desc" -> "c.createdAt DESC, c.id DESC";
+            case "updatedat,asc" -> "c.updatedAt ASC, c.id ASC";
+            case "updatedat,desc" -> "c.updatedAt DESC, c.id DESC";
+            default -> throw new CustomException(ErrorCode.BAD_REQUEST);
+        };
+    }
+
+    private String resolveCouponCodeOrderBy(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return "cc.id ASC";
+        }
+
+        return switch (sort.trim().toLowerCase()) {
+            case "id,asc" -> "cc.id ASC";
+            case "id,desc" -> "cc.id DESC";
+            case "couponid,asc" -> "c.id ASC, cc.id ASC";
+            case "couponid,desc" -> "c.id DESC, cc.id DESC";
+            case "code,asc" -> "cc.code ASC, cc.id ASC";
+            case "code,desc" -> "cc.code DESC, cc.id DESC";
+            case "usedat,asc" -> "cc.usedAt ASC, cc.id ASC";
+            case "usedat,desc" -> "cc.usedAt DESC, cc.id DESC";
+            case "isvalid,asc" -> "cc.isValid ASC, cc.id ASC";
+            case "isvalid,desc" -> "cc.isValid DESC, cc.id DESC";
+            case "createdat,asc" -> "cc.createdAt ASC, cc.id ASC";
+            case "createdat,desc" -> "cc.createdAt DESC, cc.id DESC";
+            default -> throw new CustomException(ErrorCode.BAD_REQUEST);
+        };
+    }
+
+    private String resolveIssuedCouponOrderBy(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return "ic.id ASC";
+        }
+
+        return switch (sort.trim().toLowerCase()) {
+            case "id,asc" -> "ic.id ASC";
+            case "id,desc" -> "ic.id DESC";
+            case "coupon,asc" -> "c.couponName ASC, ic.id ASC";
+            case "coupon,desc" -> "c.couponName DESC, ic.id DESC";
+            case "member,asc" -> "m.name ASC, ic.id ASC";
+            case "member,desc" -> "m.name DESC, ic.id DESC";
+            case "usedat,asc" -> "ic.usedAt ASC, ic.id ASC";
+            case "usedat,desc" -> "ic.usedAt DESC, ic.id DESC";
+            case "isvalid,asc" -> "ic.isValid ASC, ic.id ASC";
+            case "isvalid,desc" -> "ic.isValid DESC, ic.id DESC";
+            case "couponid,asc" -> "c.id ASC, ic.id ASC";
+            case "couponid,desc" -> "c.id DESC, ic.id DESC";
+            case "memberid,asc" -> "m.id ASC, ic.id ASC";
+            case "memberid,desc" -> "m.id DESC, ic.id DESC";
+            case "createdat,asc" -> "ic.createdAt ASC, ic.id ASC";
+            case "createdat,desc" -> "ic.createdAt DESC, ic.id DESC";
+            default -> throw new CustomException(ErrorCode.BAD_REQUEST);
+        };
     }
 }
