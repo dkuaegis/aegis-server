@@ -19,7 +19,7 @@ import aegis.server.domain.payment.domain.PaymentStatus;
 
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
-public interface PaymentRepository extends JpaRepository<Payment, Long> {
+public interface PaymentRepository extends JpaRepository<Payment, Long>, PaymentQueryRepository {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Payment p WHERE p.id = :paymentId")
