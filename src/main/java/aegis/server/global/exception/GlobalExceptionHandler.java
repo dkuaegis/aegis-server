@@ -90,6 +90,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.of(ErrorCode.ALREADY_EXISTS));
     }
 
+    @ExceptionHandler(ArithmeticException.class)
+    public ResponseEntity<ErrorResponse> handleArithmeticException(ArithmeticException e) {
+        logFilteredException(e, "ARITHMETIC_EXCEPTION");
+        return ResponseEntity.status(ErrorCode.BAD_REQUEST.getHttpStatus())
+                .body(ErrorResponse.of(ErrorCode.BAD_REQUEST));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
         logFilteredException(e, "INTERNAL_SERVER_ERROR");

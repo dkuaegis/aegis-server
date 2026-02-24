@@ -4,4 +4,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import aegis.server.domain.payment.domain.Transaction;
 
-public interface TransactionRepository extends JpaRepository<Transaction, Long> {}
+public interface TransactionRepository extends JpaRepository<Transaction, Long>, TransactionQueryRepository {}

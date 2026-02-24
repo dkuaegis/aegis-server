@@ -1,4 +1,4 @@
-package aegis.server.domain.point.repository;
+package aegis.server.domain.payment.repository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,57 +15,54 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import aegis.server.domain.point.domain.PointTransaction;
-import aegis.server.domain.point.domain.PointTransactionType;
+import aegis.server.domain.common.domain.YearSemester;
+import aegis.server.domain.payment.domain.Transaction;
+import aegis.server.domain.payment.domain.TransactionType;
 
 @Repository
-public class PointTransactionQueryRepositoryImpl implements PointTransactionQueryRepository {
+public class TransactionQueryRepositoryImpl implements TransactionQueryRepository {
 
     @PersistenceContext
     private EntityManager entityManager;
 
     @Override
-    public Page<PointTransaction> findAdminLedger(
-            String memberKeyword,
-            PointTransactionType transactionType,
+    public Page<Transaction> searchAdminTransactions(
+            YearSemester yearSemester,
+            TransactionType transactionType,
+            String depositorKeyword,
             LocalDateTime fromDateTime,
             LocalDateTime toDateTime,
             Pageable pageable) {
         Map<String, Object> params = new LinkedHashMap<>();
         List<String> conditions = new ArrayList<>();
 
-        if (memberKeyword != null) {
-            conditions.add("(LOWER(m.name) LIKE LOWER(CONCAT('%', :memberKeyword, '%')) "
-                    + "OR LOWER(COALESCE(m.studentId, '')) LIKE LOWER(CONCAT('%', :memberKeyword, '%')))");
-            params.put("memberKeyword", memberKeyword);
+        if (yearSemester != null) {
+            conditions.add("t.yearSemester = :yearSemester");
+            params.put("yearSemester", yearSemester);
         }
         if (transactionType != null) {
-            conditions.add("pt.transactionType = :transactionType");
+            conditions.add("t.transactionType = :transactionType");
             params.put("transactionType", transactionType);
         }
+        if (depositorKeyword != null) {
+            conditions.add("LOWER(t.depositorName) LIKE LOWER(CONCAT('%', :depositorKeyword, '%'))");
+            params.put("depositorKeyword", depositorKeyword);
+        }
         if (fromDateTime != null) {
-            conditions.add("pt.createdAt >= :fromDateTime");
+            conditions.add("t.transactionTime >= :fromDateTime");
             params.put("fromDateTime", fromDateTime);
         }
         if (toDateTime != null) {
-            conditions.add("pt.createdAt < :toDateTime");
+            conditions.add("t.transactionTime < :toDateTime");
             params.put("toDateTime", toDateTime);
         }
 
         String whereClause = conditions.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditions);
 
-        String selectJpql = "SELECT pt FROM PointTransaction pt "
-                + "JOIN FETCH pt.pointAccount pa "
-                + "JOIN FETCH pa.member m"
-                + whereClause
-                + " ORDER BY pt.id DESC";
+        String selectJpql = "SELECT t FROM Transaction t" + whereClause + " ORDER BY t.transactionTime DESC, t.id DESC";
+        String countJpql = "SELECT COUNT(t) FROM Transaction t" + whereClause;
 
-        String countJpql = "SELECT COUNT(pt) FROM PointTransaction pt "
-                + "JOIN pt.pointAccount pa "
-                + "JOIN pa.member m"
-                + whereClause;
-
-        TypedQuery<PointTransaction> selectQuery = entityManager.createQuery(selectJpql, PointTransaction.class);
+        TypedQuery<Transaction> selectQuery = entityManager.createQuery(selectJpql, Transaction.class);
         TypedQuery<Long> countQuery = entityManager.createQuery(countJpql, Long.class);
 
         for (Map.Entry<String, Object> param : params.entrySet()) {
@@ -76,7 +73,7 @@ public class PointTransactionQueryRepositoryImpl implements PointTransactionQuer
         selectQuery.setFirstResult(Math.toIntExact(pageable.getOffset()));
         selectQuery.setMaxResults(pageable.getPageSize());
 
-        List<PointTransaction> content = selectQuery.getResultList();
+        List<Transaction> content = selectQuery.getResultList();
         Long total = countQuery.getSingleResult();
         return new PageImpl<>(content, pageable, total);
     }
