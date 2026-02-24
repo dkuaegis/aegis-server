@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import aegis.server.domain.coupon.domain.IssuedCoupon;
 import aegis.server.domain.member.domain.Member;
 
-public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long> {
+public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long>, IssuedCouponQueryRepository {
 
     @Query("SELECT ic FROM IssuedCoupon ic JOIN FETCH ic.member JOIN FETCH ic.coupon WHERE ic.member = :member")
     List<IssuedCoupon> findAllByMemberWithCoupon(Member member);

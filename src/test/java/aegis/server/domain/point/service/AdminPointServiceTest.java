@@ -21,6 +21,8 @@ import aegis.server.domain.point.dto.request.AdminPointGrantRequest;
 import aegis.server.domain.point.dto.response.*;
 import aegis.server.domain.point.repository.PointAccountRepository;
 import aegis.server.domain.point.repository.PointTransactionRepository;
+import aegis.server.global.exception.CustomException;
+import aegis.server.global.exception.ErrorCode;
 import aegis.server.helper.IntegrationTest;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -64,7 +66,7 @@ class AdminPointServiceTest extends IntegrationTest {
 
             // when
             AdminPointLedgerPageResponse response =
-                    adminPointService.getLedger(0, 50, "32001111", PointTransactionType.EARN, null, null);
+                    adminPointService.getLedger(0, 50, "32001111", PointTransactionType.EARN, null, null, null);
 
             // then
             assertEquals(1, response.content().size());
@@ -96,9 +98,9 @@ class AdminPointServiceTest extends IntegrationTest {
 
             // when
             AdminPointLedgerPageResponse nullKeywordResponse =
-                    adminPointService.getLedger(0, 50, null, null, null, null);
+                    adminPointService.getLedger(0, 50, null, null, null, null, null);
             AdminPointLedgerPageResponse blankKeywordResponse =
-                    adminPointService.getLedger(0, 50, "   ", null, null, null);
+                    adminPointService.getLedger(0, 50, "   ", null, null, null, null);
 
             // then
             assertTrue(nullKeywordResponse.content().size() >= 2);
@@ -113,6 +115,38 @@ class AdminPointServiceTest extends IntegrationTest {
                     .anyMatch(item -> item.memberId().equals(memberA.getId())));
             assertTrue(blankKeywordResponse.content().stream()
                     .anyMatch(item -> item.memberId().equals(memberB.getId())));
+        }
+
+        @Test
+        void 거래_금액_오름차순_정렬을_적용한다() {
+            // given
+            Member member = createMember();
+            PointAccount account = createPointAccount(member);
+            createEarnPointTransaction(account, BigDecimal.valueOf(500), "큰 금액");
+            createEarnPointTransaction(account, BigDecimal.valueOf(100), "작은 금액");
+
+            // when
+            AdminPointLedgerPageResponse response =
+                    adminPointService.getLedger(0, 50, null, null, null, null, "amount,asc");
+
+            // then
+            assertTrue(response.content().size() >= 2);
+            assertTrue(response.content()
+                            .get(0)
+                            .amount()
+                            .compareTo(response.content().get(1).amount())
+                    <= 0);
+        }
+
+        @Test
+        void 지원하지_않는_sort는_실패한다() {
+            // when
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> adminPointService.getLedger(0, 50, null, null, null, null, "unsupported,desc"));
+
+            // then
+            assertEquals(ErrorCode.BAD_REQUEST, exception.getErrorCode());
         }
     }
 

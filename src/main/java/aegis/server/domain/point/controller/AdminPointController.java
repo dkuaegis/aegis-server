@@ -55,9 +55,10 @@ public class AdminPointController {
             @RequestParam(required = false) String memberKeyword,
             @RequestParam(required = false) PointTransactionType transactionType,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String sort) {
         AdminPointLedgerPageResponse response =
-                adminPointService.getLedger(page, size, memberKeyword, transactionType, from, to);
+                adminPointService.getLedger(page, size, memberKeyword, transactionType, from, to, sort);
         return ResponseEntity.ok(response);
     }
 

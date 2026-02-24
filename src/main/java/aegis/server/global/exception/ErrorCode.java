@@ -53,6 +53,7 @@ public enum ErrorCode {
     // Payment
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND),
     PAYMENT_ALREADY_EXISTS(HttpStatus.CONFLICT),
+    PAYMENT_ALREADY_COMPLETED(HttpStatus.CONFLICT),
     PAYMENT_ACCESS_DENIED(HttpStatus.FORBIDDEN),
 
     // Activity
