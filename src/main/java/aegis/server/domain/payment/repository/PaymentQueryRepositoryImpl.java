@@ -58,7 +58,7 @@ public class PaymentQueryRepositoryImpl implements PaymentQueryRepository {
             countQuery.setParameter(param.getKey(), param.getValue());
         }
 
-        selectQuery.setFirstResult((int) pageable.getOffset());
+        selectQuery.setFirstResult(Math.toIntExact(pageable.getOffset()));
         selectQuery.setMaxResults(pageable.getPageSize());
 
         List<Payment> content = selectQuery.getResultList();

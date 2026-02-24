@@ -73,7 +73,7 @@ public class PointTransactionQueryRepositoryImpl implements PointTransactionQuer
             countQuery.setParameter(param.getKey(), param.getValue());
         }
 
-        selectQuery.setFirstResult((int) pageable.getOffset());
+        selectQuery.setFirstResult(Math.toIntExact(pageable.getOffset()));
         selectQuery.setMaxResults(pageable.getPageSize());
 
         List<PointTransaction> content = selectQuery.getResultList();
