@@ -3,6 +3,8 @@ package aegis.server.domain.coupon.controller;
 import java.util.List;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
@@ -20,12 +23,16 @@ import aegis.server.domain.coupon.dto.request.CouponCodeCreateRequest;
 import aegis.server.domain.coupon.dto.request.CouponCreateRequest;
 import aegis.server.domain.coupon.dto.request.CouponIssueRequest;
 import aegis.server.domain.coupon.dto.request.CouponNameUpdateRequest;
+import aegis.server.domain.coupon.dto.response.AdminCouponCodePageResponse;
 import aegis.server.domain.coupon.dto.response.AdminCouponCodeResponse;
+import aegis.server.domain.coupon.dto.response.AdminCouponPageResponse;
 import aegis.server.domain.coupon.dto.response.AdminCouponResponse;
+import aegis.server.domain.coupon.dto.response.AdminIssuedCouponPageResponse;
 import aegis.server.domain.coupon.dto.response.AdminIssuedCouponResponse;
 import aegis.server.domain.coupon.service.CouponService;
 
 @Tag(name = "Admin Coupon", description = "관리자 쿠폰 관리 API")
+@Validated
 @RestController
 @RequestMapping("/admin/coupons")
 @RequiredArgsConstructor
@@ -35,11 +42,15 @@ public class AdminCouponController {
 
     @Operation(
             summary = "모든 쿠폰 조회",
-            description = "관리자가 등록된 모든 쿠폰을 조회합니다.",
+            description = "관리자가 쿠폰 목록을 검색/정렬/페이지네이션으로 조회합니다.",
             responses = {@ApiResponse(responseCode = "200", description = "쿠폰 조회 성공")})
     @GetMapping
-    public ResponseEntity<List<AdminCouponResponse>> getAllCoupons() {
-        List<AdminCouponResponse> response = couponService.findAllCouponsForAdmin();
+    public ResponseEntity<AdminCouponPageResponse> getAllCoupons(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "50") @Min(1) @Max(100) int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String sort) {
+        AdminCouponPageResponse response = couponService.getAdminCouponsPage(page, size, keyword, sort);
         return ResponseEntity.ok().body(response);
     }
 
@@ -92,11 +103,19 @@ public class AdminCouponController {
 
     @Operation(
             summary = "모든 발급된 쿠폰 조회",
-            description = "관리자가 발급된 모든 쿠폰을 조회합니다.",
+            description = "관리자가 발급된 쿠폰 목록을 검색/정렬/페이지네이션으로 조회합니다.",
             responses = {@ApiResponse(responseCode = "200", description = "발급된 쿠폰 조회 성공")})
     @GetMapping("/issued")
-    public ResponseEntity<List<AdminIssuedCouponResponse>> getAllIssuedCoupons() {
-        List<AdminIssuedCouponResponse> response = couponService.findAllIssuedCouponsForAdmin();
+    public ResponseEntity<AdminIssuedCouponPageResponse> getAllIssuedCoupons(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "50") @Min(1) @Max(100) int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long couponId,
+            @RequestParam(required = false) Long memberId,
+            @RequestParam(required = false) Boolean isValid,
+            @RequestParam(required = false) String sort) {
+        AdminIssuedCouponPageResponse response =
+                couponService.getAdminIssuedCouponsPage(page, size, keyword, couponId, memberId, isValid, sort);
         return ResponseEntity.ok().body(response);
     }
 
@@ -133,11 +152,15 @@ public class AdminCouponController {
 
     @Operation(
             summary = "모든 쿠폰 코드 조회",
-            description = "관리자가 생성된 모든 쿠폰 코드를 조회합니다.",
+            description = "관리자가 쿠폰 코드 목록을 검색/정렬/페이지네이션으로 조회합니다.",
             responses = {@ApiResponse(responseCode = "200", description = "쿠폰 코드 조회 성공")})
     @GetMapping("/code")
-    public ResponseEntity<List<AdminCouponCodeResponse>> getAllCodeCoupons() {
-        List<AdminCouponCodeResponse> response = couponService.findAllCouponCodeForAdmin();
+    public ResponseEntity<AdminCouponCodePageResponse> getAllCodeCoupons(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "50") @Min(1) @Max(100) int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String sort) {
+        AdminCouponCodePageResponse response = couponService.getAdminCouponCodesPage(page, size, keyword, sort);
         return ResponseEntity.ok().body(response);
     }
 

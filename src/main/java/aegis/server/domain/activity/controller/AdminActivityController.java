@@ -1,8 +1,8 @@
 package aegis.server.domain.activity.controller;
 
-import java.util.List;
-
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,15 +12,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.activity.dto.request.ActivityCreateUpdateRequest;
 import aegis.server.domain.activity.dto.response.ActivityResponse;
+import aegis.server.domain.activity.dto.response.AdminActivityPageResponse;
 import aegis.server.domain.activity.service.ActivityService;
 
 @Tag(name = "Admin Activity", description = "관리자 활동 관리 API")
+@Validated
 @RestController
 @RequestMapping("/admin/activities")
 @RequiredArgsConstructor
@@ -30,11 +33,15 @@ public class AdminActivityController {
 
     @Operation(
             summary = "모든 활동 조회",
-            description = "관리자가 등록된 모든 활동을 조회합니다.",
+            description = "관리자가 활동 목록을 검색/정렬/페이지네이션으로 조회합니다.",
             responses = {@ApiResponse(responseCode = "200", description = "활동 조회 성공")})
     @GetMapping
-    public ResponseEntity<List<ActivityResponse>> getAllActivities() {
-        List<ActivityResponse> response = activityService.findAllActivities();
+    public ResponseEntity<AdminActivityPageResponse> getAllActivities(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "50") @Min(1) @Max(100) int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String sort) {
+        AdminActivityPageResponse response = activityService.searchActivitiesForAdmin(page, size, keyword, sort);
         return ResponseEntity.ok().body(response);
     }
 
