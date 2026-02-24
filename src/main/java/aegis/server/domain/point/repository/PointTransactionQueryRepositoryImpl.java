@@ -30,7 +30,8 @@ public class PointTransactionQueryRepositoryImpl implements PointTransactionQuer
             PointTransactionType transactionType,
             LocalDateTime fromDateTime,
             LocalDateTime toDateTime,
-            Pageable pageable) {
+            Pageable pageable,
+            String orderByClause) {
         Map<String, Object> params = new LinkedHashMap<>();
         List<String> conditions = new ArrayList<>();
 
@@ -58,7 +59,8 @@ public class PointTransactionQueryRepositoryImpl implements PointTransactionQuer
                 + "JOIN FETCH pt.pointAccount pa "
                 + "JOIN FETCH pa.member m"
                 + whereClause
-                + " ORDER BY pt.id DESC";
+                + " ORDER BY "
+                + orderByClause;
 
         String countJpql = "SELECT COUNT(pt) FROM PointTransaction pt "
                 + "JOIN pt.pointAccount pa "

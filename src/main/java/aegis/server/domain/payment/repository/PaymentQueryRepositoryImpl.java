@@ -26,7 +26,11 @@ public class PaymentQueryRepositoryImpl implements PaymentQueryRepository {
 
     @Override
     public Page<Payment> searchAdminPayments(
-            YearSemester yearSemester, PaymentStatus status, String memberKeyword, Pageable pageable) {
+            YearSemester yearSemester,
+            PaymentStatus status,
+            String memberKeyword,
+            Pageable pageable,
+            String orderByClause) {
         Map<String, Object> params = new LinkedHashMap<>();
         List<String> conditions = new ArrayList<>();
 
@@ -46,7 +50,8 @@ public class PaymentQueryRepositoryImpl implements PaymentQueryRepository {
 
         String whereClause = conditions.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditions);
 
-        String selectJpql = "SELECT p FROM Payment p " + "JOIN FETCH p.member m" + whereClause + " ORDER BY p.id DESC";
+        String selectJpql =
+                "SELECT p FROM Payment p " + "JOIN FETCH p.member m" + whereClause + " ORDER BY " + orderByClause;
 
         String countJpql = "SELECT COUNT(p) FROM Payment p " + "JOIN p.member m" + whereClause;
 

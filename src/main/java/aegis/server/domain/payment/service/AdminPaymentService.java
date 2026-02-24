@@ -40,13 +40,14 @@ public class AdminPaymentService {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     public AdminPaymentPageResponse getPayments(
-            int page, int size, YearSemester yearSemester, PaymentStatus status, String memberKeyword) {
+            int page, int size, YearSemester yearSemester, PaymentStatus status, String memberKeyword, String sort) {
         int normalizedSize = Math.min(size, MAX_PAGE_SIZE);
         String normalizedKeyword = normalizeKeyword(memberKeyword);
+        String orderByClause = resolvePaymentOrderBy(sort);
         PageRequest pageRequest = PageRequest.of(page, normalizedSize);
 
-        Page<Payment> paymentPage =
-                paymentRepository.searchAdminPayments(yearSemester, status, normalizedKeyword, pageRequest);
+        Page<Payment> paymentPage = paymentRepository.searchAdminPayments(
+                yearSemester, status, normalizedKeyword, pageRequest, orderByClause);
         return AdminPaymentPageResponse.from(paymentPage);
     }
 
@@ -57,19 +58,21 @@ public class AdminPaymentService {
             TransactionType transactionType,
             String depositorKeyword,
             LocalDate from,
-            LocalDate to) {
+            LocalDate to,
+            String sort) {
         if (from != null && to != null && from.isAfter(to)) {
             throw new CustomException(ErrorCode.BAD_REQUEST);
         }
 
         int normalizedSize = Math.min(size, MAX_PAGE_SIZE);
         String normalizedKeyword = normalizeKeyword(depositorKeyword);
+        String orderByClause = resolveTransactionOrderBy(sort);
         LocalDateTime fromDateTime = from == null ? null : from.atStartOfDay();
         LocalDateTime toDateTime = to == null ? null : to.plusDays(1).atStartOfDay();
         PageRequest pageRequest = PageRequest.of(page, normalizedSize);
 
         Page<Transaction> transactionPage = transactionRepository.searchAdminTransactions(
-                yearSemester, transactionType, normalizedKeyword, fromDateTime, toDateTime, pageRequest);
+                yearSemester, transactionType, normalizedKeyword, fromDateTime, toDateTime, pageRequest, orderByClause);
         return AdminTransactionPageResponse.from(transactionPage);
     }
 
@@ -105,5 +108,45 @@ public class AdminPaymentService {
 
         String trimmedKeyword = keyword.trim();
         return trimmedKeyword.isEmpty() ? null : trimmedKeyword;
+    }
+
+    private String resolvePaymentOrderBy(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return "p.id DESC";
+        }
+
+        return switch (sort.trim().toLowerCase()) {
+            case "id,asc" -> "p.id ASC";
+            case "id,desc" -> "p.id DESC";
+            case "createdat,asc" -> "p.createdAt ASC, p.id ASC";
+            case "createdat,desc" -> "p.createdAt DESC, p.id DESC";
+            case "finalprice,asc" -> "p.finalPrice ASC, p.id ASC";
+            case "finalprice,desc" -> "p.finalPrice DESC, p.id DESC";
+            case "status,asc" -> "p.status ASC, p.id ASC";
+            case "status,desc" -> "p.status DESC, p.id DESC";
+            case "membername,asc" -> "m.name ASC, p.id ASC";
+            case "membername,desc" -> "m.name DESC, p.id DESC";
+            default -> throw new CustomException(ErrorCode.BAD_REQUEST);
+        };
+    }
+
+    private String resolveTransactionOrderBy(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return "t.transactionTime DESC, t.id DESC";
+        }
+
+        return switch (sort.trim().toLowerCase()) {
+            case "id,asc" -> "t.id ASC";
+            case "id,desc" -> "t.id DESC";
+            case "transactiontime,asc" -> "t.transactionTime ASC, t.id ASC";
+            case "transactiontime,desc" -> "t.transactionTime DESC, t.id DESC";
+            case "amount,asc" -> "t.amount ASC, t.id ASC";
+            case "amount,desc" -> "t.amount DESC, t.id DESC";
+            case "balance,asc" -> "t.balance ASC, t.id ASC";
+            case "balance,desc" -> "t.balance DESC, t.id DESC";
+            case "depositorname,asc" -> "t.depositorName ASC, t.id ASC";
+            case "depositorname,desc" -> "t.depositorName DESC, t.id DESC";
+            default -> throw new CustomException(ErrorCode.BAD_REQUEST);
+        };
     }
 }

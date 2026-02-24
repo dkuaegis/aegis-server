@@ -67,13 +67,52 @@ public class AdminPaymentServiceTest extends IntegrationTestWithoutTransactional
 
             // when
             AdminPaymentPageResponse response =
-                    adminPaymentService.getPayments(0, 50, CURRENT_YEAR_SEMESTER, PaymentStatus.PENDING, "홍");
+                    adminPaymentService.getPayments(0, 50, CURRENT_YEAR_SEMESTER, PaymentStatus.PENDING, "홍", null);
 
             // then
             assertEquals(1, response.totalElements());
             assertEquals(1, response.content().size());
             assertEquals(targetMember.getId(), response.content().get(0).memberId());
             assertEquals(PaymentStatus.PENDING, response.content().get(0).status());
+        }
+
+        @Test
+        void 결제금액_내림차순_정렬을_적용한다() {
+            // given
+            Member memberA = createMemberWithName("정렬A");
+            Member memberB = createMemberWithName("정렬B");
+
+            Payment low =
+                    paymentRepository.save(Payment.createForDev(memberA, PaymentStatus.PENDING, CURRENT_YEAR_SEMESTER));
+            Payment high =
+                    paymentRepository.save(Payment.createForDev(memberB, PaymentStatus.PENDING, CURRENT_YEAR_SEMESTER));
+            ReflectionTestUtils.setField(low, "finalPrice", BigDecimal.valueOf(1000));
+            ReflectionTestUtils.setField(high, "finalPrice", BigDecimal.valueOf(9000));
+            paymentRepository.save(low);
+            paymentRepository.save(high);
+
+            // when
+            AdminPaymentPageResponse response = adminPaymentService.getPayments(
+                    0, 50, CURRENT_YEAR_SEMESTER, PaymentStatus.PENDING, null, "finalPrice,desc");
+
+            // then
+            assertTrue(response.content().size() >= 2);
+            assertTrue(response.content()
+                            .get(0)
+                            .finalPrice()
+                            .compareTo(response.content().get(1).finalPrice())
+                    >= 0);
+        }
+
+        @Test
+        void 지원하지_않는_sort는_실패한다() {
+            // when
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> adminPaymentService.getPayments(0, 50, CURRENT_YEAR_SEMESTER, null, null, "unsupported,asc"));
+
+            // then
+            assertEquals(ErrorCode.BAD_REQUEST, exception.getErrorCode());
         }
     }
 
@@ -115,7 +154,8 @@ public class AdminPaymentServiceTest extends IntegrationTestWithoutTransactional
                     TransactionType.DEPOSIT,
                     "홍",
                     LocalDate.of(2026, 1, 10),
-                    LocalDate.of(2026, 1, 10));
+                    LocalDate.of(2026, 1, 10),
+                    null);
 
             // then
             assertEquals(1, response.totalElements());
@@ -142,7 +182,52 @@ public class AdminPaymentServiceTest extends IntegrationTestWithoutTransactional
                             null,
                             null,
                             LocalDate.of(2026, 1, 11),
-                            LocalDate.of(2026, 1, 10)));
+                            LocalDate.of(2026, 1, 10),
+                            null));
+            assertEquals(ErrorCode.BAD_REQUEST, exception.getErrorCode());
+        }
+
+        @Test
+        void 거래_시간_오름차순_정렬을_적용한다() {
+            // given
+            transactionRepository.save(Transaction.of(
+                    LocalDateTime.of(2026, 1, 10, 11, 0),
+                    "B",
+                    TransactionType.DEPOSIT,
+                    BigDecimal.valueOf(1000),
+                    BigDecimal.valueOf(1000)));
+            transactionRepository.save(Transaction.of(
+                    LocalDateTime.of(2026, 1, 10, 9, 0),
+                    "A",
+                    TransactionType.DEPOSIT,
+                    BigDecimal.valueOf(2000),
+                    BigDecimal.valueOf(3000)));
+
+            // when
+            AdminTransactionPageResponse response = adminPaymentService.getTransactions(
+                    0, 50, CURRENT_YEAR_SEMESTER, null, null, null, null, "transactionTime,asc");
+
+            // then
+            assertTrue(response.content().size() >= 2);
+            assertTrue(response.content()
+                            .get(0)
+                            .transactionTime()
+                            .isBefore(response.content().get(1).transactionTime())
+                    || response.content()
+                            .get(0)
+                            .transactionTime()
+                            .isEqual(response.content().get(1).transactionTime()));
+        }
+
+        @Test
+        void 지원하지_않는_sort는_실패한다() {
+            // when
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> adminPaymentService.getTransactions(
+                            0, 50, CURRENT_YEAR_SEMESTER, null, null, null, null, "unsupported,asc"));
+
+            // then
             assertEquals(ErrorCode.BAD_REQUEST, exception.getErrorCode());
         }
     }

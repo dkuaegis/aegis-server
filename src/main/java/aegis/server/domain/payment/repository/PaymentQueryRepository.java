@@ -10,5 +10,9 @@ import aegis.server.domain.payment.domain.PaymentStatus;
 public interface PaymentQueryRepository {
 
     Page<Payment> searchAdminPayments(
-            YearSemester yearSemester, PaymentStatus status, String memberKeyword, Pageable pageable);
+            YearSemester yearSemester,
+            PaymentStatus status,
+            String memberKeyword,
+            Pageable pageable,
+            String orderByClause);
 }

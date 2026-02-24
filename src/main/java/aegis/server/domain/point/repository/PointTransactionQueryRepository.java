@@ -15,5 +15,6 @@ public interface PointTransactionQueryRepository {
             PointTransactionType transactionType,
             LocalDateTime fromDateTime,
             LocalDateTime toDateTime,
-            Pageable pageable);
+            Pageable pageable,
+            String orderByClause);
 }

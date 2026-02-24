@@ -17,5 +17,6 @@ public interface TransactionQueryRepository {
             String depositorKeyword,
             LocalDateTime fromDateTime,
             LocalDateTime toDateTime,
-            Pageable pageable);
+            Pageable pageable,
+            String orderByClause);
 }

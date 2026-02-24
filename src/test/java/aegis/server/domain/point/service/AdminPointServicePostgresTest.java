@@ -49,7 +49,7 @@ class AdminPointServicePostgresTest extends IntegrationTestWithoutTransactional 
 
         // when
         AdminPointLedgerPageResponse response =
-                assertDoesNotThrow(() -> adminPointService.getLedger(0, 50, null, null, null, null));
+                assertDoesNotThrow(() -> adminPointService.getLedger(0, 50, null, null, null, null, null));
 
         // then
         assertTrue(response.content().stream().anyMatch(item -> item.memberId().equals(member.getId())));

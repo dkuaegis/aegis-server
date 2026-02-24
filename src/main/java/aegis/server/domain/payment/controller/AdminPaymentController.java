@@ -49,9 +49,10 @@ public class AdminPaymentController {
             @RequestParam(defaultValue = "50") @Min(1) @Max(100) int size,
             @RequestParam(required = false) YearSemester yearSemester,
             @RequestParam(required = false) PaymentStatus status,
-            @RequestParam(required = false) String memberKeyword) {
+            @RequestParam(required = false) String memberKeyword,
+            @RequestParam(required = false) String sort) {
         AdminPaymentPageResponse response =
-                adminPaymentService.getPayments(page, size, yearSemester, status, memberKeyword);
+                adminPaymentService.getPayments(page, size, yearSemester, status, memberKeyword, sort);
         return ResponseEntity.ok(response);
     }
 
@@ -86,9 +87,10 @@ public class AdminPaymentController {
             @RequestParam(required = false) TransactionType transactionType,
             @RequestParam(required = false) String depositorKeyword,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String sort) {
         AdminTransactionPageResponse response = adminPaymentService.getTransactions(
-                page, size, yearSemester, transactionType, depositorKeyword, from, to);
+                page, size, yearSemester, transactionType, depositorKeyword, from, to, sort);
         return ResponseEntity.ok(response);
     }
 }

@@ -32,7 +32,8 @@ public class TransactionQueryRepositoryImpl implements TransactionQueryRepositor
             String depositorKeyword,
             LocalDateTime fromDateTime,
             LocalDateTime toDateTime,
-            Pageable pageable) {
+            Pageable pageable,
+            String orderByClause) {
         Map<String, Object> params = new LinkedHashMap<>();
         List<String> conditions = new ArrayList<>();
 
@@ -59,7 +60,7 @@ public class TransactionQueryRepositoryImpl implements TransactionQueryRepositor
 
         String whereClause = conditions.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditions);
 
-        String selectJpql = "SELECT t FROM Transaction t" + whereClause + " ORDER BY t.transactionTime DESC, t.id DESC";
+        String selectJpql = "SELECT t FROM Transaction t" + whereClause + " ORDER BY " + orderByClause;
         String countJpql = "SELECT COUNT(t) FROM Transaction t" + whereClause;
 
         TypedQuery<Transaction> selectQuery = entityManager.createQuery(selectJpql, Transaction.class);

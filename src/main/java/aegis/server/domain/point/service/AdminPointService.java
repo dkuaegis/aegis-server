@@ -51,7 +51,8 @@ public class AdminPointService {
             String memberKeyword,
             PointTransactionType transactionType,
             LocalDate from,
-            LocalDate to) {
+            LocalDate to,
+            String sort) {
         if (from != null && to != null && from.isAfter(to)) {
             throw new CustomException(ErrorCode.BAD_REQUEST);
         }
@@ -59,10 +60,11 @@ public class AdminPointService {
         LocalDateTime fromDateTime = from == null ? null : from.atStartOfDay();
         LocalDateTime toDateTime = to == null ? null : to.plusDays(1).atStartOfDay();
         String normalizedKeyword = normalizeKeyword(memberKeyword);
+        String orderByClause = resolveLedgerOrderBy(sort);
         PageRequest pageRequest = PageRequest.of(page, normalizedSize);
 
         Page<PointTransaction> ledgerPage = pointTransactionRepository.findAdminLedger(
-                normalizedKeyword, transactionType, fromDateTime, toDateTime, pageRequest);
+                normalizedKeyword, transactionType, fromDateTime, toDateTime, pageRequest, orderByClause);
         return AdminPointLedgerPageResponse.from(ledgerPage);
     }
 
@@ -145,5 +147,25 @@ public class AdminPointService {
             return null;
         }
         return trimmed;
+    }
+
+    private String resolveLedgerOrderBy(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return "pt.id DESC";
+        }
+
+        return switch (sort.trim().toLowerCase()) {
+            case "id,asc" -> "pt.id ASC";
+            case "id,desc" -> "pt.id DESC";
+            case "createdat,asc" -> "pt.createdAt ASC, pt.id ASC";
+            case "createdat,desc" -> "pt.createdAt DESC, pt.id DESC";
+            case "amount,asc" -> "pt.amount ASC, pt.id ASC";
+            case "amount,desc" -> "pt.amount DESC, pt.id DESC";
+            case "membername,asc" -> "m.name ASC, pt.id ASC";
+            case "membername,desc" -> "m.name DESC, pt.id DESC";
+            case "transactiontype,asc" -> "pt.transactionType ASC, pt.id ASC";
+            case "transactiontype,desc" -> "pt.transactionType DESC, pt.id DESC";
+            default -> throw new CustomException(ErrorCode.BAD_REQUEST);
+        };
     }
 }
