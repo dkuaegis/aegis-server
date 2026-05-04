@@ -89,8 +89,8 @@
 - 본 프로젝트의 테스트코드는 조금 독특하므로 테스트코드 컨벤션은 다른 코드를 참조하세요.
 - 코드 구현을 마치고 항상 전체 테스트 코드를 실행하여, 시스템에 문제가 없는지 확인하세요.
 - 필요한 경우 `ReflectionTestUtils`을 사용하여 private 필드에 접근하세요.
-- 동시성 로직을 테스트하는 경우 별도의 테스트 클래스에 `IntegrationTestWithoutTransactional` 과 `@ActiveProfiles("postgres")` 어노테이션을 사용하여 작성하세요.
-  - `@ActiveProfiles("postgres")` 의 경우 Testcontainers 를 사용하여 Postgres 데이터베이스를 실행하기 위한 설정입니다.
+- 모든 통합 테스트는 `test` 프로파일의 Postgres Testcontainers 를 사용합니다.
+- 동시성 로직을 테스트하는 경우 별도의 테스트 클래스에 `IntegrationTestWithoutTransactional` 을 사용하여 작성하세요.
   - 자세한 코드 예시는 `StudyEnrollConcurrencyTest`, `CouponCodeUseConcurrencyTest` 를 참조하세요.
 - 생성/수정/삭제(CUD) 테스트는 '반환값(Response)'과 'DB 상태(Entity)'를 모두 검증하세요.
   > - CUD 작업은 '클라이언트와의 계약 이행'과 '데이터 상태 변경'이라는 두 가지 임무를 가집니다.

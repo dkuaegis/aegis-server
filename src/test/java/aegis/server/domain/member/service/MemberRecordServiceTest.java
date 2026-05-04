@@ -201,8 +201,8 @@ class MemberRecordServiceTest extends IntegrationTestWithoutTransactional {
                     member2.getId(), YearSemester.YEAR_SEMESTER_2025_2, MemberRecordSource.BACKFILL_PAYMENT);
 
             // when
-            AdminMemberRecordPageResponse response =
-                    memberRecordService.getMemberRecordsByYearSemester(YearSemester.YEAR_SEMESTER_2026_1, 0, 50);
+            AdminMemberRecordPageResponse response = memberRecordService.getMemberRecordsByYearSemester(
+                    YearSemester.YEAR_SEMESTER_2026_1, 0, 50, null, null, null);
 
             // then
             assertEquals(2, response.content().size());
