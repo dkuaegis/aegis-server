@@ -19,7 +19,7 @@ FROM eclipse-temurin:25-jre-ubi10-minimal
 
 WORKDIR /app
 
-RUN wget -O /app/grafana-opentelemetry-java.jar https://github.com/grafana/grafana-opentelemetry-java/releases/download/v2.22.0/grafana-opentelemetry-java.jar
+RUN wget -O /app/grafana-opentelemetry-java.jar https://github.com/grafana/grafana-opentelemetry-java/releases/download/v2.27.0/grafana-opentelemetry-java.jar
 
 COPY --from=builder /tmp/build/version.txt /app/version.txt
 COPY --from=builder /tmp/build/libs/*-*.jar /app/app.jar

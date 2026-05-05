@@ -14,7 +14,12 @@ import aegis.server.global.exception.ErrorCode;
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"name", "year_semester"}))
+@Table(
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_activity_name_year_semester",
+                    columnNames = {"name", "year_semester"})
+        })
 @Getter
 @Builder(access = lombok.AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

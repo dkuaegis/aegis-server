@@ -9,6 +9,11 @@ import lombok.*;
 import aegis.server.domain.common.domain.BaseEntity;
 
 @Entity
+@Table(
+        uniqueConstraints = {
+            @UniqueConstraint(name = "uk_member_oidc_id", columnNames = "oidc_id"),
+            @UniqueConstraint(name = "uk_member_discord_id", columnNames = "discord_id")
+        })
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -20,10 +25,9 @@ public class Member extends BaseEntity {
     @Column(name = "member_id")
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String oidcId;
 
-    @Column(unique = true)
     private String discordId;
 
     @Enumerated(EnumType.STRING)

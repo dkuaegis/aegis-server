@@ -9,7 +9,12 @@ import aegis.server.domain.member.domain.Member;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"study_id", "member_id"}))
+@Table(
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_study_application_study_member",
+                    columnNames = {"study_id", "member_id"})
+        })
 @Entity
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -23,11 +28,11 @@ public class StudyApplication extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "study_id")
+    @JoinColumn(name = "study_id", foreignKey = @ForeignKey(name = "fk_study_application_study"))
     private Study study;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", foreignKey = @ForeignKey(name = "fk_study_application_member"))
     private Member member;
 
     @Enumerated(EnumType.STRING)

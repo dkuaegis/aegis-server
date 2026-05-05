@@ -15,10 +15,6 @@ import aegis.server.domain.common.domain.YearSemester;
             @UniqueConstraint(
                     name = "uk_member_record_member_year_semester",
                     columnNames = {"member_id", "year_semester"})
-        },
-        indexes = {
-            @Index(name = "idx_member_record_year_semester_id", columnList = "year_semester, member_record_id"),
-            @Index(name = "idx_member_record_member_id_id", columnList = "member_id, member_record_id")
         })
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -32,7 +28,7 @@ public class MemberRecord extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "member_id", nullable = false, foreignKey = @ForeignKey(name = "fk_member_record_member"))
     private Member member;
 
     @Enumerated(EnumType.STRING)

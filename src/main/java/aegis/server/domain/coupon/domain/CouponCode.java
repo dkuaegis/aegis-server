@@ -11,6 +11,11 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 
 @Entity
+@Table(
+        uniqueConstraints = {
+            @UniqueConstraint(name = "uk_coupon_code_code", columnNames = "code"),
+            @UniqueConstraint(name = "uk_coupon_code_issued_coupon", columnNames = "issued_coupon_id")
+        })
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -23,14 +28,13 @@ public class CouponCode extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coupon_id")
+    @JoinColumn(name = "coupon_id", foreignKey = @ForeignKey(name = "fk_coupon_code_coupon"))
     private Coupon coupon;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "issued_coupon_id")
+    @JoinColumn(name = "issued_coupon_id", foreignKey = @ForeignKey(name = "fk_coupon_code_issued_coupon"))
     private IssuedCoupon issuedCoupon;
 
-    @Column(unique = true)
     private String code;
 
     @Column(length = 255)

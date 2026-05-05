@@ -13,7 +13,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +37,6 @@ import aegis.server.helper.IntegrationTestWithoutTransactional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("concurrency")
-@ActiveProfiles("postgres")
 class StudyPointRewardConcurrencyTest extends IntegrationTestWithoutTransactional {
 
     @Autowired

@@ -22,7 +22,6 @@ import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-        indexes = {@Index(name = "idx_payment_year_status_member", columnList = "year_semester, status, member_id")},
         uniqueConstraints = {
             @UniqueConstraint(
                     name = "uk_payment_member_year_semester",
@@ -35,7 +34,7 @@ public class Payment extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", foreignKey = @ForeignKey(name = "fk_payment_member"))
     private Member member;
 
     @OneToMany(mappedBy = "payment")

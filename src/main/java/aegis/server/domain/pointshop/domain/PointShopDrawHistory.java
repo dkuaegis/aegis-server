@@ -10,10 +10,11 @@ import aegis.server.domain.point.domain.PointTransaction;
 
 @Entity
 @Table(
-        indexes =
-                @Index(
-                        name = "idx_point_shop_draw_history_member_id_id",
-                        columnList = "member_id, point_shop_draw_history_id"))
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_point_shop_draw_history_point_transaction",
+                    columnNames = "point_transaction_id")
+        })
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -26,7 +27,7 @@ public class PointShopDrawHistory extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", foreignKey = @ForeignKey(name = "fk_point_shop_draw_history_member"))
     private Member member;
 
     @Enumerated(EnumType.STRING)
@@ -34,7 +35,9 @@ public class PointShopDrawHistory extends BaseEntity {
     private PointShopItem item;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "point_transaction_id")
+    @JoinColumn(
+            name = "point_transaction_id",
+            foreignKey = @ForeignKey(name = "fk_point_shop_draw_history_point_transaction"))
     private PointTransaction pointTransaction;
 
     public static PointShopDrawHistory create(Member member, PointShopItem item, PointTransaction pointTransaction) {

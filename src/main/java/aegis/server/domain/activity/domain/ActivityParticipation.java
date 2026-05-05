@@ -11,7 +11,12 @@ import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.member.domain.Member;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"activity_id", "member_id"}))
+@Table(
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_activity_participation_activity_member",
+                    columnNames = {"activity_id", "member_id"})
+        })
 @Getter
 @Builder(access = lombok.AccessLevel.PRIVATE)
 @AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
@@ -24,11 +29,17 @@ public class ActivityParticipation extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "activity_id", nullable = false)
+    @JoinColumn(
+            name = "activity_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_activity_participation_activity"))
     private Activity activity;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(
+            name = "member_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_activity_participation_member"))
     private Member member;
 
     public static ActivityParticipation create(Activity activity, Member member) {

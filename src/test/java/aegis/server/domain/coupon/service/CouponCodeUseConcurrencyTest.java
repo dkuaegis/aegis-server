@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -35,7 +34,6 @@ import aegis.server.helper.IntegrationTestWithoutTransactional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("concurrency")
-@ActiveProfiles("postgres")
 class CouponCodeUseConcurrencyTest extends IntegrationTestWithoutTransactional {
 
     @Autowired

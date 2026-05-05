@@ -11,7 +11,12 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 
 @Entity
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"coupon_name", "discount_amount"})})
+@Table(
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_coupon_coupon_name_discount_amount",
+                    columnNames = {"coupon_name", "discount_amount"})
+        })
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
