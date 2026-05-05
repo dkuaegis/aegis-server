@@ -17,10 +17,6 @@ import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(
-        indexes = {
-            @Index(name = "idx_transaction_depositor_name", columnList = "depositorName"),
-        })
 public class Transaction extends BaseEntity {
 
     @Id

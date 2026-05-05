@@ -12,11 +12,11 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 
 @Entity
+@Table(uniqueConstraints = {@UniqueConstraint(name = "uk_point_account_member", columnNames = "member_id")})
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(indexes = @Index(name = "idx_point_account_total_earned_desc", columnList = "total_earned DESC"))
 public class PointAccount extends BaseEntity {
 
     @Id
@@ -24,7 +24,7 @@ public class PointAccount extends BaseEntity {
     private Long id; // memberId와 동일
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", foreignKey = @ForeignKey(name = "fk_point_account_member"))
     private Member member;
 
     @Column(precision = 10, scale = 0)

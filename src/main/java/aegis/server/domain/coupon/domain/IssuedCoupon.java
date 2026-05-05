@@ -25,14 +25,15 @@ public class IssuedCoupon extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coupon_id")
+    @JoinColumn(name = "coupon_id", foreignKey = @ForeignKey(name = "fk_issued_coupon_coupon"))
     private Coupon coupon;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", foreignKey = @ForeignKey(name = "fk_issued_coupon_member"))
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id", foreignKey = @ForeignKey(name = "fk_issued_coupon_payment"))
     private Payment payment;
 
     private Boolean isValid;

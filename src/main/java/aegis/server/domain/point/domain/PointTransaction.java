@@ -12,15 +12,14 @@ import aegis.server.domain.common.domain.YearSemester;
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
 @Entity
+@Table(
+        uniqueConstraints = {
+            @UniqueConstraint(name = "uk_point_transaction_idempotency_key", columnNames = "idempotency_key")
+        })
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(
-        indexes =
-                @Index(
-                        name = "idx_point_transaction_account_id_desc",
-                        columnList = "point_account_id, point_transaction_id DESC"))
 public class PointTransaction extends BaseEntity {
 
     @Id
@@ -29,7 +28,7 @@ public class PointTransaction extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "point_account_id")
+    @JoinColumn(name = "point_account_id", foreignKey = @ForeignKey(name = "fk_point_transaction_point_account"))
     private PointAccount pointAccount;
 
     @Enumerated(EnumType.STRING)
@@ -43,7 +42,6 @@ public class PointTransaction extends BaseEntity {
 
     private String reason;
 
-    @Column(unique = true)
     private String idempotencyKey;
 
     public static PointTransaction create(

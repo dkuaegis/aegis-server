@@ -8,7 +8,12 @@ import aegis.server.domain.common.domain.BaseEntity;
 import aegis.server.domain.member.domain.Member;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"study_session_id", "member_id"}))
+@Table(
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_study_attendance_session_member",
+                    columnNames = {"study_session_id", "member_id"})
+        })
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -21,11 +26,14 @@ public class StudyAttendance extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "study_session_id", nullable = false)
+    @JoinColumn(
+            name = "study_session_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_study_attendance_study_session"))
     private StudySession studySession;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "member_id", nullable = false, foreignKey = @ForeignKey(name = "fk_study_attendance_member"))
     private Member member;
 
     public static StudyAttendance create(StudySession studySession, Member member) {

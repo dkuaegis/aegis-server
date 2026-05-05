@@ -8,7 +8,12 @@ import lombok.*;
 
 import aegis.server.domain.common.domain.BaseEntity;
 
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"study_id", "session_date"}))
+@Table(
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_study_session_study_session_date",
+                    columnNames = {"study_id", "session_date"})
+        })
 @Entity
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -22,7 +27,7 @@ public class StudySession extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "study_id")
+    @JoinColumn(name = "study_id", foreignKey = @ForeignKey(name = "fk_study_session_study"))
     private Study study;
 
     @Column(nullable = false)

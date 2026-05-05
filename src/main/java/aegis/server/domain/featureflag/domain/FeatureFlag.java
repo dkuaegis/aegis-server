@@ -11,8 +11,7 @@ import aegis.server.domain.common.domain.BaseEntity;
 @Builder(access = AccessLevel.PRIVATE)
 @Table(
         name = "feature_flag",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"feature_key"}),
-        indexes = @Index(name = "idx_feature_flag_feature_key", columnList = "feature_key"))
+        uniqueConstraints = {@UniqueConstraint(name = "uk_feature_flag_feature_key", columnNames = "feature_key")})
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FeatureFlag extends BaseEntity {

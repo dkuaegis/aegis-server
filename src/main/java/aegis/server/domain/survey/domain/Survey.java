@@ -11,6 +11,12 @@ import aegis.server.domain.member.domain.Member;
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
 @Entity
+@Table(
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_survey_member_year_semester",
+                    columnNames = {"member_id", "year_semester"})
+        })
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -23,7 +29,7 @@ public class Survey extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", foreignKey = @ForeignKey(name = "fk_survey_member"))
     private Member member;
 
     @Enumerated(EnumType.STRING)
