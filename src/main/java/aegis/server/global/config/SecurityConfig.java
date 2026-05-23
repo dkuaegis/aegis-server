@@ -46,6 +46,10 @@ public class SecurityConfig {
         http.exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(
                 (request, response, authException) -> response.setStatus(HttpStatus.UNAUTHORIZED.value())));
 
+        // API 서버에서는 인증 실패 요청을 로그인 후 복원할 필요가 없으므로 세션에 저장하지 않습니다.
+        // 이를 통해 깨진 multipart 요청처럼 저장 과정에서 본문 파싱이 유발되는 부작용도 방지합니다.
+        http.requestCache(AbstractHttpConfigurer::disable);
+
         http.authorizeHttpRequests(auth -> auth
                 // 공개 API (인증 불필요)
                 .requestMatchers("/actuator/**", "/internal/**", "/test/**", "/auth/error/**", "/docs/**")
