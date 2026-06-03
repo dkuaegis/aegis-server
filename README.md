@@ -18,7 +18,7 @@
 
 # 기술 스택
 
-- **Backend**: Java 21, Spring Boot 3, Spring Security (OAuth2/OIDC), Spring Data JPA
+- **Backend**: Java 25, Spring Boot 4, Spring Security (OAuth2/OIDC), Spring Data JPA
 - **Database**: PostgreSQL, Redis
 - **Testing**: JUnit 5, Mockito, AssertJ, Testcontainers
 - **Documentation**: Springdoc

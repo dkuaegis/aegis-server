@@ -1,4 +1,4 @@
-FROM gradle:9-jdk25-ubi-minimal AS builder
+FROM gradle:9.5.1-jdk25-ubi10 AS builder
 
 WORKDIR /tmp
 
@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/home/gradle/.gradle/caches,id=gradle-cache,sharin
     --mount=type=cache,target=/home/gradle/.gradle/wrapper,id=gradle-wrapper,sharing=locked \
     gradle build --no-daemon -x check -x test -x spotlessApply -x spotlessCheck
 
-FROM eclipse-temurin:25-jre-ubi10-minimal
+FROM eclipse-temurin:25.0.3_9-jre-ubi10-minimal
 
 WORKDIR /app
 

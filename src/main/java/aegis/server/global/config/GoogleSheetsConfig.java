@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
@@ -39,8 +38,8 @@ public class GoogleSheetsConfig {
         GoogleCredentials credential = GoogleCredentials.fromStream(new ByteArrayInputStream(decodedBytes))
                 .createScoped(SCOPES);
 
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        return new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, new HttpCredentialsAdapter(credential))
+        NetHttpTransport httpTransport = new NetHttpTransport.Builder().build();
+        return new Sheets.Builder(httpTransport, JSON_FACTORY, new HttpCredentialsAdapter(credential))
                 .setApplicationName("aegis")
                 .build();
     }
