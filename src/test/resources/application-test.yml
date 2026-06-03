@@ -3,7 +3,7 @@ spring:
     activate:
       on-profile: test
   datasource:
-    url: jdbc:tc:postgresql:17-alpine://test/testdb
+    url: jdbc:tc:postgresql:18.3-trixie://test/testdb
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
   jpa:
     hibernate:
