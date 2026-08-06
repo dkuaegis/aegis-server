@@ -96,7 +96,6 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(ALLOWED_CLIENT_URLS);
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setExposedHeaders(List.of("Set-Cookie"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
