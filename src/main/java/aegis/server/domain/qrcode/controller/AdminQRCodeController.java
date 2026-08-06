@@ -26,7 +26,7 @@ public class AdminQRCodeController {
 
     @Operation(
             summary = "QR로 회원 조회",
-            description = "QR코드의 UUID로 Redis에서 조회하여 회원의 memberId, name, studentId를 반환합니다.",
+            description = "QR코드의 UUID로 회원의 memberId, name, studentId를 조회합니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "조회 성공"),
                 @ApiResponse(responseCode = "400", description = "UUID 포맷 오류", content = @Content),

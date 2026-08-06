@@ -1,10 +1,12 @@
 package aegis.server.domain.qrcode.service;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +16,6 @@ import aegis.server.domain.qrcode.dto.response.QRCodeMemberResponse;
 import aegis.server.domain.qrcode.repository.QRCodeRepository;
 import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
-import aegis.server.helper.RedisCleaner;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,12 +28,7 @@ class QRCodeServiceTest extends IntegrationTest {
     QRCodeRepository qrCodeRepository;
 
     @Autowired
-    RedisCleaner redisCleaner;
-
-    @BeforeEach
-    void setUp() {
-        redisCleaner.clean();
-    }
+    Clock clock;
 
     @Nested
     class QR코드_발급 {
@@ -47,8 +43,9 @@ class QRCodeServiceTest extends IntegrationTest {
             String qrCode = qrCodeService.issueQRCode(userDetails);
 
             // then
-            QRCode savedQRCode = qrCodeRepository.findByMemberId(member.getId()).get();
+            QRCode savedQRCode = qrCodeRepository.findByMemberId(member.getId()).orElseThrow();
             assertEquals(member.getId(), savedQRCode.getMemberId());
+            assertTrue(savedQRCode.getExpiresAt().isAfter(LocalDateTime.now(clock)));
             assertFalse(qrCode.isEmpty());
 
             // base64 인코딩 검증
@@ -61,18 +58,27 @@ class QRCodeServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 기존_QR코드가_있는_경우_삭제_후_새로_발급() {
+        void 기존_QR코드가_있는_경우_새로_발급() {
             // given
             Member member = createMember();
             UserDetails userDetails = createUserDetails(member);
             qrCodeService.issueQRCode(userDetails);
+            UUID previousToken = qrCodeRepository
+                    .findByMemberId(member.getId())
+                    .orElseThrow()
+                    .getToken();
 
             // when
             qrCodeService.issueQRCode(userDetails);
 
             // then
-            long count = qrCodeRepository.count();
-            assertEquals(1, count);
+            QRCode reissuedQRCode =
+                    qrCodeRepository.findByMemberId(member.getId()).orElseThrow();
+            assertNotEquals(previousToken, reissuedQRCode.getToken());
+            assertEquals(1, qrCodeRepository.count());
+            assertThrows(
+                    aegis.server.global.exception.CustomException.class,
+                    () -> qrCodeService.findMemberByQrCodeUuid(previousToken.toString()));
         }
     }
 
@@ -87,9 +93,9 @@ class QRCodeServiceTest extends IntegrationTest {
             qrCodeService.issueQRCode(userDetails);
 
             // when
-            QRCode savedQRCode = qrCodeRepository.findByMemberId(member.getId()).get();
+            QRCode savedQRCode = qrCodeRepository.findByMemberId(member.getId()).orElseThrow();
             QRCodeMemberResponse response =
-                    qrCodeService.findMemberByQrCodeUuid(savedQRCode.getId().toString());
+                    qrCodeService.findMemberByQrCodeUuid(savedQRCode.getToken().toString());
 
             // then
             assertEquals(member.getId(), response.memberId());
@@ -100,12 +106,16 @@ class QRCodeServiceTest extends IntegrationTest {
         @Test
         void QR코드가_만료된_경우_실패한다() {
             // given
-            String randomUuid = java.util.UUID.randomUUID().toString();
+            Member member = createMember();
+            UUID expiredToken = UUID.randomUUID();
+            QRCode expiredQRCode = QRCode.create(
+                    expiredToken, member.getId(), LocalDateTime.now(clock).minusSeconds(1));
+            qrCodeRepository.save(expiredQRCode);
 
             // then
             assertThrows(aegis.server.global.exception.CustomException.class, () -> {
                 // when
-                qrCodeService.findMemberByQrCodeUuid(randomUuid);
+                qrCodeService.findMemberByQrCodeUuid(expiredToken.toString());
             });
         }
 

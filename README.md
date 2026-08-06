@@ -19,7 +19,7 @@
 # 기술 스택
 
 - **Backend**: Java 25, Spring Boot 4, Spring Security (OAuth2/OIDC), Spring Data JPA
-- **Database**: PostgreSQL, Redis
+- **Database**: PostgreSQL
 - **Testing**: JUnit 5, Mockito, AssertJ, Testcontainers
 - **Documentation**: Springdoc
 - **External Integrations**: Discord JDA, Google Sheets API v4

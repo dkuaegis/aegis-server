@@ -3,7 +3,6 @@ package aegis.server.global.session;
 import java.util.Collections;
 import java.util.Map;
 
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -28,7 +27,6 @@ import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.CustomOidcUser;
 import aegis.server.global.security.oidc.UserDetails;
 
-@Profile("!test")
 @Slf4j
 @Service
 @RequiredArgsConstructor
