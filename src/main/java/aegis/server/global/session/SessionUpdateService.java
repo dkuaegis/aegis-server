@@ -20,9 +20,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.domain.event.MemberRoleChangedEvent;
 import aegis.server.domain.member.repository.MemberRepository;
-import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
-import aegis.server.domain.payment.dto.internal.PaymentInfo;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.CustomOidcUser;
@@ -84,14 +83,11 @@ public class SessionUpdateService {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void handlePaymentCompletedEvent(PaymentCompletedEvent event) {
-        PaymentInfo paymentInfo = event.paymentInfo();
-
+    public void handleMemberRoleChangedEvent(MemberRoleChangedEvent event) {
         Member member = memberRepository
-                .findById(paymentInfo.memberId())
+                .findById(event.memberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // 결제가 완료되는 경우 사용자의 권한이 변경될 수 있으므로 세션의 권한 정보를 갱신합니다.
         updateAuthenticationInAllSessions(member);
     }
 }

@@ -2,6 +2,7 @@ package aegis.server.domain.member.service;
 
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.domain.Role;
+import aegis.server.domain.member.domain.event.MemberRoleChangedEvent;
 import aegis.server.domain.member.dto.request.PersonalInfoUpdateRequest;
 import aegis.server.domain.member.dto.request.ProfileIconUpdateRequest;
 import aegis.server.domain.member.dto.response.AdminMemberSummaryResponse;
@@ -35,6 +37,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PaymentRepository paymentRepository;
     private final PointAccountRepository pointAccountRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public List<AdminMemberSummaryResponse> findAllMembersForAdmin() {
         return memberRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream()
@@ -92,7 +95,12 @@ public class MemberService {
         List<String> demotedMemberStudentIds =
                 unpaidMembers.stream().map(Member::getStudentId).toList();
 
-        unpaidMembers.forEach(Member::demoteToGuest);
+        unpaidMembers.forEach(member -> {
+            if (!member.isGuest()) {
+                member.demoteToGuest();
+                applicationEventPublisher.publishEvent(new MemberRoleChangedEvent(member.getId()));
+            }
+        });
         pointAccountRepository
                 .findAllById(unpaidMembers.stream().map(Member::getId).toList())
                 .forEach(PointAccount::resetTotalEarned);
