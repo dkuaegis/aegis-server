@@ -1,4 +1,4 @@
-FROM gradle:9.5.1-jdk25-ubi10 AS builder
+FROM gradle:9.6.1-jdk25-ubi10 AS builder
 
 WORKDIR /tmp
 
@@ -19,7 +19,7 @@ FROM eclipse-temurin:25.0.3_9-jre-ubi10-minimal
 
 WORKDIR /app
 
-RUN wget -O /app/grafana-opentelemetry-java.jar https://github.com/grafana/grafana-opentelemetry-java/releases/download/v2.27.0/grafana-opentelemetry-java.jar
+RUN wget -O /app/grafana-opentelemetry-java.jar https://github.com/grafana/grafana-opentelemetry-java/releases/download/v2.30.0/grafana-opentelemetry-java.jar
 
 COPY --from=builder /tmp/build/version.txt /app/version.txt
 COPY --from=builder /tmp/build/libs/*-*.jar /app/app.jar
