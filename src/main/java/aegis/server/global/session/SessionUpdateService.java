@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.Session;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,6 @@ import aegis.server.domain.payment.dto.internal.PaymentInfo;
 import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.global.security.oidc.CustomOidcUser;
-import aegis.server.global.security.oidc.UserDetails;
 
 @Slf4j
 @Service
@@ -38,19 +38,12 @@ public class SessionUpdateService {
     private final MemberRepository memberRepository;
 
     @SuppressWarnings("unchecked")
-    public void updateUserDetailsInAllSessions(Member member) {
+    public void updateAuthenticationInAllSessions(Member member) {
         Map<String, ? extends Session> userSessions =
                 sessionRepository.findByPrincipalName(member.getId().toString());
 
-        UserDetails updatedUserDetails = UserDetails.from(member);
-
         userSessions.values().forEach(session -> {
-            // 1. 세션의 userDetails 갱신
-            session.setAttribute("userDetails", updatedUserDetails);
-
-            // 2. SecurityContext의 Authentication 갱신
             updateSecurityContext(session, member);
-
             sessionRepository.save(session);
             log.info(
                     "[SessionUpdateService] 세션 및 SecurityContext 권한 정보 갱신: memberId={}, sessionId={}, newRole={}",
@@ -66,7 +59,8 @@ public class SessionUpdateService {
     }
 
     private void updateSecurityContext(Session session, Member member) {
-        SecurityContext securityContext = session.getAttribute("SPRING_SECURITY_CONTEXT");
+        SecurityContext securityContext =
+                session.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
         if (securityContext != null && securityContext.getAuthentication() instanceof OAuth2AuthenticationToken) {
             OAuth2AuthenticationToken currentToken = (OAuth2AuthenticationToken) securityContext.getAuthentication();
 
@@ -84,7 +78,7 @@ public class SessionUpdateService {
                     currentToken.getAuthorizedClientRegistrationId());
 
             securityContext.setAuthentication(updatedToken);
-            session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
+            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
         }
     }
 
@@ -98,6 +92,6 @@ public class SessionUpdateService {
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         // 결제가 완료되는 경우 사용자의 권한이 변경될 수 있으므로 세션의 권한 정보를 갱신합니다.
-        updateUserDetailsInAllSessions(member);
+        updateAuthenticationInAllSessions(member);
     }
 }

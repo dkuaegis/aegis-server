@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.Session;
 
@@ -22,11 +23,11 @@ import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.domain.Role;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.global.security.oidc.CustomOidcUser;
-import aegis.server.global.security.oidc.UserDetails;
 import aegis.server.helper.IntegrationTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SessionUpdateServiceTest extends IntegrationTest {
 
@@ -50,25 +51,22 @@ class SessionUpdateServiceTest extends IntegrationTest {
 
         Session session = sessionRepository.createSession();
         session.setAttribute(
-                FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME,
-                member.getId().toString());
-        session.setAttribute("userDetails", UserDetails.from(member));
-        session.setAttribute("SPRING_SECURITY_CONTEXT", createSecurityContext(member));
+                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, createSecurityContext(member));
         sessionRepository.save(session);
+        assertTrue(
+                sessionRepository.findByPrincipalName(member.getId().toString()).containsKey(session.getId()));
 
         member.promoteToUser();
         memberRepository.saveAndFlush(member);
 
         // when
-        sessionUpdateService.updateUserDetailsInAllSessions(member);
+        sessionUpdateService.updateAuthenticationInAllSessions(member);
 
         // then
         Session updatedSession = (Session) sessionRepository.findById(session.getId());
         assertNotNull(updatedSession);
-        UserDetails updatedUserDetails = updatedSession.getAttribute("userDetails");
-        assertEquals(Role.USER, updatedUserDetails.getRole());
-
-        SecurityContext updatedSecurityContext = updatedSession.getAttribute("SPRING_SECURITY_CONTEXT");
+        SecurityContext updatedSecurityContext =
+                updatedSession.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
         CustomOidcUser updatedPrincipal =
                 (CustomOidcUser) updatedSecurityContext.getAuthentication().getPrincipal();
         assertEquals(Role.USER, updatedPrincipal.getUserDetails().getRole());
