@@ -10,7 +10,6 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -39,9 +38,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource())).csrf(AbstractHttpConfigurer::disable);
 
         http.exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(
                 (request, response, authException) -> response.setStatus(HttpStatus.UNAUTHORIZED.value())));
@@ -52,7 +49,7 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(auth -> auth
                 // 공개 API (인증 불필요)
-                .requestMatchers("/actuator/**", "/internal/**", "/test/**", "/auth/error/**", "/docs/**")
+                .requestMatchers("/actuator/**", "/internal/**", "/auth/error/**", "/docs/**")
                 .permitAll()
 
                 // 관리자 전용 API
