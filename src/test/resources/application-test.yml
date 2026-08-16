@@ -28,6 +28,9 @@ email-restriction:
   enabled: true
   admin-email: dankook.aegis@gmail.com
 
+oauth2-login:
+  default-redirect-uri: http://localhost:5173
+
 internal-api-key:
   tx-track-api: test-api-key
 

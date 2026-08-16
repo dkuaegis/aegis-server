@@ -31,6 +31,7 @@ public class Constant {
     public static final String DEV_MYPAGE_URL = "https://dev-mypage.dkuaegis.org";
     public static final String DEV_ADMIN_URL = "https://dev-admin.dkuaegis.org";
     public static final String DEV_WEB_URL = "https://dev-web.dkuaegis.org";
+    public static final String DEV_NEXT_URL = "https://dev-next.dkuaegis.org";
 
     public static final String LOCAL_VITE_BUILD_CLIENT_URL = "http://localhost:4173";
     public static final String LOCAL_VITE_CLIENT_URL = "http://localhost:5173";
@@ -56,6 +57,7 @@ public class Constant {
             DEV_MYPAGE_URL,
             DEV_ADMIN_URL,
             DEV_WEB_URL,
+            DEV_NEXT_URL,
             LOCAL_VITE_BUILD_CLIENT_URL,
             LOCAL_VITE_CLIENT_URL,
             LOCAL_VITE_CLIENT_URL_2,

@@ -17,3 +17,6 @@ server:
       cookie:
         same-site: none
         secure: true
+
+oauth2-login:
+  default-redirect-uri: ${OAUTH2_LOGIN_DEFAULT_REDIRECT_URI:https://dkuaegis.org}
