@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
 
     steps:
       - name: Checkout code
@@ -80,13 +80,32 @@ jobs:
             echo "value=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Set up JDK 25
+        if: steps.image_exists.outputs.value != 'true'
+        uses: actions/setup-java@v5
+        with:
+          java-version: 25
+          distribution: "temurin"
+
+      - name: Set up Gradle
+        if: steps.image_exists.outputs.value != 'true'
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: false
+
+      - name: Build application
+        if: steps.image_exists.outputs.value != 'true'
+        run: ./gradlew bootJar writeVersionFile --build-cache -x spotlessApply -x spotlessCheck
+
       - name: Build and push image
         id: build
         if: steps.image_exists.outputs.value != 'true'
         uses: docker/build-push-action@v7
         with:
           context: .
+          target: prebuilt
           push: true
+          platforms: linux/arm64
           tags: ${{ steps.image.outputs.source_tag }}
           labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
           cache-from: type=gha,scope=aegis-server
