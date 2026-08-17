@@ -29,6 +29,8 @@ public class DatabaseCleaner implements InitializingBean {
                 .map(EntityType::getName)
                 .map(name -> name.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase())
                 .collect(Collectors.toList());
+        tableNames.add("spring_session_attributes");
+        tableNames.add("spring_session");
     }
 
     public void clean() {

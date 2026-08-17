@@ -10,6 +10,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
+import static aegis.server.global.security.oidc.OidcAccountValidator.NOT_DKU_EMAIL;
+
 @Component
 public class CustomAuthenticationFailureHandler implements AuthenticationFailureHandler {
 
@@ -19,7 +21,7 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
             throws IOException {
         if (exception instanceof OAuth2AuthenticationException oauth2Exception) {
             String errorCode = oauth2Exception.getError().getErrorCode();
-            if ("NOT_DKU_EMAIL".equals(errorCode)) {
+            if (NOT_DKU_EMAIL.equals(errorCode)) {
                 response.sendRedirect("/auth/error/not-dku");
                 return;
             }

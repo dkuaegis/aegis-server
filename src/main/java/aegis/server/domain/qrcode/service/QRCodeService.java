@@ -2,6 +2,8 @@ package aegis.server.domain.qrcode.service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -30,21 +32,29 @@ import aegis.server.global.security.oidc.UserDetails;
 @RequiredArgsConstructor
 public class QRCodeService {
 
+    private static final long QR_CODE_VALIDITY_SECONDS = 60;
+
     private final QRCodeRepository qrCodeRepository;
     private final MemberRepository memberRepository;
+    private final Clock clock;
 
     @Transactional
     public String issueQRCode(UserDetails userDetails) {
         Long memberId = userDetails.getMemberId();
+        memberRepository.findByIdWithLock(memberId).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // Redis에서 기존 QR코드 명시적으로 조회 후 삭제
-        qrCodeRepository.findByMemberId(memberId).ifPresent(qrCodeRepository::delete);
-
-        UUID qrCodeId = UUID.randomUUID();
-        QRCode qrCode = QRCode.of(qrCodeId, memberId);
+        UUID token = UUID.randomUUID();
+        LocalDateTime expiresAt = LocalDateTime.now(clock).plusSeconds(QR_CODE_VALIDITY_SECONDS);
+        QRCode qrCode = qrCodeRepository
+                .findByMemberId(memberId)
+                .map(existingQrCode -> {
+                    existingQrCode.reissue(token, expiresAt);
+                    return existingQrCode;
+                })
+                .orElseGet(() -> QRCode.create(token, memberId, expiresAt));
         qrCodeRepository.save(qrCode);
 
-        return generateQrCodeImage(qrCodeId.toString());
+        return generateQrCodeImage(token.toString());
     }
 
     private String generateQrCodeImage(String text) {
@@ -61,15 +71,16 @@ public class QRCodeService {
     }
 
     public QRCodeMemberResponse findMemberByQrCodeUuid(String uuid) {
-        UUID id;
+        UUID token;
         try {
-            id = UUID.fromString(uuid);
+            token = UUID.fromString(uuid);
         } catch (IllegalArgumentException e) {
             throw new CustomException(ErrorCode.BAD_REQUEST);
         }
 
-        QRCode qrCode =
-                qrCodeRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.QR_CODE_NOT_FOUND));
+        QRCode qrCode = qrCodeRepository
+                .findByTokenAndExpiresAtAfter(token, LocalDateTime.now(clock))
+                .orElseThrow(() -> new CustomException(ErrorCode.QR_CODE_NOT_FOUND));
 
         Long memberId = qrCode.getMemberId();
         Member member =

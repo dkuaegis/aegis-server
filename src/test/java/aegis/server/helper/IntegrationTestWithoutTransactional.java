@@ -24,9 +24,6 @@ public class IntegrationTestWithoutTransactional {
     DatabaseCleaner databaseCleaner;
 
     @Autowired
-    RedisCleaner redisCleaner;
-
-    @Autowired
     MemberRepository memberRepository;
 
     @Autowired
@@ -44,7 +41,6 @@ public class IntegrationTestWithoutTransactional {
     @AfterEach
     void setUp() {
         databaseCleaner.clean();
-        redisCleaner.clean();
     }
 
     protected Member createMember() {

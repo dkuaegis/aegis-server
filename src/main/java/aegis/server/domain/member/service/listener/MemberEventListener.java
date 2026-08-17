@@ -1,5 +1,6 @@
 package aegis.server.domain.member.service.listener;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import aegis.server.domain.member.domain.Member;
+import aegis.server.domain.member.domain.event.MemberRoleChangedEvent;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.payment.domain.event.PaymentCompletedEvent;
 import aegis.server.domain.payment.dto.internal.PaymentInfo;
@@ -22,6 +24,7 @@ import aegis.server.global.exception.ErrorCode;
 public class MemberEventListener {
 
     private final MemberRepository memberRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -39,6 +42,7 @@ public class MemberEventListener {
         if (member.isGuest()) {
             member.promoteToUser();
             memberRepository.save(member);
+            applicationEventPublisher.publishEvent(new MemberRoleChangedEvent(member.getId()));
             log.info(
                     "[MemberEventListener] 회비 납부 완료로 인한 자동 승격: memberId={}, memberName={}, GUEST → USER",
                     member.getId(),

@@ -1,11 +1,9 @@
 package aegis.server.global.security.oidc;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +14,6 @@ import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.member.repository.MemberRepository;
 import aegis.server.domain.point.domain.PointAccount;
 import aegis.server.domain.point.repository.PointAccountRepository;
-import aegis.server.global.exception.CustomException;
-import aegis.server.global.exception.ErrorCode;
 
 @Service
 @RequiredArgsConstructor
@@ -25,18 +21,14 @@ public class CustomOidcUserService implements OAuth2UserService<OidcUserRequest,
 
     private final MemberRepository memberRepository;
     private final PointAccountRepository pointAccountRepository;
+    private final OidcAccountValidator oidcAccountValidator;
     private final OidcUserService delegate = new OidcUserService();
-
-    @Value("${email-restriction.enabled}")
-    private boolean emailRestrictionEnabled;
-
-    @Value("${email-restriction.admin-email}")
-    private String adminEmail;
 
     @Override
     @Transactional
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         OidcUser oidcUser = delegate.loadUser(userRequest);
+        oidcAccountValidator.validate(oidcUser);
 
         Member member = findOrCreateMember(oidcUser);
         createPointAccountIfNotExists(member);
@@ -48,14 +40,6 @@ public class CustomOidcUserService implements OAuth2UserService<OidcUserRequest,
         String oidcId = oidcUser.getSubject();
         String email = oidcUser.getEmail();
         String name = oidcUser.getFullName();
-
-        if (email == null) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED);
-        } else if (emailRestrictionEnabled) {
-            if (!email.equals(adminEmail) && !email.endsWith("@dankook.ac.kr")) {
-                throw new OAuth2AuthenticationException(new OAuth2Error("NOT_DKU_EMAIL"));
-            }
-        }
 
         Member member = memberRepository.findByOidcId(oidcId).orElse(null);
         if (member == null) {

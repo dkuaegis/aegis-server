@@ -17,12 +17,9 @@ spring:
   jpa:
     open-in-view: false
   session:
-    data:
-      redis:
-        namespace: aegis
-        flush-mode: on_save
-        save-mode: always
-        repository-type: indexed
+    jdbc:
+      initialize-schema: always
+      schema: classpath:schema/spring-session-postgresql.sql
     timeout: ${SESSION_TIMEOUT}
 
 management:

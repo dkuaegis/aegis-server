@@ -1,8 +1,6 @@
 package aegis.server.global.security.oidc;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,55 +8,43 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import aegis.server.global.exception.CustomException;
-import aegis.server.global.exception.ErrorCode;
-
-import static aegis.server.global.constant.Constant.ALLOWED_CLIENT_URLS;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class RefererFilter extends OncePerRequestFilter {
+
+    static final String REDIRECT_URI_SESSION_ATTRIBUTE = "redirectUri";
 
     private final RequestMatcher authorizationRequestMatcher =
             PathPatternRequestMatcher.withDefaults().matcher("/oauth2/authorization/**");
+    private final AllowedClientUrlValidator allowedClientUrlValidator;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         if (authorizationRequestMatcher.matches(request)) {
-            String referer = request.getHeader("Referer");
-            if (referer != null && !referer.isEmpty()) {
-                HttpSession session = request.getSession();
-                if (validateReferer(referer)) {
-                    session.setAttribute("redirectUri", referer);
-                } else {
+            HttpSession currentSession = request.getSession(false);
+            if (currentSession != null) {
+                currentSession.removeAttribute(REDIRECT_URI_SESSION_ATTRIBUTE);
+            }
+
+            String referer = request.getHeader(HttpHeaders.REFERER);
+            if (referer != null && !referer.isBlank()) {
+                if (!allowedClientUrlValidator.isAllowed(referer)) {
                     response.setStatus(HttpStatus.BAD_REQUEST.value());
                     return;
                 }
+                request.getSession().setAttribute(REDIRECT_URI_SESSION_ATTRIBUTE, referer);
             }
         }
         filterChain.doFilter(request, response);
-    }
-
-    private boolean validateReferer(String referer) {
-        String host = extractHost(referer);
-        return ALLOWED_CLIENT_URLS.stream().anyMatch(allowedUrl -> isAllowedHost(allowedUrl, host));
-    }
-
-    private boolean isAllowedHost(String allowedUrl, String host) {
-        return extractHost(allowedUrl).equals(host);
-    }
-
-    private String extractHost(String uriString) {
-        try {
-            return new URI(uriString).getHost();
-        } catch (URISyntaxException e) {
-            throw new CustomException(ErrorCode.BAD_REQUEST);
-        }
     }
 }

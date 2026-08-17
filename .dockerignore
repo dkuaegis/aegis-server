@@ -1,0 +1,16 @@
+**
+
+!Dockerfile
+!.dockerignore
+!build.gradle
+!settings.gradle
+!gradle.properties
+!gradlew
+!gradle/
+!gradle/**
+!src/
+!src/**
+!build/
+!build/version.txt
+!build/libs/
+!build/libs/*-*.jar

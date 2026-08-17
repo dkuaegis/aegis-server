@@ -19,10 +19,7 @@ spring:
             client-id: test-client-id
             client-secret: test-client-secret
   session:
-    data:
-      redis:
-        repository-type: default
-    timeout: 0
+    timeout: 30m
 
 exception:
   log-only-aegis-stack-trace: false
@@ -30,6 +27,9 @@ exception:
 email-restriction:
   enabled: true
   admin-email: dankook.aegis@gmail.com
+
+oauth2-login:
+  default-redirect-uri: http://localhost:5173
 
 internal-api-key:
   tx-track-api: test-api-key
