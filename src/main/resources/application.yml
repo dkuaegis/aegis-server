@@ -38,6 +38,7 @@ springdoc:
     doc-expansion: none
   api-docs:
     path: /docs/api
+    version: OPENAPI_3_0
   default-produces-media-type: application/json
   default-consumes-media-type: application/json
 
