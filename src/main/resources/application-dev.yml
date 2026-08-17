@@ -19,4 +19,4 @@ server:
         secure: true
 
 oauth2-login:
-  default-redirect-uri: ${OAUTH2_LOGIN_DEFAULT_REDIRECT_URI:https://dev-next.dkuaegis.org}
+  default-redirect-uri: ${OAUTH2_LOGIN_DEFAULT_REDIRECT_URI:https://dev-web.dkuaegis.org}
