@@ -50,6 +50,7 @@ import aegis.server.global.exception.CustomException;
 import aegis.server.global.exception.ErrorCode;
 import aegis.server.helper.IntegrationTestWithoutTransactional;
 
+import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MemberRecordServiceTest extends IntegrationTestWithoutTransactional {
@@ -328,8 +329,7 @@ class MemberRecordServiceTest extends IntegrationTestWithoutTransactional {
             // then
             assertEquals(YearSemester.values().length, options.size());
             assertTrue(options.stream()
-                    .anyMatch(
-                            option -> option.yearSemester() == YearSemester.YEAR_SEMESTER_2026_1 && option.current()));
+                    .anyMatch(option -> option.yearSemester() == CURRENT_YEAR_SEMESTER && option.current()));
             assertTrue(options.stream()
                     .allMatch(
                             option -> option.label() != null && !option.label().isBlank()));
@@ -362,12 +362,12 @@ class MemberRecordServiceTest extends IntegrationTestWithoutTransactional {
                     activityParticipationRepository.save(ActivityParticipation.create(activity, member));
 
             // when
-            AdminMemberSemesterActivityDetailResponse response = memberRecordService.getMemberSemesterActivityDetail(
-                    member.getId(), YearSemester.YEAR_SEMESTER_2026_1);
+            AdminMemberSemesterActivityDetailResponse response =
+                    memberRecordService.getMemberSemesterActivityDetail(member.getId(), CURRENT_YEAR_SEMESTER);
 
             // then
             assertEquals(member.getId(), response.memberId());
-            assertEquals(YearSemester.YEAR_SEMESTER_2026_1, response.yearSemester());
+            assertEquals(CURRENT_YEAR_SEMESTER, response.yearSemester());
             assertEquals(1, response.summary().studyParticipationCount());
             assertEquals(1, response.summary().studyAttendanceCount());
             assertEquals(1, response.summary().activityParticipationCount());
