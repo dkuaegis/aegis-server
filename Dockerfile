@@ -1,5 +1,4 @@
-# 로컬 및 기존 Coolify 앱에서 소스부터 빌드합니다.
-FROM gradle:9.6.1-jdk25-ubi10 AS builder
+FROM gradle:9.8.0-jdk25-ubi10 AS builder
 
 WORKDIR /tmp
 
@@ -17,7 +16,7 @@ RUN --mount=type=cache,target=/home/gradle/.gradle/caches,id=gradle-cache,sharin
     --mount=type=cache,target=/home/gradle/.gradle/wrapper,id=gradle-wrapper,sharing=locked \
     gradle build --no-daemon -x check -x test -x spotlessApply -x spotlessCheck
 
-FROM eclipse-temurin:25.0.3_9-jre-ubi10-minimal AS runtime
+FROM eclipse-temurin:25.0.4_7-jre-ubi10-minimal AS runtime
 
 WORKDIR /app
 
