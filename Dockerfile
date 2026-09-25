@@ -1,3 +1,4 @@
+# 로컬 및 기존 Coolify 앱에서 소스부터 빌드합니다.
 FROM gradle:9.6.1-jdk25-ubi10 AS builder
 
 WORKDIR /tmp
@@ -16,11 +17,11 @@ RUN --mount=type=cache,target=/home/gradle/.gradle/caches,id=gradle-cache,sharin
     --mount=type=cache,target=/home/gradle/.gradle/wrapper,id=gradle-wrapper,sharing=locked \
     gradle build --no-daemon -x check -x test -x spotlessApply -x spotlessCheck
 
-FROM eclipse-temurin:25.0.3_9-jre-ubi10-minimal AS runtime-base
+FROM eclipse-temurin:25.0.3_9-jre-ubi10-minimal AS runtime
 
 WORKDIR /app
 
-RUN wget -O /app/grafana-opentelemetry-java.jar https://github.com/grafana/grafana-opentelemetry-java/releases/download/v2.30.0/grafana-opentelemetry-java.jar
+RUN wget -O /app/grafana-opentelemetry-java.jar https://github.com/grafana/grafana-opentelemetry-java/releases/download/v2.31.1/grafana-opentelemetry-java.jar
 
 EXPOSE 8080
 
@@ -32,13 +33,6 @@ ENV TZ=Asia/Seoul
 ENV JAVA_TOOL_OPTIONS="-Duser.timezone=Asia/Seoul"
 
 ENTRYPOINT ["sh", "-c", "export OTEL_RESOURCE_ATTRIBUTES=\"deployment.environment=${OTEL_DEPLOYMENT_ENVIRONMENT},service.namespace=${OTEL_SERVICE_NAMESPACE},service.version=$(cat /app/version.txt)\" && exec java -javaagent:/app/grafana-opentelemetry-java.jar -jar /app/app.jar 2>&1"]
-
-FROM runtime-base AS prebuilt
-
-COPY build/version.txt /app/version.txt
-COPY build/libs/*-*.jar /app/app.jar
-
-FROM runtime-base AS runtime
 
 COPY --from=builder /tmp/build/version.txt /app/version.txt
 COPY --from=builder /tmp/build/libs/*-*.jar /app/app.jar
