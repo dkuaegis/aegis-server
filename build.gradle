@@ -36,8 +36,11 @@ spotless {
     }
 }
 
-tasks.named('compileJava') {
-    dependsOn 'spotlessApply'
+// CI에서는 포맷을 자동 수정하지 않고 spotlessCheck로 위반을 검출한다.
+if (!providers.environmentVariable('CI').present) {
+    tasks.named('compileJava') {
+        dependsOn 'spotlessApply'
+    }
 }
 
 configurations {
