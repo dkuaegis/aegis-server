@@ -1,0 +1,60 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:best-practices"],
+  "timezone": "Asia/Seoul",
+  "schedule": ["* * * * 1"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 0,
+  "minimumReleaseAge": "7 days",
+  "osvVulnerabilityAlerts": true,
+  "lockFileMaintenance": {
+    "enabled": false
+  },
+  "major": {
+    "dependencyDashboardApproval": true
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Dockerfile에서 내려받는 Grafana OpenTelemetry Java agent",
+      "managerFilePatterns": ["/(^|/)Dockerfile[^/]*$/"],
+      "matchStrings": [
+        "https://github\\.com/(?<depName>grafana/grafana-opentelemetry-java)/releases/download/(?<currentValue>v[^/]+)/"
+      ],
+      "datasourceTemplate": "github-releases"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "베이스 이미지 digest는 릴리스 시각이 없어 안정화 대기를 적용하지 않는다",
+      "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["digest", "pinDigest"],
+      "minimumReleaseAge": null
+    },
+    {
+      "description": "런타임 JRE는 LTS인 Java 25 안에서만 올린다",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["eclipse-temurin"],
+      "allowedVersions": "/^25\\./"
+    },
+    {
+      "groupName": "Spring Boot",
+      "matchPackageNames": [
+        "org.springframework.boot:org.springframework.boot.gradle.plugin",
+        "io.spring.dependency-management:io.spring.dependency-management.gradle.plugin"
+      ]
+    },
+    {
+      "groupName": "Google API Client",
+      "matchPackageNames": ["com.google.api-client:**", "com.google.oauth-client:**", "com.google.apis:**"]
+    },
+    {
+      "groupName": "ZXing",
+      "matchPackageNames": ["com.google.zxing:**"]
+    },
+    {
+      "groupName": "GitHub Actions",
+      "matchManagers": ["github-actions"]
+    }
+  ]
+}
