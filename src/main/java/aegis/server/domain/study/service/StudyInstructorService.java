@@ -128,8 +128,8 @@ public class StudyInstructorService {
                 .findByIdWithLock(studyApplication.getStudy().getId())
                 .orElseThrow(() -> new CustomException(ErrorCode.STUDY_NOT_FOUND));
 
-        study.increaseCurrentParticipant();
         studyApplication.approve();
+        study.increaseCurrentParticipant();
 
         StudyMember studyMember = StudyMember.create(study, studyApplication.getMember(), StudyRole.PARTICIPANT);
         studyMemberRepository.save(studyMember);

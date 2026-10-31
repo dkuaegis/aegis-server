@@ -63,11 +63,22 @@ public class StudyApplication extends BaseEntity {
     }
 
     public void approve() {
+        validateNotApproved();
         this.status = StudyApplicationStatus.APPROVED;
     }
 
+    /**
+     * 승인된 신청은 이미 스터디원이 되었으므로 거절로 되돌릴 수 없습니다.
+     */
     public void reject() {
+        validateNotApproved();
         this.status = StudyApplicationStatus.REJECTED;
+    }
+
+    private void validateNotApproved() {
+        if (this.status == StudyApplicationStatus.APPROVED) {
+            throw new CustomException(ErrorCode.STUDY_APPLICATION_ALREADY_APPROVED);
+        }
     }
 
     private static void validateApplicationReason(String applicationReason) {

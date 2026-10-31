@@ -885,6 +885,83 @@ class StudyInstructorServiceTest extends IntegrationTest {
     }
 
     @Nested
+    class 스터디_신청_재처리 {
+
+        @Test
+        void 이미_승인한_신청을_다시_승인하면_예외가_발생하고_인원이_늘지_않는다() {
+            // given
+            Member instructor = createMember();
+            Member applicant = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+            StudyApplication application = createStudyApplication(study, applicant, "신청 사유");
+            studyInstructorService.approveStudyApplication(study.getId(), application.getId(), instructorDetails);
+
+            // when
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> studyInstructorService.approveStudyApplication(
+                            study.getId(), application.getId(), instructorDetails));
+
+            // then
+            assertEquals(ErrorCode.STUDY_APPLICATION_ALREADY_APPROVED, exception.getErrorCode());
+            assertEquals(1, studyRepository.findById(study.getId()).get().getCurrentParticipants());
+        }
+
+        @Test
+        void 승인한_신청을_거절하면_예외가_발생하고_스터디원으로_남는다() {
+            // given
+            Member instructor = createMember();
+            Member applicant = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+            StudyApplication application = createStudyApplication(study, applicant, "신청 사유");
+            studyInstructorService.approveStudyApplication(study.getId(), application.getId(), instructorDetails);
+
+            // when
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> studyInstructorService.rejectStudyApplication(
+                            study.getId(), application.getId(), instructorDetails));
+
+            // then
+            assertEquals(ErrorCode.STUDY_APPLICATION_ALREADY_APPROVED, exception.getErrorCode());
+            assertEquals(
+                    StudyApplicationStatus.APPROVED,
+                    studyApplicationRepository
+                            .findById(application.getId())
+                            .get()
+                            .getStatus());
+            assertTrue(
+                    studyMemberRepository.findByStudyAndMember(study, applicant).isPresent());
+        }
+
+        @Test
+        void 거절한_신청은_다시_승인할_수_있다() {
+            // given
+            Member instructor = createMember();
+            Member applicant = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+            StudyApplication application = createStudyApplication(study, applicant, "신청 사유");
+            studyInstructorService.rejectStudyApplication(study.getId(), application.getId(), instructorDetails);
+
+            // when
+            studyInstructorService.approveStudyApplication(study.getId(), application.getId(), instructorDetails);
+
+            // then
+            assertEquals(
+                    StudyApplicationStatus.APPROVED,
+                    studyApplicationRepository
+                            .findById(application.getId())
+                            .get()
+                            .getStatus());
+            assertTrue(
+                    studyMemberRepository.findByStudyAndMember(study, applicant).isPresent());
+        }
+    }
+
+    @Nested
     class 스터디_신청_거절 {
 
         @Test
