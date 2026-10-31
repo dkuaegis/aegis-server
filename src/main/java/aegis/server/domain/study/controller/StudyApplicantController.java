@@ -1,5 +1,7 @@
 package aegis.server.domain.study.controller;
 
+import jakarta.validation.Valid;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -70,7 +72,7 @@ public class StudyApplicantController {
     public ResponseEntity<ApplicantStudyApplicationDetail> updateStudyApplicationReason(
             @PathVariable Long studyId,
             @Parameter(hidden = true) @LoginUser UserDetails userDetails,
-            @RequestBody StudyEnrollRequest request) {
+            @Valid @RequestBody StudyEnrollRequest request) {
         ApplicantStudyApplicationDetail response =
                 studyApplicantService.updateStudyApplicationReason(studyId, request, userDetails);
         return ResponseEntity.ok(response);

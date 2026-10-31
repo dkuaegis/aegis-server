@@ -218,6 +218,21 @@ class StudyGeneralServiceTest extends IntegrationTest {
         }
 
         @Test
+        void 신청_사유_없이도_참여할_수_있다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Study study = createStudy("FCFS 스터디", StudyRecruitmentMethod.FCFS);
+            StudyEnrollRequest request = new StudyEnrollRequest(null);
+
+            // when
+            studyGeneralService.enrollInStudy(study.getId(), request, userDetails);
+
+            // then
+            assertTrue(studyMemberRepository.existsByStudyAndMember(study, member));
+        }
+
+        @Test
         void 이미_등록된_사용자가_중복_신청하면_예외가_발생한다() {
             // given
             Member member = createMember();
@@ -305,6 +320,24 @@ class StudyGeneralServiceTest extends IntegrationTest {
                     .get();
             assertEquals("신청 사유입니다", studyApplication.getApplicationReason());
             assertEquals(StudyApplicationStatus.PENDING, studyApplication.getStatus());
+        }
+
+        @Test
+        void 신청_사유가_비어_있으면_예외가_발생하고_신청서를_만들지_않는다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Study study = createStudy("신청서 스터디", StudyRecruitmentMethod.APPLICATION);
+            StudyEnrollRequest request = new StudyEnrollRequest(" ");
+
+            // when & then
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> studyGeneralService.enrollInStudy(study.getId(), request, userDetails));
+            assertEquals(ErrorCode.STUDY_APPLICATION_REASON_REQUIRED, exception.getErrorCode());
+            assertTrue(studyApplicationRepository
+                    .findByStudyAndMember(study, member)
+                    .isEmpty());
         }
 
         @Test

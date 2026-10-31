@@ -85,7 +85,7 @@ public class StudyGeneralController {
     public ResponseEntity<Void> enrollInStudy(
             @Parameter(hidden = true) @LoginUser UserDetails userDetails,
             @PathVariable Long studyId,
-            @RequestBody StudyEnrollRequest request) {
+            @Valid @RequestBody StudyEnrollRequest request) {
         studyGeneralService.enrollInStudy(studyId, request, userDetails);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

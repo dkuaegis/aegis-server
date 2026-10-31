@@ -42,6 +42,7 @@ public class StudyApplication extends BaseEntity {
     private String applicationReason;
 
     public static StudyApplication create(Study study, Member member, String applicationReason) {
+        validateApplicationReason(applicationReason);
         return StudyApplication.builder()
                 .study(study)
                 .member(member)
@@ -57,6 +58,7 @@ public class StudyApplication extends BaseEntity {
     }
 
     public void updateApplicationReason(String applicationReason) {
+        validateApplicationReason(applicationReason);
         this.applicationReason = applicationReason;
     }
 
@@ -66,5 +68,11 @@ public class StudyApplication extends BaseEntity {
 
     public void reject() {
         this.status = StudyApplicationStatus.REJECTED;
+    }
+
+    private static void validateApplicationReason(String applicationReason) {
+        if (applicationReason == null || applicationReason.isBlank()) {
+            throw new CustomException(ErrorCode.STUDY_APPLICATION_REASON_REQUIRED);
+        }
     }
 }

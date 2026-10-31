@@ -198,6 +198,23 @@ class StudyApplicantServiceTest extends IntegrationTest {
         }
 
         @Test
+        void 빈_신청_사유로_수정하면_예외가_발생하고_기존_사유를_유지한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Study study = createStudy();
+            StudyApplication application = createStudyApplication(study, member, "기존 신청 사유");
+            StudyEnrollRequest request = new StudyEnrollRequest("   ");
+
+            // when & then
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> studyApplicantService.updateStudyApplicationReason(study.getId(), request, userDetails));
+            assertEquals(ErrorCode.STUDY_APPLICATION_REASON_REQUIRED, exception.getErrorCode());
+            assertEquals("기존 신청 사유", application.getApplicationReason());
+        }
+
+        @Test
         void 선착순_스터디에서는_API_미지원_에러를_반환한다() {
             // given
             Member member = createMember();
