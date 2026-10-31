@@ -51,7 +51,7 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(auth -> auth
                 // 공개 API (인증 불필요)
-                .requestMatchers("/actuator/**", "/internal/**", "/auth/error/**", "/docs/**")
+                .requestMatchers("/actuator/**", "/internal/**", "/auth/error/**", "/docs/**", "/feature-flags")
                 .permitAll()
 
                 // 관리자 전용 API

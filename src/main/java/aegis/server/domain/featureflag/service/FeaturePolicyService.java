@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.featureflag.domain.FeatureFlagKey;
 import aegis.server.domain.featureflag.domain.FeatureFlagValueType;
+import aegis.server.domain.featureflag.dto.response.FeaturePolicyResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +38,18 @@ public class FeaturePolicyService {
 
     public boolean isStudyCreationAllowed() {
         return evaluateStudyCreation().studyCreationAllowed();
+    }
+
+    public FeaturePolicyResponse getFeaturePolicy() {
+        StudyEnrollWindowEvaluation studyEnrollWindow = evaluateStudyEnrollWindow();
+        boolean windowConfigured = studyEnrollWindow.valid();
+
+        return FeaturePolicyResponse.of(
+                isSignupAllowed(),
+                isStudyCreationAllowed(),
+                studyEnrollWindow.enrollmentAllowedNow(),
+                windowConfigured ? studyEnrollWindow.openAt() : null,
+                windowConfigured ? studyEnrollWindow.closeAt() : null);
     }
 
     public StudyEnrollWindowEvaluation evaluateStudyEnrollWindow() {
