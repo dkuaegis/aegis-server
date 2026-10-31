@@ -81,6 +81,8 @@ public class OpenApiContractCustomizer implements OpenApiCustomizer, PropertyCus
             return;
         }
         schemas.forEach((name, schema) -> {
+            // swagger-core가 nullable 속성의 어노테이션을 처음 만난 모델 자체에 옮겨 적는 경우가 있어, 모델 수준 nullable은 제거합니다.
+            schema.setNullable(null);
             if (name.endsWith("Request") || schema.getProperties() == null) {
                 return;
             }
