@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 public enum ErrorCode {
     BAD_REQUEST(HttpStatus.BAD_REQUEST),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED),
+    FORBIDDEN(HttpStatus.FORBIDDEN),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR),
 
     INVALID_ENUM(HttpStatus.BAD_REQUEST),
@@ -18,6 +19,11 @@ public enum ErrorCode {
     ALREADY_EXISTS(HttpStatus.CONFLICT),
 
     NOT_DKU_EMAIL(HttpStatus.BAD_REQUEST),
+
+    // Feature Flag
+    MEMBER_SIGNUP_CLOSED(HttpStatus.FORBIDDEN),
+    STUDY_CREATION_CLOSED(HttpStatus.FORBIDDEN),
+    STUDY_ENROLLMENT_CLOSED(HttpStatus.FORBIDDEN),
 
     // Member & Student
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND),

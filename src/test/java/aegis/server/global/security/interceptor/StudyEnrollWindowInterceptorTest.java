@@ -6,6 +6,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.junit.jupiter.api.Test;
 
 import aegis.server.domain.featureflag.service.FeaturePolicyService;
+import aegis.server.global.exception.CustomException;
+import aegis.server.global.exception.ErrorCode;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -22,12 +24,10 @@ class StudyEnrollWindowInterceptorTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         when(featurePolicyService.isStudyEnrollmentAllowed()).thenReturn(false);
 
-        // when
-        boolean result = interceptor.preHandle(request, response, new Object());
-
-        // then
-        assertFalse(result);
-        assertEquals(403, response.getStatus());
+        // when & then
+        CustomException exception =
+                assertThrows(CustomException.class, () -> interceptor.preHandle(request, response, new Object()));
+        assertEquals(ErrorCode.STUDY_ENROLLMENT_CLOSED, exception.getErrorCode());
     }
 
     @Test

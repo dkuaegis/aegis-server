@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,6 +18,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.RequiredArgsConstructor;
 
+import aegis.server.global.security.SecurityErrorResponseHandler;
 import aegis.server.global.security.oidc.CustomAuthenticationFailureHandler;
 import aegis.server.global.security.oidc.CustomOidcUserService;
 import aegis.server.global.security.oidc.CustomSuccessHandler;
@@ -35,13 +35,15 @@ public class SecurityConfig {
     private final CustomSuccessHandler customSuccessHandler;
     private final CustomAuthenticationFailureHandler authenticationFailureHandler;
     private final RefererFilter refererFilter;
+    private final SecurityErrorResponseHandler securityErrorResponseHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource())).csrf(AbstractHttpConfigurer::disable);
 
-        http.exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(
-                (request, response, authException) -> response.setStatus(HttpStatus.UNAUTHORIZED.value())));
+        http.exceptionHandling(exceptionHandling -> exceptionHandling
+                .authenticationEntryPoint(securityErrorResponseHandler)
+                .accessDeniedHandler(securityErrorResponseHandler));
 
         // API 서버에서는 인증 실패 요청을 로그인 후 복원할 필요가 없으므로 세션에 저장하지 않습니다.
         // 이를 통해 깨진 multipart 요청처럼 저장 과정에서 본문 파싱이 유발되는 부작용도 방지합니다.

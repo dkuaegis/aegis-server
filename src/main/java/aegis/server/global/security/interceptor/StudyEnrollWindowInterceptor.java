@@ -3,13 +3,14 @@ package aegis.server.global.security.interceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.featureflag.service.FeaturePolicyService;
+import aegis.server.global.exception.CustomException;
+import aegis.server.global.exception.ErrorCode;
 
 @Component
 @RequiredArgsConstructor
@@ -27,7 +28,6 @@ public class StudyEnrollWindowInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        response.setStatus(HttpStatus.FORBIDDEN.value());
-        return false;
+        throw new CustomException(ErrorCode.STUDY_ENROLLMENT_CLOSED);
     }
 }
