@@ -64,6 +64,7 @@ public class PaymentController {
     }
 
     @Operation(
+            operationId = "getPaymentStatus",
             summary = "결제 상태 조회",
             description = "로그인한 사용자의 결제 상태를 조회합니다. 결제가 없을 경우 NOT_CREATED 상태를 반환합니다.",
             responses = {

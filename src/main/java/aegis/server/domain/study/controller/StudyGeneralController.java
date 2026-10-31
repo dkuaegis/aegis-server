@@ -33,6 +33,7 @@ public class StudyGeneralController {
     private final StudyGeneralService studyGeneralService;
 
     @Operation(
+            operationId = "getStudies",
             summary = "스터디 목록 조회",
             description = "모든 스터디의 목록을 조회합니다.",
             responses = {@ApiResponse(responseCode = "200", description = "스터디 목록 조회 성공")})
@@ -43,6 +44,7 @@ public class StudyGeneralController {
     }
 
     @Operation(
+            operationId = "getStudy",
             summary = "스터디 상세 조회",
             description = "스터디의 상세 정보를 조회합니다.",
             responses = {
@@ -73,6 +75,7 @@ public class StudyGeneralController {
     }
 
     @Operation(
+            operationId = "enrollStudy",
             summary = "스터디 참여 신청",
             description = "스터디에 참여 신청을 합니다.",
             responses = {

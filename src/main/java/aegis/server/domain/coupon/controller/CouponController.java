@@ -31,6 +31,7 @@ public class CouponController {
     private final CouponService couponService;
 
     @Operation(
+            operationId = "getMyCoupons",
             summary = "내 발급된 쿠폰 조회",
             description = "로그인한 사용자의 모든 발급된 쿠폰을 조회합니다.",
             responses = {
@@ -45,6 +46,7 @@ public class CouponController {
     }
 
     @Operation(
+            operationId = "getMyValidCoupons",
             summary = "내 유효한 쿠폰 조회",
             description = "로그인한 사용자의 발급된 유효 쿠폰만 조회합니다.",
             responses = {
@@ -59,6 +61,7 @@ public class CouponController {
     }
 
     @Operation(
+            operationId = "redeemCouponCode",
             summary = "쿠폰 코드 사용",
             description = "쿠폰 코드를 사용하여 쿠폰을 발급받습니다.",
             responses = {

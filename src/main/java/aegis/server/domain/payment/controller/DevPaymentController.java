@@ -34,6 +34,7 @@ public class DevPaymentController {
     private final DevPaymentService devPaymentService;
 
     @Operation(
+            operationId = "devCreatePayment",
             summary = "개발용 결제 생성",
             description = "개발 환경에서 결제를 생성합니다. 쿠폰 ID, 결제 상태, 학기를 지정할 수 있습니다.",
             responses = {
@@ -50,6 +51,7 @@ public class DevPaymentController {
     }
 
     @Operation(
+            operationId = "devUpdatePayment",
             summary = "개발용 결제 수정",
             description = "개발 환경에서 결제를 수정합니다. 본인의 결제만 수정할 수 있습니다.",
             responses = {
@@ -68,6 +70,7 @@ public class DevPaymentController {
     }
 
     @Operation(
+            operationId = "devGetMyPayments",
             summary = "본인의 모든 결제 조회",
             description = "학기 구분 없이 본인 명의로 된 모든 결제를 조회합니다.",
             responses = {
@@ -82,6 +85,7 @@ public class DevPaymentController {
     }
 
     @Operation(
+            operationId = "devDeletePayment",
             summary = "개발용 결제 삭제",
             description = "개발 환경에서 결제를 삭제합니다. 본인의 결제만 삭제할 수 있습니다.",
             responses = {

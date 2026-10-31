@@ -28,6 +28,7 @@ public class StudyApplicantController {
     private final StudyApplicantService studyApplicantService;
 
     @Operation(
+            operationId = "getMyStudyApplicationStatus",
             summary = "스터디 지원서 상태 조회",
             description =
                     "지원서 스터디에 대해 본인의 지원서 상태를 조회합니다. 지원서를 제출하지 않았다면 200과 함께 status=NONE, id=null을 반환합니다. 선착순 스터디는 이 API를 지원하지 않습니다.",
@@ -45,6 +46,7 @@ public class StudyApplicantController {
     }
 
     @Operation(
+            operationId = "getMyStudyApplication",
             summary = "스터디 지원서 상세 조회",
             description = "본인이 제출한 스터디 지원서의 상세 내용을 조회합니다. 선착순 스터디는 이 API를 지원하지 않습니다.",
             responses = {
@@ -61,6 +63,7 @@ public class StudyApplicantController {
     }
 
     @Operation(
+            operationId = "updateMyStudyApplication",
             summary = "스터디 지원서 수정",
             description = "본인이 제출한 스터디 지원서를 수정합니다. 선착순 스터디는 이 API를 지원하지 않습니다.",
             responses = {

@@ -2,6 +2,8 @@ package aegis.server.domain.study.dto.response;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import aegis.server.domain.study.domain.StudyCategory;
 import aegis.server.domain.study.domain.StudyLevel;
 import aegis.server.domain.study.domain.StudyRecruitmentMethod;
@@ -15,7 +17,7 @@ public record GeneralStudyDetail(
         StudyRecruitmentMethod recruitmentMethod,
         long participantCount,
         int maxParticipants,
-        String schedule,
+        @Schema(nullable = true) String schedule,
         List<String> curricula,
         List<String> qualifications,
         String instructor) {

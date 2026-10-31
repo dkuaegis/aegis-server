@@ -27,6 +27,7 @@ public class QRCodeController {
     private final QRCodeService qrCodeService;
 
     @Operation(
+            operationId = "issueQrCode",
             summary = "QR 코드 발급",
             description = "사용자 QR 코드를 발급합니다. 기존 QR 코드가 있으면 삭제 후 새로 발급합니다.",
             responses = {

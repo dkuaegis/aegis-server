@@ -2,14 +2,16 @@ package aegis.server.domain.study.dto.response;
 
 import java.time.LocalDateTime;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import aegis.server.domain.study.domain.StudyApplication;
 import aegis.server.domain.study.domain.StudyApplicationStatus;
 
 public record InstructorStudyApplicationSummary(
         Long studyApplicationId,
         String name,
-        String studentId,
-        String phoneNumber,
+        @Schema(nullable = true) String studentId,
+        @Schema(nullable = true) String phoneNumber,
         StudyApplicationStatus status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt) {

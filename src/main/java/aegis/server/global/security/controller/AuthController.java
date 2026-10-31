@@ -36,6 +36,7 @@ public class AuthController {
     private String adminEmail;
 
     @Operation(
+            operationId = "getAuthStatus",
             summary = "인증 상태 확인",
             description = "사용자의 인증 상태와 결제 상태를 확인합니다.",
             responses = {
