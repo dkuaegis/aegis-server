@@ -45,7 +45,20 @@ class StudyEnrollWindowInterceptorTest {
     }
 
     @Test
-    void post_외_요청은_검사하지_않는다() {
+    void put_요청이_기간_외면_차단한다() {
+        // given
+        MockHttpServletRequest request = new MockHttpServletRequest("PUT", "/studies/1/applications");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        when(featurePolicyService.isStudyEnrollmentAllowed()).thenReturn(false);
+
+        // when & then
+        CustomException exception =
+                assertThrows(CustomException.class, () -> interceptor.preHandle(request, response, new Object()));
+        assertEquals(ErrorCode.STUDY_ENROLLMENT_CLOSED, exception.getErrorCode());
+    }
+
+    @Test
+    void 조회_요청은_검사하지_않는다() {
         // given
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/studies/1/enrollment");
         MockHttpServletResponse response = new MockHttpServletResponse();

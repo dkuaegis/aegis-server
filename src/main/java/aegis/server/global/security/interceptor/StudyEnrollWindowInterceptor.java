@@ -20,7 +20,9 @@ public class StudyEnrollWindowInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        if (!"POST".equalsIgnoreCase(request.getMethod())) {
+        // 신청(POST)과 지원서 수정(PUT)만 기간을 검사하고, 조회는 기간과 무관하게 허용합니다.
+        String method = request.getMethod();
+        if (!"POST".equalsIgnoreCase(method) && !"PUT".equalsIgnoreCase(method)) {
             return true;
         }
 

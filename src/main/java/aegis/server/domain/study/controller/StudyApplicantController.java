@@ -65,10 +65,11 @@ public class StudyApplicantController {
     @Operation(
             operationId = "updateMyStudyApplication",
             summary = "스터디 지원서 수정",
-            description = "본인이 제출한 스터디 지원서를 수정합니다. 선착순 스터디는 이 API를 지원하지 않습니다.",
+            description = "본인이 제출한 스터디 지원서를 수정합니다. 신청 기간에만 수정할 수 있으며, 선착순 스터디는 이 API를 지원하지 않습니다.",
             responses = {
                 @ApiResponse(responseCode = "200", description = "지원서 수정 성공"),
                 @ApiResponse(responseCode = "400", description = "선착순 스터디에서는 지원하지 않음", content = @Content),
+                @ApiResponse(responseCode = "403", description = "신청 기간이 아님", content = @Content),
                 @ApiResponse(responseCode = "404", description = "스터디 또는 지원서를 찾을 수 없음", content = @Content)
             })
     @PutMapping("/studies/{studyId}/applications")
