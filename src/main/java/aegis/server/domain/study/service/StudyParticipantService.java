@@ -21,6 +21,7 @@ import aegis.server.domain.study.domain.StudyRole;
 import aegis.server.domain.study.domain.StudySession;
 import aegis.server.domain.study.dto.request.AttendanceMarkRequest;
 import aegis.server.domain.study.dto.response.AttendanceMarkResponse;
+import aegis.server.domain.study.dto.response.TodayAttendanceResponse;
 import aegis.server.domain.study.repository.StudyAttendanceRepository;
 import aegis.server.domain.study.repository.StudyMemberRepository;
 import aegis.server.domain.study.repository.StudySessionRepository;
@@ -40,6 +41,15 @@ public class StudyParticipantService {
     private final StudyAttendanceRepository studyAttendanceRepository;
     private final PointLedger pointLedger;
     private final Clock clock;
+
+    public TodayAttendanceResponse getTodayAttendance(Long studyId, UserDetails userDetails) {
+        boolean attended = studySessionRepository
+                .findByStudyIdAndSessionDate(studyId, LocalDate.now(clock))
+                .map(session -> studyAttendanceRepository.existsByStudySessionIdAndMemberId(
+                        session.getId(), userDetails.getMemberId()))
+                .orElse(false);
+        return TodayAttendanceResponse.of(attended);
+    }
 
     @Transactional
     public AttendanceMarkResponse markAttendance(Long studyId, AttendanceMarkRequest request, UserDetails userDetails) {

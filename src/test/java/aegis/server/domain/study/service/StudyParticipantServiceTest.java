@@ -16,6 +16,7 @@ import aegis.server.domain.study.domain.*;
 import aegis.server.domain.study.dto.request.AttendanceMarkRequest;
 import aegis.server.domain.study.dto.response.AttendanceCodeIssueResponse;
 import aegis.server.domain.study.dto.response.AttendanceMarkResponse;
+import aegis.server.domain.study.dto.response.TodayAttendanceResponse;
 import aegis.server.domain.study.repository.StudyAttendanceRepository;
 import aegis.server.domain.study.repository.StudyMemberRepository;
 import aegis.server.domain.study.repository.StudyRepository;
@@ -51,6 +52,96 @@ class StudyParticipantServiceTest extends IntegrationTest {
         // 2025-09-11 Asia/Seoul 기준 날짜로 고정
         org.mockito.BDDMockito.given(clock.getZone()).willReturn(ZoneId.of("Asia/Seoul"));
         org.mockito.BDDMockito.given(clock.instant()).willReturn(Instant.parse("2025-09-11T01:00:00Z"));
+    }
+
+    @Nested
+    class 오늘_출석_여부_조회 {
+        @Test
+        void 출석한_스터디원은_true를_받는다() {
+            // given
+            Member instructor = createMember();
+            Member participant = createMember();
+            createPointAccount(instructor);
+            createPointAccount(participant);
+            UserDetails participantDetails = createUserDetails(participant);
+
+            Study study = createStudyWithInstructor(instructor);
+            addParticipant(study, participant);
+            AttendanceCodeIssueResponse issued =
+                    studyInstructorService.issueAttendanceCode(study.getId(), createUserDetails(instructor));
+            studyParticipantService.markAttendance(
+                    study.getId(), AttendanceMarkRequest.of(issued.code()), participantDetails);
+
+            // when
+            TodayAttendanceResponse response =
+                    studyParticipantService.getTodayAttendance(study.getId(), participantDetails);
+
+            // then
+            assertTrue(response.attended());
+        }
+
+        @Test
+        void 아직_출석하지_않은_스터디원은_false를_받는다() {
+            // given
+            Member instructor = createMember();
+            Member participant = createMember();
+            UserDetails participantDetails = createUserDetails(participant);
+
+            Study study = createStudyWithInstructor(instructor);
+            addParticipant(study, participant);
+            studyInstructorService.issueAttendanceCode(study.getId(), createUserDetails(instructor));
+
+            // when
+            TodayAttendanceResponse response =
+                    studyParticipantService.getTodayAttendance(study.getId(), participantDetails);
+
+            // then
+            assertFalse(response.attended());
+        }
+
+        @Test
+        void 오늘_세션이_없으면_false를_받는다() {
+            // given
+            Member instructor = createMember();
+            Member participant = createMember();
+            UserDetails participantDetails = createUserDetails(participant);
+
+            Study study = createStudyWithInstructor(instructor);
+            addParticipant(study, participant);
+
+            // when
+            TodayAttendanceResponse response =
+                    studyParticipantService.getTodayAttendance(study.getId(), participantDetails);
+
+            // then
+            assertFalse(response.attended());
+        }
+
+        /** 다른 회원의 출석 기록이 조회 결과에 섞이면 안 된다. */
+        @Test
+        void 다른_스터디원의_출석은_내_결과에_영향을_주지_않는다() {
+            // given
+            Member instructor = createMember();
+            Member attended = createMember();
+            Member other = createMember();
+            createPointAccount(instructor);
+            createPointAccount(attended);
+
+            Study study = createStudyWithInstructor(instructor);
+            addParticipant(study, attended);
+            addParticipant(study, other);
+            AttendanceCodeIssueResponse issued =
+                    studyInstructorService.issueAttendanceCode(study.getId(), createUserDetails(instructor));
+            studyParticipantService.markAttendance(
+                    study.getId(), AttendanceMarkRequest.of(issued.code()), createUserDetails(attended));
+
+            // when
+            TodayAttendanceResponse response =
+                    studyParticipantService.getTodayAttendance(study.getId(), createUserDetails(other));
+
+            // then
+            assertFalse(response.attended());
+        }
     }
 
     @Nested
