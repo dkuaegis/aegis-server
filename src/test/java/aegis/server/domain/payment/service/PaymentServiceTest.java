@@ -450,6 +450,7 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             // then
             assertEquals(PaymentCheckStatus.COMPLETED, response.status());
             assertEquals(BigDecimal.ZERO, response.finalPrice());
+            assertEquals(List.of(issuedCoupon.getId()), response.issuedCouponIds());
         }
 
         @Test
@@ -468,6 +469,40 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             // then
             assertEquals(PaymentCheckStatus.PENDING, response.status());
             assertEquals(CLUB_DUES.subtract(coupon.getDiscountAmount()), response.finalPrice());
+            assertEquals(List.of(issuedCoupon.getId()), response.issuedCouponIds());
+        }
+
+        @Test
+        void 쿠폰을_적용하지_않은_결제는_쿠폰_ID가_비어_있다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            paymentService.createPayment(new PaymentRequest(List.of()), userDetails);
+
+            // when
+            PaymentStatusResponse response = paymentService.checkPaymentStatus(userDetails);
+
+            // then
+            assertEquals(List.of(), response.issuedCouponIds());
+        }
+
+        @Test
+        void 쿠폰을_교체하면_마지막으로_적용한_쿠폰만_조회한다() {
+            // given
+            Member member = createMember();
+            UserDetails userDetails = createUserDetails(member);
+            Coupon coupon = createCoupon();
+            IssuedCoupon replaced = createIssuedCoupon(member, coupon);
+            IssuedCoupon kept = createIssuedCoupon(member, coupon);
+            IssuedCoupon added = createIssuedCoupon(member, coupon);
+            paymentService.createPayment(new PaymentRequest(List.of(replaced.getId(), kept.getId())), userDetails);
+            paymentService.updatePayment(new PaymentRequest(List.of(kept.getId(), added.getId())), userDetails);
+
+            // when
+            PaymentStatusResponse response = paymentService.checkPaymentStatus(userDetails);
+
+            // then
+            assertEquals(List.of(kept.getId(), added.getId()), response.issuedCouponIds());
         }
 
         @Test
@@ -483,6 +518,7 @@ public class PaymentServiceTest extends IntegrationTestWithoutTransactional {
             // then
             assertEquals(PaymentCheckStatus.NOT_CREATED, response.status());
             assertEquals(BigDecimal.ZERO, response.finalPrice());
+            assertEquals(List.of(), response.issuedCouponIds());
         }
     }
 
