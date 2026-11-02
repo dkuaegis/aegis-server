@@ -1,4 +1,4 @@
-FROM gradle:9.8.0-jdk25-ubi10@sha256:ac90443ecb45b276de8b736418bd2b2cb6b32de9c36ba8b9bc680aada071479e AS builder
+FROM gradle:9.8.1-jdk25-ubi10@sha256:486d21ba636e8d7c5519b5702676821cc0760f3c5d5d703318793aba29f09d5c AS builder
 
 WORKDIR /tmp
 
@@ -20,7 +20,7 @@ FROM eclipse-temurin:25.0.4_7-jre-ubi10-minimal@sha256:9a30637dc9114d1d0abfd6ae1
 
 WORKDIR /app
 
-RUN wget -O /app/grafana-opentelemetry-java.jar https://github.com/grafana/grafana-opentelemetry-java/releases/download/v2.31.1/grafana-opentelemetry-java.jar
+RUN wget -O /app/grafana-opentelemetry-java.jar https://github.com/grafana/grafana-opentelemetry-java/releases/download/v2.32.0/grafana-opentelemetry-java.jar
 
 EXPOSE 8080
 

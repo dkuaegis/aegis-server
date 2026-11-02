@@ -2,7 +2,7 @@ FROM eclipse-temurin:25.0.4_7-jre-ubi10-minimal@sha256:9a30637dc9114d1d0abfd6ae1
 
 WORKDIR /app
 
-RUN wget -O /app/grafana-opentelemetry-java.jar https://github.com/grafana/grafana-opentelemetry-java/releases/download/v2.31.1/grafana-opentelemetry-java.jar
+RUN wget -O /app/grafana-opentelemetry-java.jar https://github.com/grafana/grafana-opentelemetry-java/releases/download/v2.32.0/grafana-opentelemetry-java.jar
 
 EXPOSE 8080
 
