@@ -1,4 +1,4 @@
-FROM gradle:9.8.0-jdk25-ubi10 AS builder
+FROM gradle:9.8.1-jdk25-ubi10@sha256:486d21ba636e8d7c5519b5702676821cc0760f3c5d5d703318793aba29f09d5c AS builder
 
 WORKDIR /tmp
 
@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/home/gradle/.gradle/caches,id=gradle-cache,sharin
     --mount=type=cache,target=/home/gradle/.gradle/wrapper,id=gradle-wrapper,sharing=locked \
     gradle build --no-daemon -x check -x test -x spotlessApply -x spotlessCheck
 
-FROM eclipse-temurin:25.0.4_7-jre-ubi10-minimal AS runtime
+FROM eclipse-temurin:25.0.4_7-jre-ubi10-minimal@sha256:9a30637dc9114d1d0abfd6ae1d506e35df1c870fd46b15adfaebca4c0312ec3f AS runtime
 
 WORKDIR /app
 
