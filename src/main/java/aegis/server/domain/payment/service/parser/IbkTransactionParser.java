@@ -32,12 +32,11 @@ public class IbkTransactionParser implements TransactionParser {
             throw new IllegalArgumentException("거래유형, 거래금액, 이름을 추출할 수 없습니다");
         }
 
-        TransactionType transactionType =
-                switch (matcher.group(1)) {
-                    case "입금" -> TransactionType.DEPOSIT;
-                    case "출금" -> TransactionType.WITHDRAWAL;
-                    default -> throw new IllegalArgumentException("알 수 없는 거래유형입니다");
-                };
+        TransactionType transactionType = switch (matcher.group(1)) {
+            case "입금" -> TransactionType.DEPOSIT;
+            case "출금" -> TransactionType.WITHDRAWAL;
+            default -> throw new IllegalArgumentException("알 수 없는 거래유형입니다");
+        };
 
         BigDecimal amount = BigDecimal.valueOf(Long.parseLong(matcher.group(2).replace(",", "")));
 
