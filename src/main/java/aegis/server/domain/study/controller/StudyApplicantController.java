@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.study.dto.request.StudyEnrollRequest;
 import aegis.server.domain.study.dto.response.ApplicantStudyApplicationDetail;
-import aegis.server.domain.study.dto.response.ApplicantStudyApplicationStatus;
 import aegis.server.domain.study.service.StudyApplicantService;
 import aegis.server.global.security.annotation.LoginUser;
 import aegis.server.global.security.oidc.UserDetails;
@@ -26,24 +25,6 @@ import aegis.server.global.security.oidc.UserDetails;
 public class StudyApplicantController {
 
     private final StudyApplicantService studyApplicantService;
-
-    @Operation(
-            operationId = "getMyStudyApplicationStatus",
-            summary = "스터디 지원서 상태 조회",
-            description =
-                    "지원서 스터디에 대해 본인의 지원서 상태를 조회합니다. 지원서를 제출하지 않았다면 200과 함께 status=NONE, id=null을 반환합니다. 선착순 스터디는 이 API를 지원하지 않습니다.",
-            responses = {
-                @ApiResponse(responseCode = "200", description = "지원서 상태 조회 성공"),
-                @ApiResponse(responseCode = "400", description = "선착순 스터디에서는 지원하지 않음", content = @Content),
-                @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음", content = @Content)
-            })
-    @GetMapping("/studies/{studyId}/applications/status")
-    public ResponseEntity<ApplicantStudyApplicationStatus> getStudyApplicationStatus(
-            @PathVariable Long studyId, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
-        ApplicantStudyApplicationStatus response =
-                studyApplicantService.getStudyApplicationStatus(studyId, userDetails);
-        return ResponseEntity.ok(response);
-    }
 
     @Operation(
             operationId = "getMyStudyApplication",

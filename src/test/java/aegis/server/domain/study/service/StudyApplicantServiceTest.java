@@ -11,7 +11,6 @@ import aegis.server.domain.member.domain.Member;
 import aegis.server.domain.study.domain.*;
 import aegis.server.domain.study.dto.request.StudyEnrollRequest;
 import aegis.server.domain.study.dto.response.ApplicantStudyApplicationDetail;
-import aegis.server.domain.study.dto.response.ApplicantStudyApplicationStatus;
 import aegis.server.domain.study.repository.StudyApplicationRepository;
 import aegis.server.domain.study.repository.StudyRepository;
 import aegis.server.global.exception.CustomException;
@@ -31,57 +30,6 @@ class StudyApplicantServiceTest extends IntegrationTest {
 
     @Autowired
     StudyRepository studyRepository;
-
-    @Nested
-    class 스터디_신청_상태_조회 {
-
-        @Test
-        void 성공한다() {
-            // given
-            Member member = createMember();
-            UserDetails userDetails = createUserDetails(member);
-            Study study = createStudy();
-            StudyApplication application = createStudyApplication(study, member, "신청 사유");
-
-            // when
-            ApplicantStudyApplicationStatus response =
-                    studyApplicantService.getStudyApplicationStatus(study.getId(), userDetails);
-
-            // then
-            assertEquals(application.getId(), response.studyApplicationId());
-            assertEquals(StudyApplicationStatus.PENDING, response.status());
-        }
-
-        @Test
-        void 신청하지_않은_스터디는_NONE으로_응답한다() {
-            // given
-            Member member = createMember();
-            UserDetails userDetails = createUserDetails(member);
-            Study study = createStudy();
-
-            // when
-            ApplicantStudyApplicationStatus response =
-                    studyApplicantService.getStudyApplicationStatus(study.getId(), userDetails);
-
-            // then
-            assertNull(response.studyApplicationId());
-            assertEquals(StudyApplicationStatus.NONE, response.status());
-        }
-
-        @Test
-        void 선착순_스터디에서는_API_미지원_에러를_반환한다() {
-            // given
-            Member member = createMember();
-            UserDetails userDetails = createUserDetails(member);
-            Study study = createFCFSStudy();
-
-            // when & then
-            CustomException exception = assertThrows(
-                    CustomException.class,
-                    () -> studyApplicantService.getStudyApplicationStatus(study.getId(), userDetails));
-            assertEquals(ErrorCode.STUDY_APPLICATION_STATUS_NOT_SUPPORTED, exception.getErrorCode());
-        }
-    }
 
     @Nested
     class 스터디_신청_상세_조회 {

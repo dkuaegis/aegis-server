@@ -10,7 +10,6 @@ import aegis.server.domain.study.domain.StudyApplication;
 import aegis.server.domain.study.domain.StudyRecruitmentMethod;
 import aegis.server.domain.study.dto.request.StudyEnrollRequest;
 import aegis.server.domain.study.dto.response.ApplicantStudyApplicationDetail;
-import aegis.server.domain.study.dto.response.ApplicantStudyApplicationStatus;
 import aegis.server.domain.study.repository.StudyApplicationRepository;
 import aegis.server.domain.study.repository.StudyRepository;
 import aegis.server.global.exception.CustomException;
@@ -24,17 +23,6 @@ public class StudyApplicantService {
 
     private final StudyApplicationRepository studyApplicationRepository;
     private final StudyRepository studyRepository;
-
-    public ApplicantStudyApplicationStatus getStudyApplicationStatus(Long studyId, UserDetails userDetails) {
-        // 스터디 존재 확인 및 FCFS 미지원 검증
-        validateApplicationSupported(studyId);
-
-        // 지원서 스터디: 미제출이면 NONE 반환
-        return studyApplicationRepository
-                .findByStudyIdAndMemberId(studyId, userDetails.getMemberId())
-                .map(ApplicantStudyApplicationStatus::from)
-                .orElseGet(ApplicantStudyApplicationStatus::none);
-    }
 
     public ApplicantStudyApplicationDetail getStudyApplicationDetail(Long studyId, UserDetails userDetails) {
         // 스터디 존재 확인 및 FCFS 미지원 검증
