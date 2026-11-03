@@ -35,6 +35,9 @@ public class AuthController {
     @Value("${email-restriction.admin-email}")
     private String adminEmail;
 
+    @Value("${oauth2-login.default-redirect-uri}")
+    private String clientUrl;
+
     @Operation(
             operationId = "getAuthStatus",
             summary = "인증 상태 확인",
@@ -120,15 +123,15 @@ public class AuthController {
                      </header>
                      <section class="button-container">
                        <div class="buttons">
-                         <a href="https://join.dkuaegis.org" class="button">회원가입</a>
-                         <a href="https://mypage.dkuaegis.org" class="button">마이페이지</a>
-                         <a href="https://study.dkuaegis.org" class="button">스터디</a>
+                         <a href="{clientUrl}/join" class="button">회원가입</a>
+                         <a href="{clientUrl}/mypage" class="button">마이페이지</a>
+                         <a href="{clientUrl}/study" class="button">스터디</a>
                        </div>
                      </section>
                    </main>
                  </body>
                </html>
-               """;
+               """.replace("{clientUrl}", clientUrl);
         return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html);
     }
 }
