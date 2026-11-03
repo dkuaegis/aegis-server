@@ -4,11 +4,14 @@ import java.util.Optional;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 import lombok.*;
 
 import aegis.server.domain.common.domain.BaseEntity;
 
 @Entity
+@DynamicUpdate
 @Table(
         uniqueConstraints = {
             @UniqueConstraint(name = "uk_member_oidc_id", columnNames = "oidc_id"),
