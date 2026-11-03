@@ -194,7 +194,7 @@ class StudyParticipantServiceTest extends IntegrationTest {
             CustomException e = assertThrows(
                     CustomException.class,
                     () -> studyParticipantService.markAttendance(
-                            study.getId(), AttendanceMarkRequest.of("9999"), participantDetails));
+                            study.getId(), AttendanceMarkRequest.of("0000"), participantDetails));
             assertEquals(ErrorCode.STUDY_ATTENDANCE_CODE_INVALID, e.getErrorCode());
         }
 
