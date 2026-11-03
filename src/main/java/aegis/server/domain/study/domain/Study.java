@@ -5,6 +5,8 @@ import java.util.List;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 import lombok.*;
 
 import aegis.server.domain.common.converter.StringListJsonConverter;
@@ -16,6 +18,7 @@ import aegis.server.global.exception.ErrorCode;
 import static aegis.server.global.constant.Constant.CURRENT_YEAR_SEMESTER;
 
 @Entity
+@DynamicUpdate
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -97,11 +100,18 @@ public class Study extends BaseEntity {
             String schedule,
             List<String> curricula,
             List<String> qualifications) {
+        // 대기 중인 신청서가 처리되지 못한 채 남을 수 있으므로 모집 방식은 개설 후 변경할 수 없습니다.
+        if (this.recruitmentMethod != recruitmentMethod) {
+            throw new CustomException(ErrorCode.STUDY_RECRUITMENT_METHOD_IMMUTABLE);
+        }
+        // maxParticipants가 0이면 무제한으로 간주합니다.
+        if (maxParticipants != 0 && maxParticipants < this.currentParticipants) {
+            throw new CustomException(ErrorCode.STUDY_CAPACITY_BELOW_PARTICIPANTS);
+        }
         this.title = title;
         this.category = category;
         this.level = level;
         this.description = description;
-        this.recruitmentMethod = recruitmentMethod;
         this.maxParticipants = maxParticipants;
         this.schedule = schedule;
         this.curricula = new ArrayList<>(curricula);
