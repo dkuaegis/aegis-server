@@ -1,5 +1,7 @@
 package aegis.server.domain.study.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import aegis.server.domain.study.domain.StudyCategory;
 import aegis.server.domain.study.domain.StudyLevel;
 
@@ -10,7 +12,7 @@ public record GeneralStudySummary(
         StudyLevel level,
         long participantCount,
         int maxParticipants,
-        String schedule,
+        @Schema(nullable = true) String schedule,
         String instructor) {
 
     public static GeneralStudySummary from(

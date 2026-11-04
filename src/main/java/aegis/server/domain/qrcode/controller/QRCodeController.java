@@ -3,6 +3,7 @@ package aegis.server.domain.qrcode.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -27,13 +28,15 @@ public class QRCodeController {
     private final QRCodeService qrCodeService;
 
     @Operation(
+            operationId = "issueQrCode",
             summary = "QR 코드 발급",
             description = "사용자 QR 코드를 발급합니다. 기존 QR 코드가 있으면 삭제 후 새로 발급합니다.",
             responses = {
                 @ApiResponse(
                         responseCode = "201",
-                        description = "QR 코드 발급 성공",
-                        content = @Content(mediaType = "text/plain")),
+                        description = "QR 코드 발급 성공. 60초 동안 유효한 PNG 이미지의 Base64 문자열",
+                        content =
+                                @Content(mediaType = "text/plain", schema = @Schema(type = "string", format = "byte"))),
                 @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content)
             })
     @PostMapping("/issue")

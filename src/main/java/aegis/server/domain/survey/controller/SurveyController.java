@@ -41,6 +41,7 @@ public class SurveyController {
     }
 
     @Operation(
+            operationId = "saveSurvey",
             summary = "설문조사 작성/수정",
             description = "로그인한 사용자의 설문조사 답변을 작성하거나 수정합니다.",
             responses = {

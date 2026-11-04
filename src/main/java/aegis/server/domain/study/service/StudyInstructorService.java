@@ -94,8 +94,7 @@ public class StudyInstructorService {
     public GeneralStudyDetail updateStudy(Long studyId, StudyCreateUpdateRequest request, UserDetails userDetails) {
         validateIsStudyInstructorByStudyId(studyId, userDetails);
 
-        Study study =
-                studyRepository.findById(studyId).orElseThrow(() -> new CustomException(ErrorCode.STUDY_NOT_FOUND));
+        Study study = lockStudy(studyId);
 
         study.update(
                 request.title(),
@@ -114,22 +113,14 @@ public class StudyInstructorService {
     @Transactional
     public void approveStudyApplication(Long studyId, Long studyApplicationId, UserDetails userDetails) {
         Long instructorId = userDetails.getMemberId();
-        StudyApplication studyApplication = studyApplicationRepository
-                .findByIdWithStudy(studyApplicationId)
-                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_APPLICATION_NOT_FOUND));
+        validateIsStudyInstructorByStudyId(studyId, userDetails);
 
-        if (!studyApplication.getStudy().getId().equals(studyId)) {
-            throw new CustomException(ErrorCode.STUDY_APPLICATION_ACCESS_DENIED);
-        }
+        // 신청서를 읽기 전에 스터디를 잠가야 동시 요청이 갱신된 정원과 신청 상태를 기준으로 판단합니다.
+        Study study = lockStudy(studyId);
+        StudyApplication studyApplication = findApplicationOfStudy(studyId, studyApplicationId);
 
-        validateIsStudyInstructorByStudyId(studyApplication.getStudy().getId(), userDetails);
-
-        Study study = studyRepository
-                .findByIdWithLock(studyApplication.getStudy().getId())
-                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_NOT_FOUND));
-
-        study.increaseCurrentParticipant();
         studyApplication.approve();
+        study.increaseCurrentParticipant();
 
         StudyMember studyMember = StudyMember.create(study, studyApplication.getMember(), StudyRole.PARTICIPANT);
         studyMemberRepository.save(studyMember);
@@ -151,15 +142,11 @@ public class StudyInstructorService {
     @Transactional
     public void rejectStudyApplication(Long studyId, Long studyApplicationId, UserDetails userDetails) {
         Long instructorId = userDetails.getMemberId();
-        StudyApplication studyApplication = studyApplicationRepository
-                .findByIdWithStudy(studyApplicationId)
-                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_APPLICATION_NOT_FOUND));
+        validateIsStudyInstructorByStudyId(studyId, userDetails);
 
-        if (!studyApplication.getStudy().getId().equals(studyId)) {
-            throw new CustomException(ErrorCode.STUDY_APPLICATION_ACCESS_DENIED);
-        }
-
-        validateIsStudyInstructorByStudyId(studyApplication.getStudy().getId(), userDetails);
+        // 승인과 같은 잠금을 사용하여 승인과 거절이 동시에 성공하지 않도록 합니다.
+        lockStudy(studyId);
+        StudyApplication studyApplication = findApplicationOfStudy(studyId, studyApplicationId);
 
         studyApplication.reject();
 
@@ -254,6 +241,23 @@ public class StudyInstructorService {
         }
 
         return AttendanceMatrixResponse.from(sessionHeaders, memberRows);
+    }
+
+    private Study lockStudy(Long studyId) {
+        return studyRepository
+                .findByIdWithLock(studyId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_NOT_FOUND));
+    }
+
+    private StudyApplication findApplicationOfStudy(Long studyId, Long studyApplicationId) {
+        StudyApplication studyApplication = studyApplicationRepository
+                .findByIdWithStudy(studyApplicationId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_APPLICATION_NOT_FOUND));
+
+        if (!studyApplication.getStudy().getId().equals(studyId)) {
+            throw new CustomException(ErrorCode.STUDY_APPLICATION_ACCESS_DENIED);
+        }
+        return studyApplication;
     }
 
     private void validateIsStudyInstructorByStudyId(Long studyId, UserDetails userDetails) {

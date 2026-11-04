@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.study.dto.request.AttendanceMarkRequest;
 import aegis.server.domain.study.dto.response.AttendanceMarkResponse;
+import aegis.server.domain.study.dto.response.TodayAttendanceResponse;
 import aegis.server.domain.study.service.StudyParticipantService;
 import aegis.server.global.security.annotation.LoginUser;
 import aegis.server.global.security.oidc.UserDetails;
@@ -26,6 +27,17 @@ import aegis.server.global.security.oidc.UserDetails;
 public class StudyParticipantController {
 
     private final StudyParticipantService studyParticipantService;
+
+    @Operation(
+            operationId = "getMyTodayAttendance",
+            summary = "오늘 출석 여부 조회",
+            description = "로그인한 회원이 이 스터디의 오늘 세션에 출석했는지 조회합니다. 오늘 세션이 없거나 스터디원이 아니면 attended=false를 반환합니다.",
+            responses = {@ApiResponse(responseCode = "200", description = "오늘 출석 여부 조회 성공")})
+    @GetMapping("/studies/{studyId}/attendance/today")
+    public ResponseEntity<TodayAttendanceResponse> getTodayAttendance(
+            @PathVariable Long studyId, @Parameter(hidden = true) @LoginUser UserDetails userDetails) {
+        return ResponseEntity.ok(studyParticipantService.getTodayAttendance(studyId, userDetails));
+    }
 
     @Operation(
             summary = "출석 처리",

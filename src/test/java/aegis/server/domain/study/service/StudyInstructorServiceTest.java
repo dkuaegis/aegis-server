@@ -747,6 +747,60 @@ class StudyInstructorServiceTest extends IntegrationTest {
                     () -> studyInstructorService.updateStudy(nonExistentStudyId, request, instructorDetails));
             assertEquals(ErrorCode.STUDY_MEMBER_NOT_INSTRUCTOR, exception.getErrorCode());
         }
+
+        @Test
+        void 모집_방식을_바꾸면_예외가_발생하고_스터디는_유지된다() {
+            // given
+            Member instructor = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+            StudyCreateUpdateRequest request = new StudyCreateUpdateRequest(
+                    "수정된 스터디",
+                    StudyCategory.WEB,
+                    StudyLevel.ADVANCED,
+                    "수정된 스터디 설명",
+                    StudyRecruitmentMethod.FCFS,
+                    10,
+                    "주 3회",
+                    List.of("커리큘럼"),
+                    List.of("자격 요건"));
+
+            // when & then
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> studyInstructorService.updateStudy(study.getId(), request, instructorDetails));
+            assertEquals(ErrorCode.STUDY_RECRUITMENT_METHOD_IMMUTABLE, exception.getErrorCode());
+            assertEquals(
+                    StudyRecruitmentMethod.APPLICATION,
+                    studyRepository.findById(study.getId()).get().getRecruitmentMethod());
+        }
+
+        @Test
+        void 정원을_현재_참여자_수보다_줄이면_예외가_발생한다() {
+            // given
+            Member instructor = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+            study.increaseCurrentParticipant();
+            study.increaseCurrentParticipant();
+            studyRepository.saveAndFlush(study);
+            StudyCreateUpdateRequest request = new StudyCreateUpdateRequest(
+                    "수정된 스터디",
+                    StudyCategory.WEB,
+                    StudyLevel.ADVANCED,
+                    "수정된 스터디 설명",
+                    StudyRecruitmentMethod.APPLICATION,
+                    1,
+                    "주 3회",
+                    List.of("커리큘럼"),
+                    List.of("자격 요건"));
+
+            // when & then
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> studyInstructorService.updateStudy(study.getId(), request, instructorDetails));
+            assertEquals(ErrorCode.STUDY_CAPACITY_BELOW_PARTICIPANTS, exception.getErrorCode());
+        }
     }
 
     @Nested
@@ -885,6 +939,83 @@ class StudyInstructorServiceTest extends IntegrationTest {
     }
 
     @Nested
+    class 스터디_신청_재처리 {
+
+        @Test
+        void 이미_승인한_신청을_다시_승인하면_예외가_발생하고_인원이_늘지_않는다() {
+            // given
+            Member instructor = createMember();
+            Member applicant = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+            StudyApplication application = createStudyApplication(study, applicant, "신청 사유");
+            studyInstructorService.approveStudyApplication(study.getId(), application.getId(), instructorDetails);
+
+            // when
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> studyInstructorService.approveStudyApplication(
+                            study.getId(), application.getId(), instructorDetails));
+
+            // then
+            assertEquals(ErrorCode.STUDY_APPLICATION_ALREADY_APPROVED, exception.getErrorCode());
+            assertEquals(1, studyRepository.findById(study.getId()).get().getCurrentParticipants());
+        }
+
+        @Test
+        void 승인한_신청을_거절하면_예외가_발생하고_스터디원으로_남는다() {
+            // given
+            Member instructor = createMember();
+            Member applicant = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+            StudyApplication application = createStudyApplication(study, applicant, "신청 사유");
+            studyInstructorService.approveStudyApplication(study.getId(), application.getId(), instructorDetails);
+
+            // when
+            CustomException exception = assertThrows(
+                    CustomException.class,
+                    () -> studyInstructorService.rejectStudyApplication(
+                            study.getId(), application.getId(), instructorDetails));
+
+            // then
+            assertEquals(ErrorCode.STUDY_APPLICATION_ALREADY_APPROVED, exception.getErrorCode());
+            assertEquals(
+                    StudyApplicationStatus.APPROVED,
+                    studyApplicationRepository
+                            .findById(application.getId())
+                            .get()
+                            .getStatus());
+            assertTrue(
+                    studyMemberRepository.findByStudyAndMember(study, applicant).isPresent());
+        }
+
+        @Test
+        void 거절한_신청은_다시_승인할_수_있다() {
+            // given
+            Member instructor = createMember();
+            Member applicant = createMember();
+            UserDetails instructorDetails = createUserDetails(instructor);
+            Study study = createStudyWithInstructor(instructor);
+            StudyApplication application = createStudyApplication(study, applicant, "신청 사유");
+            studyInstructorService.rejectStudyApplication(study.getId(), application.getId(), instructorDetails);
+
+            // when
+            studyInstructorService.approveStudyApplication(study.getId(), application.getId(), instructorDetails);
+
+            // then
+            assertEquals(
+                    StudyApplicationStatus.APPROVED,
+                    studyApplicationRepository
+                            .findById(application.getId())
+                            .get()
+                            .getStatus());
+            assertTrue(
+                    studyMemberRepository.findByStudyAndMember(study, applicant).isPresent());
+        }
+    }
+
+    @Nested
     class 스터디_신청_거절 {
 
         @Test
@@ -1012,7 +1143,7 @@ class StudyInstructorServiceTest extends IntegrationTest {
                 StudyCategory.ARTIFICIAL_INTELLIGENCE,
                 StudyLevel.ADVANCED,
                 "수정된 스터디 설명",
-                StudyRecruitmentMethod.FCFS,
+                StudyRecruitmentMethod.APPLICATION,
                 20,
                 "주 3회",
                 List.of("수정된 커리큘럼 1", "수정된 커리큘럼 2"),

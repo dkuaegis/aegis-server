@@ -3,13 +3,14 @@ package aegis.server.global.security.interceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import lombok.RequiredArgsConstructor;
 
 import aegis.server.domain.featureflag.service.FeaturePolicyService;
+import aegis.server.global.exception.CustomException;
+import aegis.server.global.exception.ErrorCode;
 
 @Component
 @RequiredArgsConstructor
@@ -19,7 +20,9 @@ public class StudyEnrollWindowInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        if (!"POST".equalsIgnoreCase(request.getMethod())) {
+        // 신청(POST)과 지원서 수정(PUT)만 기간을 검사하고, 조회는 기간과 무관하게 허용합니다.
+        String method = request.getMethod();
+        if (!"POST".equalsIgnoreCase(method) && !"PUT".equalsIgnoreCase(method)) {
             return true;
         }
 
@@ -27,7 +30,6 @@ public class StudyEnrollWindowInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        response.setStatus(HttpStatus.FORBIDDEN.value());
-        return false;
+        throw new CustomException(ErrorCode.STUDY_ENROLLMENT_CLOSED);
     }
 }

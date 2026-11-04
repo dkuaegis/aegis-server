@@ -33,7 +33,9 @@
 
 # Controller
 
-- 200대 응답이 아닌 경우 빈 `@Content` 를 반환하도록 Swagger 문서에 명시하세요.
+- 200대 응답이 아닌 경우 빈 `@Content` 로 명시하세요. `OpenApiContractCustomizer` 가 오류 응답에 `ErrorResponse` 본문을 자동으로 연결합니다.
+- 응답 DTO의 속성은 OpenAPI 문서에서 모두 required로 표시됩니다. null이 될 수 있는 속성에는 `@Schema(nullable = true)` 를 붙이세요.
+- 새 API에는 생성될 클라이언트 함수 이름이 명확하도록 `@Operation(operationId = ...)` 를 지정하세요.
 - 200 Status OK만 사용하는 것이 아니라 적절한 HTTP 상태 코드를 사용하세요.
 - DTO 내용을 파싱하지 말고 그대로 Service 레이어로 전달하세요.
 - 관리자용 API 는 `/admin` 경로를 사용하세요.

@@ -65,6 +65,7 @@ public class StudyInstructorController {
     }
 
     @Operation(
+            operationId = "getStudyApplicationReason",
             summary = "스터디 지원서 상세 조회",
             description = "스터디장 또는 관리자가 특정 지원서의 상세 내용을 조회합니다.",
             responses = {

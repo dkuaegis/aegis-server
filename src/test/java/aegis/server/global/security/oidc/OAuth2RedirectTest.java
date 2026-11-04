@@ -17,16 +17,16 @@ class OAuth2RedirectTest {
 
     @Test
     void 허용된_클라이언트의_경로를_포함한_URL을_허용한다() {
-        assertThat(validator.isAllowed("https://study.dkuaegis.org/studies/1?tab=notice#content"))
+        assertThat(validator.isAllowed("https://dev-web.dkuaegis.org/studies/1?tab=notice#content"))
                 .isTrue();
     }
 
     @Test
     void 호스트가_같아도_스킴이나_포트가_다르면_거부한다() {
-        assertThat(validator.isAllowed("http://study.dkuaegis.org/studies/1")).isFalse();
-        assertThat(validator.isAllowed("https://study.dkuaegis.org:444/studies/1"))
+        assertThat(validator.isAllowed("http://dev-web.dkuaegis.org/studies/1")).isFalse();
+        assertThat(validator.isAllowed("https://dev-web.dkuaegis.org:444/studies/1"))
                 .isFalse();
-        assertThat(validator.isAllowed("https://attacker.example@study.dkuaegis.org/studies/1"))
+        assertThat(validator.isAllowed("https://attacker.example@dev-web.dkuaegis.org/studies/1"))
                 .isFalse();
     }
 
@@ -34,14 +34,14 @@ class OAuth2RedirectTest {
     void 로그인_요청의_허용된_Referer를_세션에_저장한다() throws Exception {
         RefererFilter filter = new RefererFilter(validator);
         MockHttpServletRequest request = authorizationRequest();
-        request.addHeader("Referer", "https://mypage.dkuaegis.org/profile");
+        request.addHeader("Referer", "https://dev-web.dkuaegis.org/profile");
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain filterChain = new MockFilterChain();
 
         filter.doFilter(request, response, filterChain);
 
         assertThat(request.getSession().getAttribute(RefererFilter.REDIRECT_URI_SESSION_ATTRIBUTE))
-                .isEqualTo("https://mypage.dkuaegis.org/profile");
+                .isEqualTo("https://dev-web.dkuaegis.org/profile");
         assertThat(filterChain.getRequest()).isSameAs(request);
     }
 
@@ -50,7 +50,7 @@ class OAuth2RedirectTest {
         RefererFilter filter = new RefererFilter(validator);
         MockHttpServletRequest request = authorizationRequest();
         request.getSession()
-                .setAttribute(RefererFilter.REDIRECT_URI_SESSION_ATTRIBUTE, "https://study.dkuaegis.org/old");
+                .setAttribute(RefererFilter.REDIRECT_URI_SESSION_ATTRIBUTE, "https://dev-web.dkuaegis.org/old");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilter(request, response, new MockFilterChain());
@@ -89,12 +89,12 @@ class OAuth2RedirectTest {
         CustomSuccessHandler successHandler = createSuccessHandler();
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.getSession()
-                .setAttribute(RefererFilter.REDIRECT_URI_SESSION_ATTRIBUTE, "https://study.dkuaegis.org/studies/1");
+                .setAttribute(RefererFilter.REDIRECT_URI_SESSION_ATTRIBUTE, "https://dev-web.dkuaegis.org/studies/1");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         successHandler.onAuthenticationSuccess(request, response, mock(Authentication.class));
 
-        assertThat(response.getRedirectedUrl()).isEqualTo("https://study.dkuaegis.org/studies/1");
+        assertThat(response.getRedirectedUrl()).isEqualTo("https://dev-web.dkuaegis.org/studies/1");
     }
 
     @Test

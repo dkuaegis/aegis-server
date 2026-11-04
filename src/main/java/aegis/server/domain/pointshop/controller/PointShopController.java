@@ -45,6 +45,7 @@ public class PointShopController {
     }
 
     @Operation(
+            operationId = "drawPointShop",
             summary = "포인트 샵 뽑기",
             description = "포인트 잔액을 차감하고 가중치에 따라 상품을 뽑습니다.",
             responses = {

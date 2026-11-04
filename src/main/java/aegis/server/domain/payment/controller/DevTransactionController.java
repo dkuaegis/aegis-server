@@ -28,6 +28,7 @@ public class DevTransactionController {
     private final DevTransactionService devTransactionService;
 
     @Operation(
+            operationId = "devCreateTransaction",
             summary = "개발용 거래 생성",
             description = "개발 환경에서 은행 거래를 시뮬레이션합니다. 입금자명과 금액을 지정하여 거래를 생성할 수 있습니다.",
             responses = {

@@ -2,7 +2,12 @@ package aegis.server.domain.point.dto.response;
 
 import java.util.List;
 
-public record PointRankingListResponse(long memberCount, List<PointRankingResponse> top10, PointRankingResponse me) {
+import io.swagger.v3.oas.annotations.media.Schema;
+
+public record PointRankingListResponse(
+        long memberCount,
+        List<PointRankingResponse> top10,
+        @Schema(nullable = true) PointRankingResponse me) {
 
     public static PointRankingListResponse of(
             long memberCount, List<PointRankingResponse> top10Rankings, PointRankingResponse myRanking) {

@@ -42,6 +42,7 @@ public class StudyApplication extends BaseEntity {
     private String applicationReason;
 
     public static StudyApplication create(Study study, Member member, String applicationReason) {
+        validateApplicationReason(applicationReason);
         return StudyApplication.builder()
                 .study(study)
                 .member(member)
@@ -57,14 +58,32 @@ public class StudyApplication extends BaseEntity {
     }
 
     public void updateApplicationReason(String applicationReason) {
+        validateApplicationReason(applicationReason);
         this.applicationReason = applicationReason;
     }
 
     public void approve() {
+        validateNotApproved();
         this.status = StudyApplicationStatus.APPROVED;
     }
 
+    /**
+     * 승인된 신청은 이미 스터디원이 되었으므로 거절로 되돌릴 수 없습니다.
+     */
     public void reject() {
+        validateNotApproved();
         this.status = StudyApplicationStatus.REJECTED;
+    }
+
+    private void validateNotApproved() {
+        if (this.status == StudyApplicationStatus.APPROVED) {
+            throw new CustomException(ErrorCode.STUDY_APPLICATION_ALREADY_APPROVED);
+        }
+    }
+
+    private static void validateApplicationReason(String applicationReason) {
+        if (applicationReason == null || applicationReason.isBlank()) {
+            throw new CustomException(ErrorCode.STUDY_APPLICATION_REASON_REQUIRED);
+        }
     }
 }

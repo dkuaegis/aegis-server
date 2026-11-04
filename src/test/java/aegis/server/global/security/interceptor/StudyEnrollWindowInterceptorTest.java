@@ -6,6 +6,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.junit.jupiter.api.Test;
 
 import aegis.server.domain.featureflag.service.FeaturePolicyService;
+import aegis.server.global.exception.CustomException;
+import aegis.server.global.exception.ErrorCode;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -22,12 +24,10 @@ class StudyEnrollWindowInterceptorTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         when(featurePolicyService.isStudyEnrollmentAllowed()).thenReturn(false);
 
-        // when
-        boolean result = interceptor.preHandle(request, response, new Object());
-
-        // then
-        assertFalse(result);
-        assertEquals(403, response.getStatus());
+        // when & then
+        CustomException exception =
+                assertThrows(CustomException.class, () -> interceptor.preHandle(request, response, new Object()));
+        assertEquals(ErrorCode.STUDY_ENROLLMENT_CLOSED, exception.getErrorCode());
     }
 
     @Test
@@ -45,7 +45,20 @@ class StudyEnrollWindowInterceptorTest {
     }
 
     @Test
-    void post_외_요청은_검사하지_않는다() {
+    void put_요청이_기간_외면_차단한다() {
+        // given
+        MockHttpServletRequest request = new MockHttpServletRequest("PUT", "/studies/1/applications");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        when(featurePolicyService.isStudyEnrollmentAllowed()).thenReturn(false);
+
+        // when & then
+        CustomException exception =
+                assertThrows(CustomException.class, () -> interceptor.preHandle(request, response, new Object()));
+        assertEquals(ErrorCode.STUDY_ENROLLMENT_CLOSED, exception.getErrorCode());
+    }
+
+    @Test
+    void 조회_요청은_검사하지_않는다() {
         // given
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/studies/1/enrollment");
         MockHttpServletResponse response = new MockHttpServletResponse();

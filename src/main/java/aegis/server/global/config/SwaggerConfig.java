@@ -1,5 +1,6 @@
 package aegis.server.global.config;
 
+import io.swagger.v3.core.jackson.ModelResolver;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.OAuthFlow;
@@ -14,6 +15,11 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 public class SwaggerConfig {
+
+    static {
+        // 같은 enum이 여러 DTO에 쓰여도 하나의 스키마를 참조하도록 해서 생성된 클라이언트 타입이 중복되지 않게 합니다.
+        ModelResolver.enumsAsRef = true;
+    }
 
     private OpenAPI baseOpenAPI() {
         return new OpenAPI()

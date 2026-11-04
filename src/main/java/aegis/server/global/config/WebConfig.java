@@ -25,6 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(transactionTrackInterceptor).addPathPatterns("/internal/transaction");
         registry.addInterceptor(signupGuardInterceptor).addPathPatterns("/members/**", "/survey/**", "/payments/**");
         registry.addInterceptor(studyCreationGuardInterceptor).addPathPatterns("/studies");
-        registry.addInterceptor(studyEnrollWindowInterceptor).addPathPatterns("/studies/*/enrollment");
+        registry.addInterceptor(studyEnrollWindowInterceptor)
+                .addPathPatterns("/studies/*/enrollment", "/studies/*/applications");
     }
 }
