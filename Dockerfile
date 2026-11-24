@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/home/gradle/.gradle/caches,id=gradle-cache,sharin
     --mount=type=cache,target=/home/gradle/.gradle/wrapper,id=gradle-wrapper,sharing=locked \
     gradle build --no-daemon -x check -x test -x spotlessApply -x spotlessCheck
 
-FROM eclipse-temurin:25.0.5.1_2-jre-ubi10-minimal@sha256:98b00567cd604b1ef5446afe8aee92f1c653c8a04f44466300df96efbef10e43 AS runtime
+FROM eclipse-temurin:25.0.5.1_2-jre-ubi10-minimal@sha256:25d8fbdec171e24e474065a7a42f3e0980559f0ac57f54f5c682d42f3cfa3450 AS runtime
 
 WORKDIR /app
 
