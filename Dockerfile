@@ -1,4 +1,4 @@
-FROM gradle:9.8.2-jdk25-ubi10@sha256:d14c6786cc6958f61a7f270714f16ea4e0dabcba0a0d19ebcfe8d30e3c878cd4 AS builder
+FROM gradle:9.9.1-jdk25-ubi10@sha256:f70972c6682ed8658a47385fd912b14cd7277a6cf43ad3a3354cc7db9027a27c AS builder
 
 WORKDIR /tmp
 
